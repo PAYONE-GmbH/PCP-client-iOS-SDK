@@ -1,0 +1,96 @@
+# Directory and file filters
+included:
+  - Plugins
+  - Source
+  - Tests
+  - Package.swift
+
+# Enabled/disabled rules
+analyzer_rules:
+  - capture_variable
+  - unused_declaration
+  - unused_import
+opt_in_rules:
+  - all
+
+disabled_rules:
+  - contrasted_opening_brace
+  - explicit_type_interface
+  - opening_brace
+  - missing_docs
+  - unused_capture_list
+  - inert_defer
+  - anyobject_protocol
+
+file_header:
+  required_pattern: |
+                    \/\/
+                    \/\/ This file is part of the PCPClient iOS SDK.
+                    \/\/ Copyright © \d{4} PAYONE GmbH\. All rights reserved\.
+                    \/\/
+                    \/\/ For the full copyright and license information, please view the LICENSE
+                    \/\/ file that was distributed with this source code.
+                    \/\/
+# Configurations
+attributes:
+  always_on_same_line:
+    - "@IBSegueAction"
+    - "@IBAction"
+    - "@NSManaged"
+    - "@objc"
+  always_on_line_above:
+    - "@discardableResult"
+
+force_cast: error
+
+force_try: error
+
+function_body_length:
+    warning: 150
+
+legacy_hashing: error
+
+identifier_name:
+  min_length: 3
+  max_length:
+    warning: 60
+    error: 80
+  excluded:
+    - id
+
+multiline_arguments:
+  first_argument_location: any_line
+  only_enforce_after_first_closure_on_first_line: true
+  
+number_separator:
+  minimum_length: 5
+  
+private_over_fileprivate:
+  validate_extensions: true
+
+trailing_whitespace:
+  ignores_empty_lines: true
+  ignores_comments: true
+
+type_name:
+  min_length: 3
+  max_length:
+    warning: 70
+    error: 80
+
+inclusive_language:
+  override_allowed_terms: [whitelist]
+
+trailing_closure:
+  only_single_muted_parameter: true
+
+cyclomatic_complexity:
+  ignores_case_statements: true
+
+function_parameter_count:
+  warning: 6
+  error: 8
+
+type_body_length:
+  warning: 300
+  error: 400
