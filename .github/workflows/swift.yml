@@ -25,7 +25,7 @@ jobs:
     - name: Coverage output path
       run:  swift test --show-codecov-path
     - name: Generate Code Coverage
-      run: xcrun llvm-cov show -instr-profile=.build/debug/codecov/default.profdata .build/arm64-apple-macosx/debug/codecov/PCPClient > coverage.json
+      run: xcrun llvm-cov show -instr-profile=.build/debug/codecov/default.profdata .build/arm64-apple-macosx/debug/codecov/PCPClient > coverage.report
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
