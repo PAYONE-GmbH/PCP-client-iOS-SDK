@@ -22,6 +22,8 @@ jobs:
       run: swift build
     - name: Run tests
       run: swift test --enable-code-coverage
+    - name: Generate Code Coverage
+      run: xcrun llvm-cov show -instr-profile=.build/debug/codecov/default.profdata > coverage.report
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
