@@ -23,3 +23,7 @@ jobs:
       run: swift build
     - name: Run tests
       run: swift test
+    - name: Run SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
