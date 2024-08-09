@@ -45,5 +45,9 @@ jobs:
           name: Coverage
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.coverageReportPaths=Coverage.xml
+            -Dsonar.verbose=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
