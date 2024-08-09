@@ -21,9 +21,15 @@ jobs:
     - name: Build
       run: swift build
     - name: Run tests
-      run: swift test --enable-code-coverage
-    - name: Coverage output path
-      run:  swift test --show-codecov-path
+      run: xcodebuild -scheme PCPClient -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -derivedDataPath Build/ -enableCodeCoverage YES clean build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -resultBundlePath Coverage.xcresult test
+    - name: Make Sonar Compatible Code Coverage Report
+      run: bash xccov-to-sonarqube-generic.sh .build/Coverage.xcresult >Coverage.xml
+    - name: Upload Coverage XML
+      uses: actions/upload-artifact@v4
+      with:
+        name: Coverage
+        path: Coverage.xml 
+        retention-days: 1
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
@@ -33,6 +39,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Download Coverage XML
+        uses: actions/download-artifact@v4
+        with:
+          name: Coverage
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
