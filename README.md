@@ -5,7 +5,7 @@
 [![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)
 [![CocoaPods](https://img.shields.io/cocoapods/v/PCPClient.svg?style=flat)](https://cocoapods.org/pods/PCPClient)
 ![iOS 10.0+](https://img.shields.io/badge/iOS-15.0%2B-blue.svg)
-[![GitHub License](https://img.shields.io/github/license/PAYONE-GmbH/PCP-client-swift-SDK)](https://github.com/PAYONE-GmbH/PCP-client-swift-SDK/blob/main/LICENSE)
+[![GitHub License](https://img.shields.io/github/license/PAYONE-GmbH/PCP-client-iOS-SDK)](https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK/blob/main/LICENSE)
 
 ## Installation
 
