@@ -21,10 +21,11 @@ jobs:
     - name: Build
       run: swift build
     - name: Run tests
-      run: swift test
+      run: swift test --enable-code-coverage
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
+    needs: [build]
 
     steps:
       - uses: actions/checkout@v4
