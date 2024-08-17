@@ -44,18 +44,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: Coverage
-      - name: Update Paths for SonarCloud
-        uses: jacobtomlinson/gha-find-replace@v3
-        with:
-          find: "/Users/runner/work/PCP-client-iOS-SDK/PCP-client-iOS-SDK/"
-          replace: ""
-          regex: false
-          include: "coverage.report"
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
           args: >
             -Dsonar.swift.coverage.reportPaths=coverage.report
             -Dsonar.verbose=true
+            -Dsonar.sources=Sources
+            -Dsonar.tests=Tests
+            -Dsonar.projectBaseDir=.
+            -Dsonar.log.level=DEBUG
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
