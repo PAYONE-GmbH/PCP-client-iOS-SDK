@@ -24,7 +24,7 @@ jobs:
       run: swift test --enable-code-coverage
       working-directory: .
     - name: Make Sonar Compatible Code Coverage Report
-      run: xcrun llvm-cov show -instr-profile=.build/debug/codecov/default.profdata .build/debug/PCPClientPackageTests.xctest/Contents/MacOS/PCPClientPackageTests > coverage.report
+      run: xcrun llvm-cov report -instr-profile=.build/debug/codecov/default.profdata .build/debug/PCPClientPackageTests.xctest/Contents/MacOS/PCPClientPackageTests > coverage.report
     - name: Upload Coverage
       uses: actions/upload-artifact@v4
       with:
@@ -50,9 +50,6 @@ jobs:
           args: >
             -Dsonar.swift.coverage.reportPaths=coverage.report
             -Dsonar.verbose=true
-            -Dsonar.sources=Sources
-            -Dsonar.tests=Tests
-            -Dsonar.projectBaseDir=.
             -Dsonar.log.level=DEBUG
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
