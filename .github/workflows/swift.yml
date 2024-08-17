@@ -25,6 +25,13 @@ jobs:
       working-directory: .
     - name: Make Sonar Compatible Code Coverage Report
       run: xcrun llvm-cov show -instr-profile=.build/debug/codecov/default.profdata .build/debug/PCPClientPackageTests.xctest/Contents/MacOS/PCPClientPackageTests > coverage.report
+    - name: Update Paths for SonarCloud
+      uses: jacobtomlinson/gha-find-replace@v3
+      with:
+        find: "/Users/runner/work/PCP-client-iOS-SDK/PCP-client-iOS-SDK/Sources/"
+        replace: ""
+        regex: false
+        include: "**/coverage.report"
     - name: Upload Coverage
       uses: actions/upload-artifact@v4
       with:
