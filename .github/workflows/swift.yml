@@ -47,7 +47,7 @@ jobs:
       - name: Update Paths for SonarCloud
         uses: jacobtomlinson/gha-find-replace@v3
         with:
-          find: "/Users/runner/work/PCP-client-iOS-SDK/PCP-client-iOS-SDK/Sources/"
+          find: "/Users/runner/work/PCP-client-iOS-SDK/PCP-client-iOS-SDK/"
           replace: ""
           regex: false
           include: "coverage.report"
