@@ -43,6 +43,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: Coverage
+      - name: Update Paths for SonarCloud
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "/Users/runner/work/PCP-client-iOS-SDK/PCP-client-iOS-SDK/"
+          replace: ""
+          regex: false
+          include: "Coverage.xml"
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:

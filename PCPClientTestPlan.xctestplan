@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "50143A09-AEC4-4C27-90D4-9AEC069728A7",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "PCPClientTests",
+        "name" : "PCPClientTests"
+      }
+    }
+  ],
+  "version" : 1
+}
