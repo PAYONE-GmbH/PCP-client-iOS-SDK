@@ -8,16 +8,6 @@
 
 import Foundation
 
-@objc public enum PCPEnvironment: Int {
+enum FakeError: Error {
     case test
-    case production
-
-    var environmentKey: String {
-        switch self {
-        case .test:
-            return "t"
-        case .production:
-            return "p"
-        }
-    }
 }

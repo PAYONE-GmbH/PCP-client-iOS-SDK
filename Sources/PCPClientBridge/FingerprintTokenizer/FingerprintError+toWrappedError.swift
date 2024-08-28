@@ -7,17 +7,15 @@
 //
 
 import Foundation
+import PCPClient
 
-@objc public enum PCPEnvironment: Int {
-    case test
-    case production
-
-    var environmentKey: String {
+extension FingerprintError {
+    func toWrappedError() -> FingerprintErrorWrapper {
         switch self {
-        case .test:
-            return "t"
-        case .production:
-            return "p"
+        case .scriptError:
+            return .scriptError
+        case .undefined:
+            return .undefined
         }
     }
 }

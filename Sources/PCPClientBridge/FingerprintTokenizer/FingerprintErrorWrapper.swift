@@ -7,17 +7,10 @@
 //
 
 import Foundation
+import PCPClient
 
-@objc public enum PCPEnvironment: Int {
-    case test
-    case production
-
-    var environmentKey: String {
-        switch self {
-        case .test:
-            return "t"
-        case .production:
-            return "p"
-        }
-    }
+@objc
+public enum FingerprintErrorWrapper: Int {
+    case scriptError
+    case undefined
 }
