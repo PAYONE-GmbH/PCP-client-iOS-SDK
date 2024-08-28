@@ -9,7 +9,7 @@
 import Foundation
 import OSLog
 
-struct PCPLogger {
+enum PCPLogger {
     private static let logger: Logger = Self.createApplicationLogger()
 
     static func info(_ message: String) {

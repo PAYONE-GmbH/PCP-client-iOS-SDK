@@ -12,6 +12,10 @@ let package = Package(
             name: "PCPClient",
             targets: ["PCPClient"]
         ),
+        .library(
+            name: "PCPClientBridge",
+            targets: ["PCPClientBridge"]
+        )
     ],
     dependencies: [
         .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", exact: "0.56.1")
@@ -23,9 +27,17 @@ let package = Package(
             name: "PCPClient",
             plugins: [.plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")]
         ),
+        .target(
+            name: "PCPClientBridge",
+            dependencies: [.target(name: "PCPClient")]
+        ),
         .testTarget(
             name: "PCPClientTests",
             dependencies: ["PCPClient"]
         ),
+        .testTarget(
+            name: "PCPClientBridgeTests",
+            dependencies: ["PCPClientBridge"]
+        )
     ]
 )

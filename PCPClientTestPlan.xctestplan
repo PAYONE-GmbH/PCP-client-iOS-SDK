@@ -13,10 +13,19 @@
   },
   "testTargets" : [
     {
+      "parallelizable" : true,
       "target" : {
         "containerPath" : "container:",
         "identifier" : "PCPClientTests",
         "name" : "PCPClientTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "PCPClientBridgeTests",
+        "name" : "PCPClientBridgeTests"
       }
     }
   ],

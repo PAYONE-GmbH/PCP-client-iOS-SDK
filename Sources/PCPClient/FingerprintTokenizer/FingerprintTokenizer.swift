@@ -58,7 +58,7 @@ public final class FingerprintTokenizer: NSObject {
         script.src = 'https://d.payla.io/dcs/\(paylaPartnerId)/\(partnerMerchantId)/dcs.js';
         script.onload = function() {
             if (typeof window.paylaDcs !== 'undefined' && window.paylaDcs.init) {
-                window.paylaDcs.init('\(environment.rawValue)', '\(snippetToken)');
+                window.paylaDcs.init('\(environment.environmentKey)', '\(snippetToken)');
             }
             else {
                 throw new Error('paylaDcs is not defined or does not have an init method.');
