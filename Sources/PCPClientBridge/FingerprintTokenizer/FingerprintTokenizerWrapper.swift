@@ -12,7 +12,7 @@ import PCPClient
 @objc public class FingerprintTokenizerWrapper: NSObject {
     private let tokenizer: FingerprintTokenizer
 
-    public init(
+    @objc public init(
         paylaPartnerId: String,
         partnerMerchantId: String,
         environment: PCPEnvironment,
