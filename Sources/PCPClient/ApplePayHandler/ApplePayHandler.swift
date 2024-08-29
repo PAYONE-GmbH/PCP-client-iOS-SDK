@@ -9,27 +9,27 @@ import Foundation
 import PassKit
 import SwiftUI
 
-public class ApplePayHandler: NSObject, PKPaymentAuthorizationViewControllerDelegate {
-    public var paymentController: PKPaymentAuthorizationViewController?
-    public var didAuthorizePayment: ((PKPaymentAuthorizationResult) -> Void)?
-    public var didSelectShippingContact: ((PKContact) -> Void)?
+@objc public class ApplePayHandler: NSObject, PKPaymentAuthorizationViewControllerDelegate {
+    @objc public var paymentController: PKPaymentAuthorizationViewController?
+    @objc public var didAuthorizePayment: ((PKPaymentAuthorizationResult) -> Void)?
+    @objc public var didSelectShippingContact: ((PKContact) -> Void)?
 
-    public var onShippingMethodDidChange: ((PKShippingMethod) -> PKPaymentRequestShippingMethodUpdate)?
-    public var onDidSelectPaymentMethod: ((PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate)?
-    public var onChangeCouponCode: ((String) -> PKPaymentRequestCouponCodeUpdate)?
+    @objc public var onShippingMethodDidChange: ((PKShippingMethod) -> PKPaymentRequestShippingMethodUpdate)?
+    @objc public var onDidSelectPaymentMethod: ((PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate)?
+    @objc public var onChangeCouponCode: ((String) -> PKPaymentRequestCouponCodeUpdate)?
 
     private var paymentStatus: PKPaymentAuthorizationStatus = .failure
     private var completion: ((Bool) -> Void)?
     private let processPaymentServerUrl: URL
     private var request: PKPaymentRequest?
 
-    public init(
+    @objc public init(
         processPaymentServerUrl: URL
     ) {
         self.processPaymentServerUrl = processPaymentServerUrl
     }
 
-    public func supportsApplePay() -> Bool {
+    @objc public func supportsApplePay() -> Bool {
         guard let request else {
             return PKPaymentAuthorizationViewController.canMakePayments()
         }
@@ -40,7 +40,7 @@ public class ApplePayHandler: NSObject, PKPaymentAuthorizationViewControllerDele
             )
     }
 
-    public func startPaymentAndReturnViewController(
+    @objc public func startPaymentAndReturnViewController(
         request: PKPaymentRequest,
         onDidSelectPaymentMethod: @escaping @convention(block) (PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate,
         completion: @escaping (Bool) -> Void
@@ -49,7 +49,7 @@ public class ApplePayHandler: NSObject, PKPaymentAuthorizationViewControllerDele
         return paymentController
     }
 
-    public func startAndPresentPayment(
+    @objc public func startAndPresentPayment(
         request: PKPaymentRequest,
         on viewController: UIViewController,
         onDidSelectPaymentMethod: @escaping @convention(block) (PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate,
