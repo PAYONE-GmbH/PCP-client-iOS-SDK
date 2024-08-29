@@ -257,7 +257,3 @@ extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessa
         }
     }
 }
-
-// Make it compatible with Objective-C
-// Add it to Objective-C app
-// Add it to SwiftUI app

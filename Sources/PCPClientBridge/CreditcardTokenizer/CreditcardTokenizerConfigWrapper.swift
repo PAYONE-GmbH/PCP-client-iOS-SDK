@@ -10,9 +10,9 @@ import Foundation
 import PCPClient
 
 @objc public class CreditcardTokenizerConfigWrapper: NSObject {
-    let creditcardTokenizerConfig: CreditcardTokenizerConfig
+    @objc public let creditcardTokenizerConfig: CreditcardTokenizerConfig
 
-    @objc init(
+    @objc public init(
         cardPan: Field,
         cardCvc2: Field,
         cardExpireMonth: Field,
