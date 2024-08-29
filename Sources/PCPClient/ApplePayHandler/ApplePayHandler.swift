@@ -9,8 +9,8 @@ import Foundation
 import PassKit
 import SwiftUI
 
-@objc public class ApplePayHandler: NSObject, PKPaymentAuthorizationViewControllerDelegate {
-    @objc public var paymentController: PKPaymentAuthorizationViewController?
+@objc public class ApplePayHandler: NSObject, PKPaymentAuthorizationControllerDelegate {
+    @objc public var paymentController: PKPaymentAuthorizationController?
     @objc public var didAuthorizePayment: ((PKPaymentAuthorizationResult) -> Void)?
     @objc public var didSelectShippingContact: ((PKContact) -> Void)?
 
@@ -40,35 +40,28 @@ import SwiftUI
             )
     }
 
-    @objc public func startPaymentAndReturnViewController(
+    @objc public func startPayment(
         request: PKPaymentRequest,
-        onDidSelectPaymentMethod: @escaping @convention(block) (PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate,
-        completion: @escaping (Bool) -> Void
-    ) -> UIViewController? {
-        startPayment(request: request, onDidSelectPaymentMethod: onDidSelectPaymentMethod, completion: completion)
-        return paymentController
-    }
-
-    @objc public func startAndPresentPayment(
-        request: PKPaymentRequest,
-        on viewController: UIViewController,
         onDidSelectPaymentMethod: @escaping @convention(block) (PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate,
         completion: @escaping @convention(block) (Bool) -> Void
     ) {
-        startPayment(request: request, onDidSelectPaymentMethod: onDidSelectPaymentMethod, completion: completion)
-        if let paymentController {
-            viewController.present(paymentController, animated: true)
-        }
+        PCPLogger.info("Starts payment request.")
+        self.request = request
+        self.completion = completion
+        self.onDidSelectPaymentMethod = onDidSelectPaymentMethod
+        self.paymentController = PKPaymentAuthorizationController(paymentRequest: request)
+        paymentController?.delegate = self
+        paymentController?.present()
     }
 
-    public func paymentAuthorizationViewControllerDidFinish(_ controller: PKPaymentAuthorizationViewController) {
-        PCPLogger.info("Dismisses PKPaymentAuthorizationViewController.")
-        controller.dismiss(animated: true, completion: nil)
+    public func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController) {
+        PCPLogger.info("Dismisses PKPaymentAuthorizationController.")
+        controller.dismiss()
         completion?(paymentStatus == .success)
     }
 
-    public func paymentAuthorizationViewController(
-        _ controller: PKPaymentAuthorizationViewController,
+    public func paymentAuthorizationController(
+        _ controller: PKPaymentAuthorizationController,
         didAuthorizePayment payment: PKPayment,
         handler completion: @escaping (PKPaymentAuthorizationResult) -> Void
     ) {
@@ -106,9 +99,9 @@ import SwiftUI
         task.resume()
     }
 
-    public func paymentAuthorizationViewController(
-        _ controller: PKPaymentAuthorizationViewController,
-        didSelect shippingMethod: PKShippingMethod,
+    public func paymentAuthorizationController(
+        _ controller: PKPaymentAuthorizationController,
+        didSelectShippingMethod shippingMethod: PKShippingMethod,
         handler completion: @escaping (PKPaymentRequestShippingMethodUpdate) -> Void
     ) {
         guard let request else {
@@ -128,8 +121,8 @@ import SwiftUI
         completion(onShippingMethodDidChange(shippingMethod))
     }
 
-    public func paymentAuthorizationViewController(
-        _ controller: PKPaymentAuthorizationViewController,
+    public func paymentAuthorizationController(
+        _ controller: PKPaymentAuthorizationController,
         didSelectShippingContact contact: PKContact,
         handler completion: @escaping (PKPaymentRequestShippingContactUpdate) -> Void
     ) {
@@ -143,8 +136,8 @@ import SwiftUI
         completion(PKPaymentRequestShippingContactUpdate(paymentSummaryItems: request.paymentSummaryItems))
     }
 
-    public func paymentAuthorizationViewController(
-        _ controller: PKPaymentAuthorizationViewController,
+    public func paymentAuthorizationController(
+        _ controller: PKPaymentAuthorizationController,
         didChangeCouponCode couponCode: String,
         handler completion: @escaping (PKPaymentRequestCouponCodeUpdate) -> Void
     ) {
@@ -157,9 +150,9 @@ import SwiftUI
         completion(onChangeCouponCode(couponCode))
     }
 
-    public func paymentAuthorizationViewController(
-        _ controller: PKPaymentAuthorizationViewController,
-        didSelect paymentMethod: PKPaymentMethod,
+    public func paymentAuthorizationController(
+        _ controller: PKPaymentAuthorizationController,
+        didSelectPaymentMethod paymentMethod: PKPaymentMethod,
         handler completion: @escaping (PKPaymentRequestPaymentMethodUpdate) -> Void
     ) {
         guard let onDidSelectPaymentMethod else {
@@ -168,18 +161,5 @@ import SwiftUI
             return
         }
         completion(onDidSelectPaymentMethod(paymentMethod))
-    }
-
-    private func startPayment(
-        request: PKPaymentRequest,
-        onDidSelectPaymentMethod: @escaping @convention(block) (PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate,
-        completion: @escaping @convention(block) (Bool) -> Void
-    ) {
-        PCPLogger.info("Starts payment request.")
-        self.request = request
-        self.completion = completion
-        self.onDidSelectPaymentMethod = onDidSelectPaymentMethod
-        self.paymentController = PKPaymentAuthorizationViewController(paymentRequest: request)
-        paymentController?.delegate = self
     }
 }
