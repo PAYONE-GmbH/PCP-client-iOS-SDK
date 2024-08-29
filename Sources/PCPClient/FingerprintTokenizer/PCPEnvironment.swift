@@ -12,7 +12,16 @@ import Foundation
     case test
     case production
 
-    var environmentKey: String {
+    var ccTokenizerIdentifier: String {
+        switch self {
+        case .test:
+            return "test"
+        case .production:
+            return "prod"
+        }
+    }
+
+    var fingerprintTokenizerIdentifier: String {
         switch self {
         case .test:
             return "t"
