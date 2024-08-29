@@ -19,7 +19,7 @@ import Foundation
     case uatp
     case girocard
 
-    var identifier: String {
+    public var identifier: String {
         switch self {
         case .visa:
             return "V"
