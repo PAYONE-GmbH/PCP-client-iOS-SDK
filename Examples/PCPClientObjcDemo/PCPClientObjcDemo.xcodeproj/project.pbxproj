@@ -384,7 +384,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK";
 			requirement = {
-				branch = ed5b67e33fb0a19a0052046fcdadfedf66560a4a;
+				branch = 34941c5d965ecd6596b2002a4588bd5dec842f95;
 				kind = branch;
 			};
 		};
