@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="jM5-Wu-Hqq">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
@@ -8,6 +8,22 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
+        <!--Navigation Controller-->
+        <scene sceneID="5YQ-eH-YMo">
+            <objects>
+                <navigationController id="jM5-Wu-Hqq" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="wg5-EQ-62X">
+                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="IQ4-04-79t"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="qjj-dV-1d6" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-810" y="-82"/>
+        </scene>
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
@@ -17,7 +33,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zpg-bP-Jwc">
-                                <rect key="frame" x="16" y="75" width="361" height="35"/>
+                                <rect key="frame" x="16" y="119" width="361" height="35"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="35" id="B0v-Po-TRU"/>
                                 </constraints>
@@ -28,7 +44,7 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fingerprint Token:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tDG-P4-e01">
-                                <rect key="frame" x="16" y="118" width="361" height="21"/>
+                                <rect key="frame" x="16" y="162" width="361" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="vn3-9P-t5E"/>
                                 </constraints>
@@ -37,7 +53,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="-" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="7" translatesAutoresizingMaskIntoConstraints="NO" id="rJ0-HK-jfl">
-                                <rect key="frame" x="16" y="147" width="361" height="21"/>
+                                <rect key="frame" x="16" y="191" width="361" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="sRX-hW-HhD"/>
                                 </constraints>
@@ -54,32 +70,72 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nIK-dW-XzL">
+                                <rect key="frame" x="16" y="236" width="361" height="35"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="35" id="eyl-fW-54L"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Create Creditcard Token"/>
+                                <connections>
+                                    <action selector="startCreditcardTokenizer:" destination="BYZ-38-t0r" eventType="touchUpInside" id="1GP-Wd-PZp"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Creditcard Token Response:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vfr-dm-diu">
+                                <rect key="frame" x="16" y="279" width="361" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="BZ2-Qb-qKN"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f9Y-dM-lBW">
+                                <rect key="frame" x="16" y="308" width="361" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="ZfN-8O-iIE"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="f9Y-dM-lBW" secondAttribute="trailing" constant="16" id="3Dd-me-P4M"/>
+                            <constraint firstItem="f9Y-dM-lBW" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="3a6-0Z-fLc"/>
+                            <constraint firstItem="Vfr-dm-diu" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="7RC-nE-tOE"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="AhT-nf-fES" secondAttribute="trailing" constant="16" id="9yh-u7-iDI"/>
                             <constraint firstItem="tDG-P4-e01" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="KIH-Cb-LS3"/>
                             <constraint firstItem="tDG-P4-e01" firstAttribute="top" secondItem="zpg-bP-Jwc" secondAttribute="bottom" constant="8" id="Kil-2P-Qf1"/>
                             <constraint firstItem="rJ0-HK-jfl" firstAttribute="top" secondItem="tDG-P4-e01" secondAttribute="bottom" constant="8" id="Mu2-Ys-T65"/>
+                            <constraint firstItem="nIK-dW-XzL" firstAttribute="top" secondItem="rJ0-HK-jfl" secondAttribute="bottom" constant="24" id="OEs-dj-2N6"/>
                             <constraint firstItem="rJ0-HK-jfl" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="Pr8-FK-y2S"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="tDG-P4-e01" secondAttribute="trailing" constant="16" id="RRT-vH-5Rm"/>
                             <constraint firstItem="AhT-nf-fES" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="UtM-Dm-fZl"/>
+                            <constraint firstItem="nIK-dW-XzL" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="WZ9-EE-xmU"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="nIK-dW-XzL" secondAttribute="trailing" constant="16" id="XXD-nK-pHi"/>
+                            <constraint firstItem="Vfr-dm-diu" firstAttribute="top" secondItem="nIK-dW-XzL" secondAttribute="bottom" constant="8" id="a42-V1-1Dc"/>
                             <constraint firstItem="AhT-nf-fES" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="gZh-dX-Clj"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="zpg-bP-Jwc" secondAttribute="trailing" constant="16" id="hFj-hu-ngy"/>
                             <constraint firstItem="zpg-bP-Jwc" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="16" id="ho4-MM-fu3"/>
+                            <constraint firstItem="f9Y-dM-lBW" firstAttribute="top" secondItem="Vfr-dm-diu" secondAttribute="bottom" constant="8" id="lcV-4l-e9V"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Vfr-dm-diu" secondAttribute="trailing" constant="16" id="nsL-rq-qTr"/>
                             <constraint firstItem="zpg-bP-Jwc" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="y1P-XL-Hm7"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="rJ0-HK-jfl" secondAttribute="trailing" constant="16" id="yru-ir-ggW"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="6JL-SS-ZfK"/>
                     <connections>
                         <outlet property="applePayResultLabel" destination="AhT-nf-fES" id="Ody-kN-BjI"/>
+                        <outlet property="creditcardTokenizerResponseLabel" destination="f9Y-dM-lBW" id="VKr-l7-O3L"/>
                         <outlet property="fingerprintTokenLabel" destination="rJ0-HK-jfl" id="Ykx-Q2-Frv"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-167.17557251908397" y="-54.225352112676056"/>
+            <point key="canvasLocation" x="56" y="-82"/>
         </scene>
     </scenes>
     <resources>

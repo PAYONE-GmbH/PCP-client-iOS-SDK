@@ -16,6 +16,7 @@
 @property (nonatomic, strong) FingerprintTokenizerWrapper *tokenizerWrapper;
 @property (nonatomic, strong) ApplePayHandler *applePayHandler;
 @property (weak, nonatomic) IBOutlet UILabel *applePayResultLabel;
+@property (weak, nonatomic) IBOutlet UILabel *creditcardTokenizerResponseLabel;
 
 @end
 
@@ -75,13 +76,90 @@
         return [[PKPaymentRequestPaymentMethodUpdate alloc] initWithPaymentSummaryItems:request.paymentSummaryItems];
     } completion:^(BOOL success) {
         if (success) {
-            NSLog(@"We are here");
             self.applePayResultLabel.text = @"Success";
         } else {
-            NSLog(@"We are there");
             self.applePayResultLabel.text = @"Failed";
         }
     }];
+}
+- (IBAction)startCreditcardTokenizer:(id)sender {
+    NSURL *url = [[NSURL alloc] initWithString:@"YOUR_URL"];
+    CCTokenizerRequest *request = [
+        [CCTokenizerRequest alloc]
+        initWithMid:@"YOUR_MID"
+        aid:@"YOUR_AID"
+        portalId:@"YOUR_PORTAL_ID"
+        environment:PCPEnvironmentTest
+        pmiPortalKey:@"YOUR_PMI_PORTAL_KEY"
+    ];
+    CreditcardTokenizerConfigWrapper *config = [
+        [CreditcardTokenizerConfigWrapper alloc]
+        initWithCardPan:[
+            [Field alloc]
+            initWithSelector:@"cardpan"
+            style:@"font-size: 14px; border: 1px solid #000;"
+            type:@"input" 
+            size:NULL
+            maxlength:NULL
+            length:NULL
+            iframe:NULL
+        ]
+        cardCvc2:[
+            [Field alloc]
+            initWithSelector:@"cardcvc2"
+            style:@"font-size: 14px; border: 1px solid #000;"
+            type:@"password"
+            size:@"4"
+            maxlength:@"4"
+            length:@{@"V": @3, @"M": @4}
+            iframe:NULL
+        ]
+        cardExpireMonth:[
+            [Field alloc]
+            initWithSelector:@"cardexpiremonth"
+            style:@"font-size: 14px; width: 30px; border: solid 1px #000; height: 22px;"
+            type:@"text"
+            size:@"2"
+            maxlength:@"2"
+            length:NULL
+            iframe:@{@"width": @"40px"}
+        ]
+        cardExpireYear:[
+            [Field alloc]
+            initWithSelector:@"cardexpireyear"
+            style:NULL
+            type:@"text"
+            size:NULL
+            maxlength:NULL
+            length:NULL
+            iframe:@{@"width": @"50px"}
+        ]
+        defaultStyles:@{
+            @"input": @"font-size: 1em; border: 1px solid #000; width: 175px;",
+            @"select": @"font-size: 1em; border: 1px solid #000;",
+            @"iframe": @"height: 22px, width: 180px"
+        }
+        language:PayoneLanguageGerman
+        error:@"error"
+        submitButtonId:@"submit"
+        success:^(CCTokenizerResponse *response) {
+            self.creditcardTokenizerResponseLabel.text =
+                [NSString stringWithFormat: @"cardtype: %@ cardexpiredate: %@ pseudocardpan %@ truncatedcardpan: %@ status: %@ errorcode: %@ errormessage: %@", response.cardType, response.cardExpireDate, response.pseudoCardpan, response.truncatedCardpan, response.status, response.errorCode, response.errorMessage];
+            [self.navigationController popViewControllerAnimated:true];
+        }
+        failure:^(enum CCTokenizerError error) {
+            self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"%ld", (long)error];
+            [self.navigationController popViewControllerAnimated:true];
+        }
+    ];
+    CreditcardTokenizerViewController *viewController = [
+        [CreditcardTokenizerViewController alloc]
+            initWithTokenizerUrl:url
+            request:request
+            supportedCardTypes:@[@"V", @"M"]
+            config:config.creditcardTokenizerConfig
+    ];
+    [self.navigationController pushViewController:viewController animated:true];
 }
 
 -(PKPaymentRequest *)makeRequest {

@@ -6,7 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK",
       "state" : {
-        "revision" : "ed5b67e33fb0a19a0052046fcdadfedf66560a4a"
+        "branch" : "main",
+        "revision" : "5ee0dac0edae1fb3673e36090207b538d618d4ac"
       }
     },
     {
