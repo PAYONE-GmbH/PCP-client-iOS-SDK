@@ -51,7 +51,7 @@ public class CreditcardTokenizerConfig: NSObject {
     let length: [String: Int]?
     let iframe: [String: String]?
 
-    @objc init(
+    @objc public init(
         selector: String,
         style: String?,
         type: String,
