@@ -71,7 +71,7 @@
 
         return [[PKPaymentRequestShippingMethodUpdate alloc] initWithPaymentSummaryItems:currentPaymentSummaryItems];
     };
-    [self.applePayHandler startAndPresentPaymentWithRequest:request on:self onDidSelectPaymentMethod:^PKPaymentRequestPaymentMethodUpdate * _Nonnull(PKPaymentMethod *paymentMethod) {
+    [self.applePayHandler startPaymentWithRequest:request onDidSelectPaymentMethod:^PKPaymentRequestPaymentMethodUpdate * _Nonnull(PKPaymentMethod *paymentMethod) {
         return [[PKPaymentRequestPaymentMethodUpdate alloc] initWithPaymentSummaryItems:request.paymentSummaryItems];
     } completion:^(BOOL success) {
         if (success) {
