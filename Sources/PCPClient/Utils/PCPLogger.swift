@@ -20,6 +20,10 @@ enum PCPLogger {
         logUnified(message: message, on: .error)
     }
 
+    static func fault(_ message: String) {
+        logUnified(message: message, on: .fault)
+    }
+
     private static func logUnified(message: String, on level: OSLogType) {
         let logLevelPrefix = buildLogLevelPrefix(from: level)
 

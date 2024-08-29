@@ -12,6 +12,7 @@
 		95EB6E4A2C7FB786005243D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95EB6E492C7FB786005243D3 /* Assets.xcassets */; };
 		95EB6E4D2C7FB786005243D3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95EB6E4C2C7FB786005243D3 /* Preview Assets.xcassets */; };
 		95EB6E552C7FB7E8005243D3 /* PCPClient in Frameworks */ = {isa = PBXBuildFile; productRef = 95EB6E542C7FB7E8005243D3 /* PCPClient */; };
+		95EB6E572C7FFE28005243D3 /* ApplePayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EB6E562C7FFE28005243D3 /* ApplePayButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +21,7 @@
 		95EB6E472C7FB785005243D3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		95EB6E492C7FB786005243D3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95EB6E4C2C7FB786005243D3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		95EB6E562C7FFE28005243D3 /* ApplePayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplePayButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 				95EB6E472C7FB785005243D3 /* ContentView.swift */,
 				95EB6E492C7FB786005243D3 /* Assets.xcassets */,
 				95EB6E4B2C7FB786005243D3 /* Preview Content */,
+				95EB6E562C7FFE28005243D3 /* ApplePayButton.swift */,
 			);
 			path = PCPClientSwiftDemo;
 			sourceTree = "<group>";
@@ -145,6 +148,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				95EB6E572C7FFE28005243D3 /* ApplePayButton.swift in Sources */,
 				95EB6E482C7FB785005243D3 /* ContentView.swift in Sources */,
 				95EB6E462C7FB785005243D3 /* PCPClientSwiftDemoApp.swift in Sources */,
 			);
@@ -356,7 +360,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK";
 			requirement = {
-				branch = main;
+				branch = ed5b67e33fb0a19a0052046fcdadfedf66560a4a;
 				kind = branch;
 			};
 		};

@@ -45,15 +45,27 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Apple Pay result yet" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AhT-nf-fES">
+                                <rect key="frame" x="16" y="797" width="361" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="epR-2E-HUS"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="AhT-nf-fES" secondAttribute="trailing" constant="16" id="9yh-u7-iDI"/>
                             <constraint firstItem="tDG-P4-e01" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="KIH-Cb-LS3"/>
                             <constraint firstItem="tDG-P4-e01" firstAttribute="top" secondItem="zpg-bP-Jwc" secondAttribute="bottom" constant="8" id="Kil-2P-Qf1"/>
                             <constraint firstItem="rJ0-HK-jfl" firstAttribute="top" secondItem="tDG-P4-e01" secondAttribute="bottom" constant="8" id="Mu2-Ys-T65"/>
                             <constraint firstItem="rJ0-HK-jfl" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="Pr8-FK-y2S"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="tDG-P4-e01" secondAttribute="trailing" constant="16" id="RRT-vH-5Rm"/>
+                            <constraint firstItem="AhT-nf-fES" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="UtM-Dm-fZl"/>
+                            <constraint firstItem="AhT-nf-fES" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="gZh-dX-Clj"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="zpg-bP-Jwc" secondAttribute="trailing" constant="16" id="hFj-hu-ngy"/>
                             <constraint firstItem="zpg-bP-Jwc" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="16" id="ho4-MM-fu3"/>
                             <constraint firstItem="zpg-bP-Jwc" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="y1P-XL-Hm7"/>
@@ -61,6 +73,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="applePayResultLabel" destination="AhT-nf-fES" id="Ody-kN-BjI"/>
                         <outlet property="fingerprintTokenLabel" destination="rJ0-HK-jfl" id="Ykx-Q2-Frv"/>
                     </connections>
                 </viewController>
