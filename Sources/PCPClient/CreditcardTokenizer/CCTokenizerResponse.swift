@@ -9,13 +9,13 @@
 import Foundation
 
 @objc public class CCTokenizerResponse: NSObject, Codable {
-    public let cardExpireDate: String?
-    public let cardType: String?
-    public let errorCode: String?
-    public let errorMessage: String?
-    public let pseudoCardpan: String?
-    public let status: String?
-    public let truncatedCardpan: String?
+    @objc public let cardExpireDate: String?
+    @objc public let cardType: String?
+    @objc public let errorCode: String?
+    @objc public let errorMessage: String?
+    @objc public let pseudoCardpan: String?
+    @objc public let status: String?
+    @objc public let truncatedCardpan: String?
 
     enum CodingKeys: String, CodingKey {
         case cardExpireDate = "cardexpiredate"
