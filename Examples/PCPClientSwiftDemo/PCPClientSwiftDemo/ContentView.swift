@@ -22,31 +22,38 @@ struct ContentView: View {
     @State private var applePayResult = "No Apple Pay result yet"
     private let applePayHandler = ApplePayHandler(processPaymentServerUrl: URL(string: "YOUR_PROCESS_PAYMENT_URL")!)
 
+    @State private var creditcardTokenResult = ""
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Button(action: {
-                startFingerprintTokenizer()
-            }, label: {
-                Text("Get Fingerprint Token")
-            })
-            .frame(maxWidth: .infinity)
-            Text("Fingerprint Token:")
-            Text(fingerprintToken)
-            Spacer()
-            
-            if shouldShowApplePay {
-                ApplePayButton()
-                    .onTapGesture {
-                        startPayment()
-                    }
-                    .frame(height: 30)
+        NavigationView(content: {
+            VStack(alignment: .leading, spacing: 8) {
+                Button(action: {
+                    startFingerprintTokenizer()
+                }, label: {
+                    Text("Get Fingerprint Token")
+                })
+                .frame(maxWidth: .infinity)
+                Text("Fingerprint Token:")
+                Text(fingerprintToken)
+                NavigationLink(destination: creditcardTokenizer) { Text("Create Creditcard Token") }
+                Text("Creditcard Token Result:")
+                Text(creditcardTokenResult)
+                Spacer()
+
+                if shouldShowApplePay {
+                    ApplePayButton()
+                        .onTapGesture {
+                            startPayment()
+                        }
+                        .frame(height: 30)
+                }
+                Text(applePayResult)
             }
-            Text(applePayResult)
-        }
-        .padding()
-        .onAppear {
-            shouldShowApplePay = applePayHandler.supportsApplePay()
-        }
+            .padding()
+            .onAppear {
+                shouldShowApplePay = applePayHandler.supportsApplePay()
+            }
+        })
     }
 
     private func startFingerprintTokenizer() {
@@ -101,6 +108,83 @@ struct ContentView: View {
             applePayResult = "Apple Pay is not available."
         }
     }
+
+    private var creditcardTokenizer: some View {
+        CreditcardTokenizerView(
+            tokenizerUrl: URL(string: "YOUR_URL")!,
+            request: CCTokenizerRequest(
+                mid: "YOUR_MID",
+                aid: "YOUR_AID",
+                portalId: "YOUR_PORTAL_ID",
+                environment: .test,
+                pmiPortalKey: "YOUR_PMI_PORTAL_KEY"
+            ),
+            supportedCardTypes: [SupportedCardType.visa.identifier, SupportedCardType.mastercard.identifier],
+            config: CreditcardTokenizerConfig(
+                cardPan: Field(
+                    selector: "cardpan",
+                    style: "font-size: 14px; border: 1px solid #000;",
+                    type: "input",
+                    size: nil,
+                    maxlength: nil,
+                    length: nil,
+                    iframe: nil
+                ),
+                cardCvc2: Field(
+                    selector: "cardcvc2",
+                    style: "font-size: 14px; border: 1px solid #000;",
+                    type: "password",
+                    size: "4",
+                    maxlength: "4",
+                    length: [
+                        "V": 3,
+                        "M": 3
+                    ],
+                    iframe: nil
+                ),
+                cardExpireMonth: Field(
+                    selector: "cardexpiremonth",
+                    style: "font-size: 14px; width: 30px; border: solid 1px #000; height: 22px;",
+                    type: "text",
+                    size: "2",
+                    maxlength: "2",
+                    length: nil,
+                    iframe: [
+                        "width": "40px"
+                    ]
+                ),
+                cardExpireYear: Field(
+                    selector: "cardexpireyear",
+                    style: nil,
+                    type: "text",
+                    size: nil,
+                    maxlength: nil,
+                    length: nil,
+                    iframe: [
+                        "width": "50px"
+                    ]
+                ),
+                defaultStyles: [
+                    "input": "font-size: 1em; border: 1px solid #000; width: 175px;",
+                    "select": "font-size: 1em; border: 1px solid #000;",
+                    "iframe": "height: 22px, width: 180px"
+                ],
+                language: .german,
+                error: "error",
+                submitButtonId: "submit",
+                creditCardCheckCallback: { result in
+                    switch result {
+                    case let .success(response):
+                        creditcardTokenResult = "cardtype: \(response.cardType) cardexpiredate: \(response.cardExpireDate) pseudocardpan: \(response.pseudoCardpan) truncatedcardpan: \(response.truncatedCardpan) status: \(response.status) errorcode: \(response.errorCode) errormessage: \(response.errorMessage)"
+
+                    case let .failure(error):
+                        creditcardTokenResult = "\(error.localizedDescription)"
+                    }
+                }
+            )
+        )
+    }
+
 
     private func makeRequest() -> PKPaymentRequest {
         let request = PKPaymentRequest()
