@@ -2,9 +2,9 @@
   "configurations" : [
     {
       "id" : "50143A09-AEC4-4C27-90D4-9AEC069728A7",
-      "name" : "Configuration 1",
+      "name" : "PCPClient",
       "options" : {
-
+        "testExecutionOrdering" : "random"
       }
     }
   ],
