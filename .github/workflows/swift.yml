@@ -19,9 +19,9 @@ jobs:
       with:
         swift-version: "5.10.1"
     - name: Build
-      run: swift build
+      run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=17.0'
     - name: Run tests
-      run: xcodebuild -scheme PCPClient -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -skipPackagePluginValidation -derivedDataPath Build/ -enableCodeCoverage YES clean build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -resultBundlePath Coverage.xcresult test
+      run: xcodebuild -scheme 'PCPClient-Package' -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -skipPackagePluginValidation -derivedDataPath Build/ -enableCodeCoverage YES clean build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -resultBundlePath Coverage.xcresult test
     - name: Make Sonar Compatible Code Coverage Report
       run: bash xccov-to-sonarqube-generic.sh Coverage.xcresult >Coverage.xml
     - name: Upload Coverage XML

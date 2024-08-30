@@ -1,19 +1,18 @@
 {
   "configurations" : [
     {
-      "id" : "50143A09-AEC4-4C27-90D4-9AEC069728A7",
-      "name" : "Configuration 1",
+      "id" : "B601BA46-4DBC-407D-BE9D-D59B823CE617",
+      "name" : "Test Scheme Action",
       "options" : {
-
+        "testExecutionOrdering" : "random"
       }
     }
   ],
   "defaultOptions" : {
-    "testTimeoutsEnabled" : true
+
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
       "target" : {
         "containerPath" : "container:",
         "identifier" : "PCPClientTests",
@@ -21,7 +20,6 @@
       }
     },
     {
-      "parallelizable" : true,
       "target" : {
         "containerPath" : "container:",
         "identifier" : "PCPClientBridgeTests",
