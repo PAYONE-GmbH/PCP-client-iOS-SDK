@@ -68,8 +68,8 @@ import WebKit
             }
             let js = makeScriptToLoadPayoneHostedScript()
             let script = WKUserScript(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
-            self.webView?.configuration.userContentController.add(self, name: "scriptLoaded")
-            self.webView?.configuration.userContentController.add(self, name: "scriptError")
+            self.addScriptMessageHandler(key: CCScriptMessageType.scriptLoaded.rawValue)
+            self.addScriptMessageHandler(key: CCScriptMessageType.scriptError.rawValue)
             self.webView?.configuration.userContentController.addUserScript(script)
             self.webView?.evaluateJavaScript(js)
         })
@@ -115,10 +115,10 @@ import WebKit
             script.src = 'https://secure.prelive.pay1-test.de/client-api/js/v1/payone_hosted_min.js';
             script.id = 'payone-hosted-script';
             script.onload = function() {
-                window.webkit.messageHandlers.scriptLoaded.postMessage('Script loaded.');
+                \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: "Script loaded."))
             }
             script.onerror = function() {
-                window.webkit.messageHandlers.scriptError.postMessage('Failed to load Payone script.');
+                \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: "Failed to load Payone script."))
             }
             document.head.appendChild(script);
         }
@@ -172,7 +172,8 @@ import WebKit
             storecarddata: 'yes',
             hash: '\(request.generatedHash)'
         };
-        document.getElementById('\(config.submitButtonId)').onclick = function() { window.webkit.messageHandlers.submitButtonClicked.postMessage('');
+        document.getElementById('\(config.submitButtonId)').onclick = function() {
+            \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: ""))
         };
 
         var iframes = new window.Payone.ClientApi.HostedIFrames(config, request);
@@ -186,7 +187,7 @@ import WebKit
        var iframes = window.payoneIFrames;
 
        function payCallback(response) {
-           window.webkit.messageHandlers.responseReceived.postMessage(response);
+           \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: "response"))
        }
 
        iframes.creditCardCheck('payCallback');
@@ -225,7 +226,7 @@ extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessa
 
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         switch message.name {
-        case "scriptLoaded":
+        case CCScriptMessageType.scriptLoaded.rawValue:
             webView?.evaluateJavaScript(
                 self.makeScriptToPopulateHTML(),
                 completionHandler: { [weak self] _, error in
@@ -235,15 +236,14 @@ extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessa
                     }
                 }
             )
-            webView?.configuration.userContentController.add(self, name: "submitButtonClicked")
-        case "scriptError":
+            addScriptMessageHandler(key: CCScriptMessageType.submitButtonClicked.rawValue)
+        case CCScriptMessageType.scriptError.rawValue:
             PCPLogger.error("Loading Payone Script failed.")
             config.creditCardCheckCallback(.failure(.loadingScriptFailed))
-        case "submitButtonClicked":
-            webView?.configuration.userContentController.removeScriptMessageHandler(forName: "responseReceived")
+        case CCScriptMessageType.submitButtonClicked.rawValue:
             webView?.evaluateJavaScript(makeScriptToInitiateAndHandleCheck())
-            webView?.configuration.userContentController.add(self, name: "responseReceived")
-        case "responseReceived":
+            addScriptMessageHandler(key: CCScriptMessageType.responseReceived.rawValue)
+        case CCScriptMessageType.responseReceived.rawValue:
             guard let dictionary = message.body as? [String: String?],
                   let data = try? JSONEncoder().encode(dictionary),
                   let response = try? JSONDecoder().decode(CCTokenizerResponse.self, from: data) else {
@@ -255,5 +255,10 @@ extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessa
         default:
             PCPLogger.warning("Unknown message send from WebView \(message.name).")
         }
+    }
+
+    private func addScriptMessageHandler(key: String) {
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: key)
+        webView?.configuration.userContentController.add(self, name: key)
     }
 }
