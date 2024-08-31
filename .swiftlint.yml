@@ -1,9 +1,7 @@
 # Directory and file filters
 included:
-  - Plugins
   - Source
   - Tests
-  - Package.swift
 
 # Enabled/disabled rules
 analyzer_rules:
