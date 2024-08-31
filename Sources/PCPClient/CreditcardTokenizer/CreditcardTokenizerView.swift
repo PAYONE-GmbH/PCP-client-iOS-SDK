@@ -10,10 +10,10 @@ import SwiftUI
 import UIKit
 
 public struct CreditcardTokenizerView: UIViewControllerRepresentable {
-    let tokenizerUrl: URL
-    let request: CCTokenizerRequest
-    let supportedCardTypes: [String]
-    let config: CreditcardTokenizerConfig
+    internal let tokenizerUrl: URL
+    internal let request: CCTokenizerRequest
+    internal let supportedCardTypes: [String]
+    internal let config: CreditcardTokenizerConfig
 
     public init(tokenizerUrl: URL, request: CCTokenizerRequest, supportedCardTypes: [String], config: CreditcardTokenizerConfig) {
         self.tokenizerUrl = tokenizerUrl

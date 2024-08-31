@@ -8,13 +8,13 @@
 
 import Foundation
 
-enum CCScriptMessageType: String {
-    case scriptLoaded = "scriptLoaded"
-    case scriptError = "scriptError"
-    case submitButtonClicked = "submitButtonClicked"
-    case responseReceived = "responseReceived"
+internal enum CCScriptMessageType: String {
+    case scriptLoaded
+    case scriptError
+    case submitButtonClicked
+    case responseReceived
 
-    func makeWebkitMessageString(body: String) -> String {
+    internal func makeWebkitMessageString(body: String) -> String {
         switch self {
         case .scriptLoaded:
             return "window.webkit.messageHandlers.scriptLoaded.postMessage(\(body));"
