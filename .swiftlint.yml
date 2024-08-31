@@ -25,6 +25,8 @@ disabled_rules:
   - prefer_nimble
   - sorted_enum_cases
   - no_grouping_extension
+  - explicit_enum_raw_value
+  - inclusive_language
 
 file_header:
   required_pattern: |

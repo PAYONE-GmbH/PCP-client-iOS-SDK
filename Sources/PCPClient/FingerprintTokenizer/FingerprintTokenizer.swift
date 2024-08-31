@@ -44,7 +44,7 @@ public final class FingerprintTokenizer: NSObject {
         """
         <!doctype html>
         <html lang="en">
-          <body></body>
+        <body></body>
         </html>
         """
     }
@@ -83,7 +83,9 @@ public final class FingerprintTokenizer: NSObject {
 }
 
 extension FingerprintTokenizer: WKNavigationDelegate {
+    // swiftlint:disable implicitly_unwrapped_optional
     public func webView(_ webView: WKWebView, didFinish _: WKNavigation!) {
+        // swiftlint:enable implicitly_unwrapped_optional
         let invokeInitFunction = #"paylaDcs.init("p", "pcp_init");"#
         webView.evaluateJavaScript(invokeInitFunction) { [weak self] _, error in
             if let error {

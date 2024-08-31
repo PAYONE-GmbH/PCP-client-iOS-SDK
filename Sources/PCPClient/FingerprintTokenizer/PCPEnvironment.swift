@@ -12,7 +12,7 @@ import Foundation
     case test
     case production
 
-    var ccTokenizerIdentifier: String {
+    internal var ccTokenizerIdentifier: String {
         switch self {
         case .test:
             return "test"
@@ -21,7 +21,7 @@ import Foundation
         }
     }
 
-    var fingerprintTokenizerIdentifier: String {
+    internal var fingerprintTokenizerIdentifier: String {
         switch self {
         case .test:
             return "t"

@@ -9,8 +9,7 @@
 import Foundation
 import PCPClient
 
-@objc
-public enum FingerprintErrorWrapper: Int, Error {
+@objc public enum FingerprintErrorWrapper: Int, Error {
     case scriptError
     case undefined
 

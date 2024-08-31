@@ -15,7 +15,12 @@ public struct CreditcardTokenizerView: UIViewControllerRepresentable {
     internal let supportedCardTypes: [String]
     internal let config: CreditcardTokenizerConfig
 
-    public init(tokenizerUrl: URL, request: CCTokenizerRequest, supportedCardTypes: [String], config: CreditcardTokenizerConfig) {
+    public init(
+        tokenizerUrl: URL,
+        request: CCTokenizerRequest,
+        supportedCardTypes: [String],
+        config: CreditcardTokenizerConfig
+    ) {
         self.tokenizerUrl = tokenizerUrl
         self.request = request
         self.supportedCardTypes = supportedCardTypes

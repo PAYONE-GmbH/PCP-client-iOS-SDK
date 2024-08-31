@@ -15,7 +15,7 @@ import WebKit
     private let config: CreditcardTokenizerConfig
     private let request: CCTokenizerRequest
 
-    var webView: WKWebView?
+    internal var webView: WKWebView?
 
     @objc public init(
         tokenizerUrl: URL,
@@ -30,6 +30,7 @@ import WebKit
         super.init(nibName: nil, bundle: nil)
     }
 
+    @available(*, unavailable)
     public required init?(coder _: NSCoder) {
         fatalError("\(#function ) has not been implemented")
     }
@@ -39,7 +40,9 @@ import WebKit
 
         setupWebView()
     }
+}
 
+extension CreditcardTokenizerViewController {
     private func setupWebView() {
         let webView = makeInjectedWebView()
         self.webView = webView
@@ -73,12 +76,12 @@ import WebKit
                 return
             }
 
-            let js = makeScriptToLoadPayoneHostedScript()
-            let script = WKUserScript(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+            let script = makeScriptToLoadPayoneHostedScript()
+            let userScript = WKUserScript(source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
             addScriptMessageHandler(key: CCScriptMessageType.scriptLoaded.rawValue)
             addScriptMessageHandler(key: CCScriptMessageType.scriptError.rawValue)
-            webView?.configuration.userContentController.addUserScript(script)
-            webView?.evaluateJavaScript(js)
+            webView?.configuration.userContentController.addUserScript(userScript)
+            webView?.evaluateJavaScript(script)
         })
     }
 
@@ -97,13 +100,13 @@ import WebKit
             result += ", maxlength: \"\(maxlength)\""
         }
 
-        if let length = field.length {
-            let lengthString = length.map { "\($0.key): \"\($0.value)\"" }.joined(separator: ", ")
+        if !field.length.isEmpty {
+            let lengthString = field.length.map { "\($0.key): \"\($0.value)\"" }.joined(separator: ", ")
             result += ", length: { \(lengthString) }"
         }
 
-        if let iframe = field.iframe {
-            let iframeString = iframe.map { "\($0.key): \"\($0.value)\"" }.joined(separator: ", ")
+        if !field.iframe.isEmpty {
+            let iframeString = field.iframe.map { "\($0.key): \"\($0.value)\"" }.joined(separator: ", ")
             result += ", iframe: { \(iframeString) }"
         }
 
@@ -186,26 +189,26 @@ import WebKit
         var iframes = new window.Payone.ClientApi.HostedIFrames(config, request);
         window.payoneIFrames = iframes;
         ;null
-       """
+        """
     }
 
     private func makeScriptToInitiateAndHandleCheck() -> String {
         """
-       var iframes = window.payoneIFrames;
+        var iframes = window.payoneIFrames;
 
-       function payCallback(response) {
-           \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: "response"))
-       }
+        function payCallback(response) {
+            \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: "response"))
+        }
 
-       iframes.creditCardCheck('payCallback');
-       """
+        iframes.creditCardCheck('payCallback');
+        """
     }
 
     private func checkRequiredElements(onCheckResult: @escaping (Bool) -> Void) {
         var hasSubmitButton: Bool = true
 
-        checkIfElementExists(elementId: config.submitButtonId) {
-            hasSubmitButton = $0
+        checkIfElementExists(elementId: config.submitButtonId) { isSubmitButtonAvailable in
+            hasSubmitButton = isSubmitButtonAvailable
             onCheckResult(hasSubmitButton)
         }
     }
@@ -227,9 +230,11 @@ import WebKit
 }
 
 extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessageHandler {
+    // swiftlint:disable implicitly_unwrapped_optional
     public func webView(_: WKWebView, didFinish _: WKNavigation!) {
         initialize()
     }
+    // swiftlint:enable implicitly_unwrapped_optional
 
     public func userContentController(_: WKUserContentController, didReceive message: WKScriptMessage) {
         switch message.name {
@@ -252,8 +257,8 @@ extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessa
             addScriptMessageHandler(key: CCScriptMessageType.responseReceived.rawValue)
         case CCScriptMessageType.responseReceived.rawValue:
             guard let dictionary = message.body as? [String: String?],
-                  let data = try? JSONEncoder().encode(dictionary),
-                  let response = try? JSONDecoder().decode(CCTokenizerResponse.self, from: data) else {
+                let data = try? JSONEncoder().encode(dictionary),
+                let response = try? JSONDecoder().decode(CCTokenizerResponse.self, from: data) else {
                 PCPLogger.error("Invalid response received.")
                 config.creditCardCheckCallback(.failure(.invalidResponse))
                 return
