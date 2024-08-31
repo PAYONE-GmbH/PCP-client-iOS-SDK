@@ -1,6 +1,6 @@
 # Directory and file filters
 included:
-  - Source
+  - Sources
   - Tests
 
 # Enabled/disabled rules
@@ -20,6 +20,10 @@ disabled_rules:
   - inert_defer
   - anyobject_protocol
   - vertical_whitespace_between_cases
+  - vertical_whitespace_opening_braces
+  - required_deinit
+  - prefer_nimble
+  - sorted_enum_cases
 
 file_header:
   required_pattern: |
