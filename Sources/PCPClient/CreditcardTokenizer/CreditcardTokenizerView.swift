@@ -22,7 +22,7 @@ public struct CreditcardTokenizerView: UIViewControllerRepresentable {
         self.config = config
     }
 
-    public func makeUIViewController(context: Context) -> CreditcardTokenizerViewController {
+    public func makeUIViewController(context _: Context) -> CreditcardTokenizerViewController {
         CreditcardTokenizerViewController(
             tokenizerUrl: tokenizerUrl,
             request: request,
@@ -31,7 +31,7 @@ public struct CreditcardTokenizerView: UIViewControllerRepresentable {
         )
     }
 
-    public func updateUIViewController(_ uiViewController: CreditcardTokenizerViewController, context: Context) {
+    public func updateUIViewController(_: CreditcardTokenizerViewController, context _: Context) {
         // Update the view controller if needed
     }
 }

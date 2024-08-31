@@ -30,11 +30,11 @@ import WebKit
         super.init(nibName: nil, bundle: nil)
     }
 
-    public required init?(coder: NSCoder) {
+    public required init?(coder _: NSCoder) {
         fatalError("\(#function ) has not been implemented")
     }
 
-    public override func viewWillAppear(_ animated: Bool) {
+    override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
         setupWebView()
@@ -64,14 +64,21 @@ import WebKit
     private func initialize() {
         checkRequiredElements(onCheckResult: { [weak self] isSetUpCorrectly in
             guard let self else {
+                PCPLogger.fault("Self already released before completion block was executed.")
                 return
             }
+
+            guard isSetUpCorrectly else {
+                PCPLogger.error("Not all required elements are available.")
+                return
+            }
+
             let js = makeScriptToLoadPayoneHostedScript()
             let script = WKUserScript(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
-            self.addScriptMessageHandler(key: CCScriptMessageType.scriptLoaded.rawValue)
-            self.addScriptMessageHandler(key: CCScriptMessageType.scriptError.rawValue)
-            self.webView?.configuration.userContentController.addUserScript(script)
-            self.webView?.evaluateJavaScript(js)
+            addScriptMessageHandler(key: CCScriptMessageType.scriptLoaded.rawValue)
+            addScriptMessageHandler(key: CCScriptMessageType.scriptError.rawValue)
+            webView?.configuration.userContentController.addUserScript(script)
+            webView?.evaluateJavaScript(js)
         })
     }
 
@@ -104,7 +111,7 @@ import WebKit
     }
 
     private func generateDefaultStyleKeyValuePairs() -> String {
-        config.defaultStyles.map { "\($0.key): \"\($0.value)\""}.joined(separator: ",\n")
+        config.defaultStyles.map { "\($0.key): \"\($0.value)\"" }.joined(separator: ",\n")
     }
 
     private func makeScriptToLoadPayoneHostedScript() -> String {
@@ -209,7 +216,7 @@ import WebKit
             onCheckResult(false)
             return
         }
-        webView.evaluateJavaScript(script) { (result, error) in
+        webView.evaluateJavaScript(script) { result, _ in
             if let exists = result as? Bool {
                 onCheckResult(exists)
             } else {
@@ -220,16 +227,16 @@ import WebKit
 }
 
 extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessageHandler {
-    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    public func webView(_: WKWebView, didFinish _: WKNavigation!) {
         initialize()
     }
 
-    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+    public func userContentController(_: WKUserContentController, didReceive message: WKScriptMessage) {
         switch message.name {
         case CCScriptMessageType.scriptLoaded.rawValue:
             webView?.evaluateJavaScript(
                 self.makeScriptToPopulateHTML(),
-                completionHandler: { [weak self] _, error in
+                completionHandler: { [weak self] _, _ in
                     if let error {
                         PCPLogger.error("Populating HTML with inputs failed.")
                         self?.config.creditCardCheckCallback(.failure(.populatingHTMLFailed))

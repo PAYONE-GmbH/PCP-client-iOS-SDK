@@ -57,8 +57,8 @@ public class CreditcardTokenizerConfig: NSObject {
         type: String,
         size: String?,
         maxlength: String?,
-        length: [String : Int]?,
-        iframe: [String : String]?
+        length: [String: Int]?,
+        iframe: [String: String]?
     ) {
         self.selector = selector
         self.style = style
@@ -74,7 +74,7 @@ public class CreditcardTokenizerConfig: NSObject {
     let htmlElementName: String
     let styles: [String: String]
 
-    @objc public init(htmlElementName: String, styles: [String : String]) {
+    @objc public init(htmlElementName: String, styles: [String: String]) {
         self.htmlElementName = htmlElementName
         self.styles = styles
     }

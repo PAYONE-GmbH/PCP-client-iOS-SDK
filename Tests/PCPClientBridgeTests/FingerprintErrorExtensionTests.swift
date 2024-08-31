@@ -7,14 +7,14 @@
 //
 
 import PCPClient
-import XCTest
 @testable import PCPClientBridge
+import XCTest
 
-final class FingerprintErrorExtensionTests: XCTestCase {
+internal final class FingerprintErrorExtensionTests: XCTestCase {
 
     // MARK: - Tests
 
-    func test_scriptError_toWrappedError_returnsWrappedFingerprintScriptError() {
+    internal func test_scriptError_toWrappedError_returnsWrappedFingerprintScriptError() {
         let sut = FingerprintError.scriptError(error: FakeError.test)
 
         let result = sut.toWrappedError()
@@ -22,7 +22,7 @@ final class FingerprintErrorExtensionTests: XCTestCase {
         XCTAssertEqual(result, .scriptError)
     }
 
-    func test_undefinedError_toWrappedError_returnsWrappedUndefindError() {
+    internal func test_undefinedError_toWrappedError_returnsWrappedUndefindError() {
         let sut = FingerprintError.undefined
 
         let result = sut.toWrappedError()

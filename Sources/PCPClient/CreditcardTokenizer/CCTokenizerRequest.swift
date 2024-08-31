@@ -6,8 +6,8 @@
 // file that was distributed with this source code.
 //
 
-import Foundation
 import CommonCrypto
+import Foundation
 
 @objc public class CCTokenizerRequest: NSObject {
     let mid: String
@@ -53,10 +53,9 @@ import CommonCrypto
             "creditcardcheck",
             "JSON",
             "yes"
-        ];
+        ]
 
-        let hash = createHash(requestValues.joined(separator: ""), pmiPortalKey)
-        return hash
+        return createHash(requestValues.joined(), pmiPortalKey)
     }
 
     private static func createHash(_ string: String, _ secret: String) -> String {
@@ -71,7 +70,6 @@ import CommonCrypto
                 CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA512), keyAddress, key.count, baseAddress, data.count, &digest)
             }
         }
-        let hash = Data(digest).base64EncodedString()
-        return hash
+        return Data(digest).base64EncodedString()
     }
 }

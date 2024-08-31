@@ -8,6 +8,6 @@
 
 import Foundation
 
-enum FakeError: Error {
+internal enum FakeError: Error {
     case test
 }

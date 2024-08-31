@@ -17,7 +17,7 @@ enum CCScriptMessageType: String {
     func makeWebkitMessageString(body: String) -> String {
         switch self {
         case .scriptLoaded:
-            return "window.webkit.messageHandlers.scriptLoaded.postMessage(\(body));";
+            return "window.webkit.messageHandlers.scriptLoaded.postMessage(\(body));"
         case .scriptError:
             return "window.webkit.messageHandlers.scriptError.postMessage(\(body));"
         case .submitButtonClicked:

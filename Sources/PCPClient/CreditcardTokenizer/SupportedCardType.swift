@@ -39,7 +39,6 @@ import Foundation
             return "U"
         case .girocard:
             return "G"
-
         }
     }
 }
