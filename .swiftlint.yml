@@ -24,6 +24,7 @@ disabled_rules:
   - required_deinit
   - prefer_nimble
   - sorted_enum_cases
+  - no_grouping_extension
 
 file_header:
   required_pattern: |
