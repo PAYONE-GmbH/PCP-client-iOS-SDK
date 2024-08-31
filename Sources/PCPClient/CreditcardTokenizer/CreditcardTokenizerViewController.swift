@@ -236,9 +236,9 @@ extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessa
         case CCScriptMessageType.scriptLoaded.rawValue:
             webView?.evaluateJavaScript(
                 self.makeScriptToPopulateHTML(),
-                completionHandler: { [weak self] _, _ in
+                completionHandler: { [weak self] _, error in
                     if let error {
-                        PCPLogger.error("Populating HTML with inputs failed.")
+                        PCPLogger.error("Populating HTML with inputs failed with \(error.localizedDescription).")
                         self?.config.creditCardCheckCallback(.failure(.populatingHTMLFailed))
                     }
                 }
