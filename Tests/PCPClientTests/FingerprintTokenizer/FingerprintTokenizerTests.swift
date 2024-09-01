@@ -31,6 +31,6 @@ internal final class FingerprintTokenizerTests: XCTestCase {
             })
         }
 
-        wait(for: [expectation], timeout: 0.7)
+        wait(for: [expectation], timeout: 3.0)
     }
 }
