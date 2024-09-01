@@ -19,7 +19,7 @@ public final class FingerprintTokenizer: NSObject {
     private let environment: PCPEnvironment
     private let snippetToken: String
 
-    private var webView: WKWebView?
+    private(set) internal var webView: WKWebView?
     private var onCompletion: ((Result<String, FingerprintError>) -> Void)?
 
     /// Initializes the `FingerprintTokenizer`.

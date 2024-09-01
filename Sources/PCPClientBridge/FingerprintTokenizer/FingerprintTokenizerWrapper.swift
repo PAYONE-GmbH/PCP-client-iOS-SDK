@@ -11,7 +11,7 @@ import PCPClient
 
 /// Wraps the `FingerprintTokenizer` so it can be used by Objective-C apps.
 @objc public class FingerprintTokenizerWrapper: NSObject {
-    private let tokenizer: FingerprintTokenizer
+    internal let tokenizer: FingerprintTokenizer
 
     /// Initializes the wrapper and therefore the `FingerprintTokenizer`.
     /// - Parameters:
