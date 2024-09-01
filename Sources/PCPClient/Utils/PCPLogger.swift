@@ -9,22 +9,22 @@
 import Foundation
 import OSLog
 
-enum PCPLogger {
+internal enum PCPLogger {
     private static let logger: Logger = Self.createApplicationLogger()
 
-    static func info(_ message: String) {
+    internal static func info(_ message: String) {
         logUnified(message: message, on: .info)
     }
 
-    static func error(_ message: String) {
+    internal static func error(_ message: String) {
         logUnified(message: message, on: .error)
     }
 
-    static func fault(_ message: String) {
+    internal static func fault(_ message: String) {
         logUnified(message: message, on: .fault)
     }
 
-    static func warning(_ message: String) {
+    internal static func warning(_ message: String) {
         logUnified(message: message, on: .default)
     }
 
@@ -36,12 +36,18 @@ enum PCPLogger {
 
     private static func buildLogLevelPrefix(from level: OSLogType) -> String {
         switch level {
-        case .debug: return "[🛠️]"
-        case .info: return "[ℹ️]"
-        case .default: return "[⚠️]"
-        case .error: return "[🛑]"
-        case .fault: return "[💥]"
-        default: return "[Default]"
+        case .debug:
+            return "[🛠️]"
+        case .info:
+            return "[ℹ️]"
+        case .default:
+            return "[⚠️]"
+        case .error:
+            return "[🛑]"
+        case .fault:
+            return "[💥]"
+        default:
+            return "[Default]"
         }
     }
 

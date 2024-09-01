@@ -10,7 +10,7 @@ import Foundation
 import PCPClient
 
 extension FingerprintError {
-    func toWrappedError() -> FingerprintErrorWrapper {
+    internal func toWrappedError() -> FingerprintErrorWrapper {
         switch self {
         case .scriptError:
             return .scriptError

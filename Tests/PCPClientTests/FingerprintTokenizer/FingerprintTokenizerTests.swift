@@ -8,6 +8,5 @@
 
 import XCTest
 
-final class FingerprintTokenizerTests: XCTestCase {
-
+internal final class FingerprintTokenizerTests: XCTestCase {
 }

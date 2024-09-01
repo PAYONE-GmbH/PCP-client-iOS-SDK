@@ -44,7 +44,7 @@ public final class FingerprintTokenizer: NSObject {
         """
         <!doctype html>
         <html lang="en">
-          <body></body>
+        <body></body>
         </html>
         """
     }
@@ -83,10 +83,12 @@ public final class FingerprintTokenizer: NSObject {
 }
 
 extension FingerprintTokenizer: WKNavigationDelegate {
-    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    // swiftlint:disable implicitly_unwrapped_optional
+    public func webView(_ webView: WKWebView, didFinish _: WKNavigation!) {
+        // swiftlint:enable implicitly_unwrapped_optional
         let invokeInitFunction = #"paylaDcs.init("p", "pcp_init");"#
-        webView.evaluateJavaScript(invokeInitFunction) { [weak self] (result, error) in
-            if let error = error {
+        webView.evaluateJavaScript(invokeInitFunction) { [weak self] _, error in
+            if let error {
                 PCPLogger.error("Fingerprinting script failed with error: \(error.localizedDescription).")
                 self?.onCompletion?(.failure(.scriptError(error: error)))
             } else if let snippetToken = self?.snippetToken {

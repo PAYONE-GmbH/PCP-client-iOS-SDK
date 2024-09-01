@@ -61,7 +61,7 @@ import SwiftUI
     }
 
     public func paymentAuthorizationController(
-        _ controller: PKPaymentAuthorizationController,
+        _: PKPaymentAuthorizationController,
         didAuthorizePayment payment: PKPayment,
         handler completion: @escaping (PKPaymentAuthorizationResult) -> Void
     ) {
@@ -78,29 +78,28 @@ import SwiftUI
         request.httpBody = try? JSONSerialization.data(withJSONObject: paymentData, options: [])
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
-            if let error = error {
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+            if let error {
                 PCPLogger.error(error.localizedDescription)
                 self?.paymentStatus = .failure
                 let result = PKPaymentAuthorizationResult(status: .failure, errors: [error])
                 completion(result)
                 self?.didAuthorizePayment?(result)
-            } else if let data = data {
-                let str = String(data: data, encoding: .utf8)
-                PCPLogger.info("Received data:\n\(str ?? "")")
+            } else if let data {
+                let dataString = String(decoding: data, as: UTF8.self)
+                PCPLogger.info("Received data:\n\(dataString)")
                 self?.paymentStatus = .success
                 let result = PKPaymentAuthorizationResult(status: .success, errors: nil)
                 completion(result)
                 self?.didAuthorizePayment?(result)
             }
-
         }
 
         task.resume()
     }
 
     public func paymentAuthorizationController(
-        _ controller: PKPaymentAuthorizationController,
+        _: PKPaymentAuthorizationController,
         didSelectShippingMethod shippingMethod: PKShippingMethod,
         handler completion: @escaping (PKPaymentRequestShippingMethodUpdate) -> Void
     ) {
@@ -122,7 +121,7 @@ import SwiftUI
     }
 
     public func paymentAuthorizationController(
-        _ controller: PKPaymentAuthorizationController,
+        _: PKPaymentAuthorizationController,
         didSelectShippingContact contact: PKContact,
         handler completion: @escaping (PKPaymentRequestShippingContactUpdate) -> Void
     ) {
@@ -137,7 +136,7 @@ import SwiftUI
     }
 
     public func paymentAuthorizationController(
-        _ controller: PKPaymentAuthorizationController,
+        _: PKPaymentAuthorizationController,
         didChangeCouponCode couponCode: String,
         handler completion: @escaping (PKPaymentRequestCouponCodeUpdate) -> Void
     ) {
@@ -151,7 +150,7 @@ import SwiftUI
     }
 
     public func paymentAuthorizationController(
-        _ controller: PKPaymentAuthorizationController,
+        _: PKPaymentAuthorizationController,
         didSelectPaymentMethod paymentMethod: PKPaymentMethod,
         handler completion: @escaping (PKPaymentRequestPaymentMethodUpdate) -> Void
     ) {

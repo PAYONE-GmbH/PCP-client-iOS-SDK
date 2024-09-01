@@ -6,15 +6,15 @@
 // file that was distributed with this source code.
 //
 
-import Foundation
 import CommonCrypto
+import Foundation
 
 @objc public class CCTokenizerRequest: NSObject {
-    let mid: String
-    let aid: String
-    let portalId: String
-    let environment: PCPEnvironment
-    let generatedHash: String
+    internal let mid: String
+    internal let aid: String
+    internal let portalId: String
+    internal let environment: PCPEnvironment
+    internal let generatedHash: String
 
     @objc public init(
         mid: String,
@@ -53,25 +53,27 @@ import CommonCrypto
             "creditcardcheck",
             "JSON",
             "yes"
-        ];
+        ]
 
-        let hash = createHash(requestValues.joined(separator: ""), pmiPortalKey)
-        return hash
+        return createHash(requestValues.joined(), pmiPortalKey)
     }
 
     private static func createHash(_ string: String, _ secret: String) -> String {
         let stringToSign = "\(string)\(secret)"
-        let key = secret.data(using: .utf8)!
-        let data = stringToSign.data(using: .utf8)!
+        let key = Data(secret.utf8)
+        let data = Data(stringToSign.utf8)
         var digest = [UInt8](repeating: 0, count: Int(CC_SHA512_DIGEST_LENGTH))
-        data.withUnsafeBytes {
-            guard let baseAddress = $0.baseAddress else { return }
+        data.withUnsafeBytes { pointer in
+            guard let baseAddress = pointer.baseAddress else {
+                return
+            }
             key.withUnsafeBytes { keyBytes in
-                guard let keyAddress = keyBytes.baseAddress else { return }
+                guard let keyAddress = keyBytes.baseAddress else {
+                    return
+                }
                 CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA512), keyAddress, key.count, baseAddress, data.count, &digest)
             }
         }
-        let hash = Data(digest).base64EncodedString()
-        return hash
+        return Data(digest).base64EncodedString()
     }
 }

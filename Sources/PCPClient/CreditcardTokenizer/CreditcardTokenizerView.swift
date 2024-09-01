@@ -10,19 +10,24 @@ import SwiftUI
 import UIKit
 
 public struct CreditcardTokenizerView: UIViewControllerRepresentable {
-    let tokenizerUrl: URL
-    let request: CCTokenizerRequest
-    let supportedCardTypes: [String]
-    let config: CreditcardTokenizerConfig
+    internal let tokenizerUrl: URL
+    internal let request: CCTokenizerRequest
+    internal let supportedCardTypes: [String]
+    internal let config: CreditcardTokenizerConfig
 
-    public init(tokenizerUrl: URL, request: CCTokenizerRequest, supportedCardTypes: [String], config: CreditcardTokenizerConfig) {
+    public init(
+        tokenizerUrl: URL,
+        request: CCTokenizerRequest,
+        supportedCardTypes: [String],
+        config: CreditcardTokenizerConfig
+    ) {
         self.tokenizerUrl = tokenizerUrl
         self.request = request
         self.supportedCardTypes = supportedCardTypes
         self.config = config
     }
 
-    public func makeUIViewController(context: Context) -> CreditcardTokenizerViewController {
+    public func makeUIViewController(context _: Context) -> CreditcardTokenizerViewController {
         CreditcardTokenizerViewController(
             tokenizerUrl: tokenizerUrl,
             request: request,
@@ -31,7 +36,7 @@ public struct CreditcardTokenizerView: UIViewControllerRepresentable {
         )
     }
 
-    public func updateUIViewController(_ uiViewController: CreditcardTokenizerViewController, context: Context) {
+    public func updateUIViewController(_: CreditcardTokenizerViewController, context _: Context) {
         // Update the view controller if needed
     }
 }

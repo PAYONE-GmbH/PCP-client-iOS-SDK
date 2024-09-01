@@ -8,6 +8,5 @@
 
 import XCTest
 
-final class PCPLoggerTests: XCTestCase {
-
+internal final class PCPLoggerTests: XCTestCase {
 }
