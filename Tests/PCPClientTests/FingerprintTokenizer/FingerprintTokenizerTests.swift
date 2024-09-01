@@ -6,8 +6,8 @@
 // file that was distributed with this source code.
 //
 
-import XCTest
 @testable import PCPClient
+import XCTest
 
 internal final class FingerprintTokenizerTests: XCTestCase {
     
@@ -25,7 +25,7 @@ internal final class FingerprintTokenizerTests: XCTestCase {
         let expectedScript = "\n<script id=\"paylaDcs\" type=\"text/javascript\" " +
             "src=\"https://d.payla.io/dcs/\(paylaPartnerId)/\(merchId)/dcs.js\"></script>"
         sut.getSnippetToken { _ in
-            sut.webView?.evaluateJavaScript("document.body.innerHTML", completionHandler: { html, error in
+            sut.webView?.evaluateJavaScript("document.body.innerHTML", completionHandler: { html, _ in
                 XCTAssertEqual(html as? String, expectedScript)
                 expectation.fulfill()
             })
