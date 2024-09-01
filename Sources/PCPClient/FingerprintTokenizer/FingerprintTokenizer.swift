@@ -9,6 +9,10 @@
 import Foundation
 import WebKit
 
+/// Responsible for generating a fingerprint token which is required to let your server perform transactions.
+///
+/// The `FingerprintTokenizer` sends this snippet token to Payla for later server-to-Payla authorization,
+/// ensuring the necessary device information is captured to facilitate secure and accurate payment processing.
 public final class FingerprintTokenizer: NSObject {
     private let paylaPartnerId: String
     private let partnerMerchantId: String
@@ -18,6 +22,12 @@ public final class FingerprintTokenizer: NSObject {
     private var webView: WKWebView?
     private var onCompletion: ((Result<String, FingerprintError>) -> Void)?
 
+    /// Initializes the `FingerprintTokenizer`.
+    /// - Parameters:
+    ///   - paylaPartnerId: The Payla partner ID.
+    ///   - partnerMerchantId: Your partner merchant ID.
+    ///   - environment: The `PCPEnvironment` you want to use. Either `test` or `production`.
+    ///   - sessionId: An optional session ID that you want created on your own.`
     public init(
         paylaPartnerId: String,
         partnerMerchantId: String,
@@ -32,7 +42,9 @@ public final class FingerprintTokenizer: NSObject {
         self.snippetToken = "\(paylaPartnerId)_\(partnerMerchantId)_\(uniqueId)"
         super.init()
     }
-
+    
+    /// Attempts to get the snippet token, could fail during the process.
+    /// - Parameter onCompletion: Handle the completion of either a `String` token or error.
     public func getSnippetToken(onCompletion: @escaping (Result<String, FingerprintError>) -> Void) {
         self.onCompletion = onCompletion
         let script = makeScript()
@@ -84,6 +96,7 @@ public final class FingerprintTokenizer: NSObject {
 
 extension FingerprintTokenizer: WKNavigationDelegate {
     // swiftlint:disable implicitly_unwrapped_optional
+    /// Method from `WKNavigationDelegate`. Do not call this method manually!
     public func webView(_ webView: WKWebView, didFinish _: WKNavigation!) {
         // swiftlint:enable implicitly_unwrapped_optional
         let invokeInitFunction = #"paylaDcs.init("p", "pcp_init");"#
