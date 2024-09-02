@@ -24,7 +24,7 @@ internal final class FingerprintTokenizerTests: XCTestCase {
 
     // MARK: - Test Lifecycle
 
-    override func setUp() {
+    override internal func setUp() {
         super.setUp()
 
         sut = FingerprintTokenizer(
@@ -35,7 +35,7 @@ internal final class FingerprintTokenizerTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
+    override internal func tearDown() {
         sut = nil
         super.tearDown()
     }
