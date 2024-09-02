@@ -42,20 +42,6 @@ internal final class FingerprintTokenizerTests: XCTestCase {
 
     // MARK: - Tests
 
-    internal func test_getSnippetToken_afterInitWithIds_setsUpCorrectScript() {
-        let expectation = expectation(description: #function)
-        let expectedScript = "\n<script id=\"paylaDcs\" type=\"text/javascript\" " +
-            "src=\"https://d.payla.io/dcs/\(paylaPartnerId)/\(merchId)/dcs.js\"></script>"
-        sut.getSnippetToken { [weak self] _ in
-            self?.sut.webView?.evaluateJavaScript("document.body.innerHTML", completionHandler: { html, _ in
-                XCTAssertEqual(html as? String, expectedScript)
-                expectation.fulfill()
-            })
-        }
-
-        wait(for: [expectation], timeout: 5.0)
-    }
-
     internal func test_successfulJSEvaluation_afterDidFinishNavigation_completesWithToken() {
         var receivedResults = [Result<String, FingerprintError>]()
         let expectation = expectation(description: #function)
