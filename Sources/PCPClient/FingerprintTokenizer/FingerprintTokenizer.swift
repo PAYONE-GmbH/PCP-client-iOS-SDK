@@ -100,16 +100,13 @@ extension FingerprintTokenizer: WKNavigationDelegate {
     public func webView(_ webView: WKWebView, didFinish _: WKNavigation!) {
         // swiftlint:enable implicitly_unwrapped_optional
         let invokeInitFunction = #"paylaDcs.init("p", "pcp_init");"#
-        webView.evaluateJavaScript(invokeInitFunction) { [weak self] _, error in
+        webView.evaluateJavaScript(invokeInitFunction) { [onCompletion, snippetToken] _, error in
             if let error {
                 PCPLogger.error("Fingerprinting script failed with error: \(error.localizedDescription).")
-                self?.onCompletion?(.failure(.scriptError(error: error)))
-            } else if let snippetToken = self?.snippetToken {
-                PCPLogger.info("Successfully loaded snippet token.")
-                self?.onCompletion?(.success(snippetToken))
+                onCompletion?(.failure(.scriptError(error: error)))
             } else {
-                PCPLogger.error("Fingerprinting script because snippet token was nil.")
-                self?.onCompletion?(.failure(.undefined))
+                PCPLogger.info("Successfully loaded snippet token.")
+                onCompletion?(.success(snippetToken))
             }
         }
     }
