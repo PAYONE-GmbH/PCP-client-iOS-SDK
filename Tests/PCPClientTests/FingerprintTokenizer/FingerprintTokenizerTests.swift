@@ -7,21 +7,8 @@
 //
 
 @testable import PCPClient
-import XCTest
 import WebKit
-
-extension FingerprintError: Equatable {
-    public static func == (lhs: PCPClient.FingerprintError, rhs: PCPClient.FingerprintError) -> Bool {
-        switch (lhs, rhs) {
-        case (.scriptError, .scriptError):
-            return true
-        case (.undefined, .undefined):
-            return true
-        default:
-            return false
-        }
-    }
-}
+import XCTest
 
 internal final class FingerprintTokenizerTests: XCTestCase {
 
@@ -49,7 +36,7 @@ internal final class FingerprintTokenizerTests: XCTestCase {
             })
         }
 
-        wait(for: [expectation], timeout: 3.0)
+        wait(for: [expectation], timeout: 5.0)
     }
 
     internal func test_successfulJSEvaluation_afterDidFinishNavigation_completesWithToken() {

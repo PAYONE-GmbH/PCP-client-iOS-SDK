@@ -8,7 +8,7 @@
 
 import WebKit
 
-final class MockWKWebView: WKWebView {
+internal final class MockWKWebView: WKWebView {
     internal var invokedEvaluateJavaScriptParametersList = [String]()
     internal var evaluateJavaScriptResult: ((Any?, (any Error)?))
 
@@ -18,11 +18,11 @@ final class MockWKWebView: WKWebView {
     }
 
     @available(*, unavailable)
-    public required init?(coder _: NSCoder) {
+    internal required init?(coder _: NSCoder) {
         fatalError("\(#function ) has not been implemented")
     }
 
-    override public func evaluateJavaScript(
+    override internal func evaluateJavaScript(
         _ javaScriptString: String,
         completionHandler: ((Any?, (any Error)?) -> Void)? = nil
     ) {
