@@ -15,22 +15,39 @@ internal final class FingerprintTokenizerTests: XCTestCase {
     // MARK: - Properties
 
     private let mockNavigation = WKNavigation()
+    private let paylaPartnerId = "PAYparId"
+    private let merchId = "merch"
+    private let sessionId = "sessionId"
+    // swiftlint:disable implicitly_unwrapped_optional
+    private var sut: FingerprintTokenizer!
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    // MARK: - Test Lifecycle
+
+    override func setUp() {
+        super.setUp()
+
+        sut = FingerprintTokenizer(
+            paylaPartnerId: paylaPartnerId,
+            partnerMerchantId: merchId,
+            environment: .test,
+            sessionId: sessionId
+        )
+    }
+
+    override func tearDown() {
+        sut = nil
+        super.tearDown()
+    }
 
     // MARK: - Tests
 
     internal func test_getSnippetToken_afterInitWithIds_setsUpCorrectScript() {
         let expectation = expectation(description: #function)
-        let paylaPartnerId = "PAYparId"
-        let merchId = "merch"
-        let sut = FingerprintTokenizer(
-            paylaPartnerId: paylaPartnerId,
-            partnerMerchantId: merchId,
-            environment: .test
-        )
         let expectedScript = "\n<script id=\"paylaDcs\" type=\"text/javascript\" " +
             "src=\"https://d.payla.io/dcs/\(paylaPartnerId)/\(merchId)/dcs.js\"></script>"
-        sut.getSnippetToken { _ in
-            sut.webView?.evaluateJavaScript("document.body.innerHTML", completionHandler: { html, _ in
+        sut.getSnippetToken { [weak self] _ in
+            self?.sut.webView?.evaluateJavaScript("document.body.innerHTML", completionHandler: { html, _ in
                 XCTAssertEqual(html as? String, expectedScript)
                 expectation.fulfill()
             })
@@ -42,17 +59,8 @@ internal final class FingerprintTokenizerTests: XCTestCase {
     internal func test_successfulJSEvaluation_afterDidFinishNavigation_completesWithToken() {
         var receivedResults = [Result<String, FingerprintError>]()
         let expectation = expectation(description: #function)
-        let paylaPartnerId = "PAYparId"
-        let merchId = "merch"
-        let sessionId = "sessionId"
         let expectedString = "\(paylaPartnerId)_\(merchId)_\(sessionId)"
         let mockWKWebView = MockWKWebView(evaluateJavaScriptResult: (nil, nil))
-        let sut = FingerprintTokenizer(
-            paylaPartnerId: paylaPartnerId,
-            partnerMerchantId: merchId,
-            environment: .test,
-            sessionId: sessionId
-        )
         sut.getSnippetToken { result in
             receivedResults.append(result)
             expectation.fulfill()
@@ -67,16 +75,7 @@ internal final class FingerprintTokenizerTests: XCTestCase {
     internal func test_failureJSEvaluation_afterDidFinishNavigation_completesScriptError() {
         var receivedResults = [Result<String, FingerprintError>]()
         let expectation = expectation(description: #function)
-        let paylaPartnerId = "PAYparId"
-        let merchId = "merch"
-        let sessionId = "sessionId"
         let mockWKWebView = MockWKWebView(evaluateJavaScriptResult: (nil, FakeError.test))
-        let sut = FingerprintTokenizer(
-            paylaPartnerId: paylaPartnerId,
-            partnerMerchantId: merchId,
-            environment: .test,
-            sessionId: sessionId
-        )
         sut.getSnippetToken { result in
             receivedResults.append(result)
             expectation.fulfill()
@@ -90,11 +89,6 @@ internal final class FingerprintTokenizerTests: XCTestCase {
 
     internal func test_JSEvaluation_afterDidFinishNavigation_sendsCorrectScriptToWebView() {
         let mockWKWebView = MockWKWebView(evaluateJavaScriptResult: (nil, FakeError.test))
-        let sut = FingerprintTokenizer(
-            paylaPartnerId: "paylaPartnerId",
-            partnerMerchantId: "partnerMerchantId",
-            environment: .test
-        )
 
         sut.webView(mockWKWebView, didFinish: mockNavigation)
 
