@@ -37,6 +37,7 @@ internal final class ApplePayHandlerTests: XCTestCase {
 
     internal func test_supportApplePay_withNoRequest_returnsControllerCanMakePaymentsResult() {
         let expectedResult = PKPaymentAuthorizationController.canMakePayments()
+        sut.request = nil
 
         XCTAssertEqual(sut.supportsApplePay(), expectedResult)
     }
@@ -48,6 +49,15 @@ internal final class ApplePayHandlerTests: XCTestCase {
         let expectedResult = PKPaymentAuthorizationController.canMakePayments() && PKPaymentAuthorizationController.canMakePayments(
             usingNetworks: [.amex, .visa],
             capabilities: .threeDSecure
+        )
+        sut.startPayment(
+            request: request,
+            onDidSelectPaymentMethod: { _ in
+                PKPaymentRequestPaymentMethodUpdateMock()
+            },
+            completion: { _ in
+                XCTFail("Unexpected completion call.")
+            }
         )
 
         XCTAssertEqual(sut.supportsApplePay(), expectedResult)
