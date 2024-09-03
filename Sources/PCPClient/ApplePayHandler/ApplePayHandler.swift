@@ -21,20 +21,23 @@ import SwiftUI
     private var paymentStatus: PKPaymentAuthorizationStatus = .failure
     private var completion: ((Bool) -> Void)?
     private let processPaymentServerUrl: URL
-    private var request: PKPaymentRequest?
+    private let urlSession: URLSession
+    internal var request: PKPaymentRequest?
 
     @objc public init(
-        processPaymentServerUrl: URL
+        processPaymentServerUrl: URL,
+        urlSession: URLSession = URLSession.shared
     ) {
         self.processPaymentServerUrl = processPaymentServerUrl
+        self.urlSession = urlSession
     }
 
     @objc public func supportsApplePay() -> Bool {
         guard let request else {
-            return PKPaymentAuthorizationViewController.canMakePayments()
+            return PKPaymentAuthorizationController.canMakePayments()
         }
-        return PKPaymentAuthorizationViewController.canMakePayments() &&
-            PKPaymentAuthorizationViewController.canMakePayments(
+        return PKPaymentAuthorizationController.canMakePayments() &&
+            PKPaymentAuthorizationController.canMakePayments(
                 usingNetworks: request.supportedNetworks,
                 capabilities: request.merchantCapabilities
             )
@@ -78,7 +81,7 @@ import SwiftUI
         request.httpBody = try? JSONSerialization.data(withJSONObject: paymentData, options: [])
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let task = URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+        let task = urlSession.dataTask(with: request) { [weak self] data, _, error in
             if let error {
                 PCPLogger.error(error.localizedDescription)
                 self?.paymentStatus = .failure
@@ -103,19 +106,11 @@ import SwiftUI
         didSelectShippingMethod shippingMethod: PKShippingMethod,
         handler completion: @escaping (PKPaymentRequestShippingMethodUpdate) -> Void
     ) {
-        guard let request else {
-            PCPLogger.error("Shipping method was changed but not request object was set.")
-            self.completion?(false)
-            return
-        }
-
         guard let onShippingMethodDidChange else {
             PCPLogger.error("No onShippingMethodDidChange defined.")
             self.completion?(false)
             return
         }
-        var paymentSummaryItems = request.paymentSummaryItems
-        paymentSummaryItems.append(PKPaymentSummaryItem(label: shippingMethod.label, amount: shippingMethod.amount))
         PCPLogger.info("Shipping method selected..")
         completion(onShippingMethodDidChange(shippingMethod))
     }
