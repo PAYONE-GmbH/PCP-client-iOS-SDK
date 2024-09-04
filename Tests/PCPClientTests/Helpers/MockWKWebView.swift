@@ -8,6 +8,7 @@
 
 import WebKit
 
+// swiftlint:disable all
 internal final class MockWKWebView: WKWebView {
     internal var invokedEvaluateJavaScriptParametersList = [String]()
     internal var evaluateJavaScriptResult: ((Any?, (any Error)?))
@@ -29,4 +30,12 @@ internal final class MockWKWebView: WKWebView {
         invokedEvaluateJavaScriptParametersList.append(javaScriptString)
         completionHandler?(evaluateJavaScriptResult.0, evaluateJavaScriptResult.1)
     }
+
+    internal var invokedLoadWithRequestList = [URLRequest]()
+
+    override internal func load(_ request: URLRequest) -> WKNavigation? {
+        invokedLoadWithRequestList.append(request)
+        return nil
+    }
 }
+// swiftlint:enable all

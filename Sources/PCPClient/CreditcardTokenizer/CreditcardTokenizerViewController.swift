@@ -30,6 +30,22 @@ import WebKit
         super.init(nibName: nil, bundle: nil)
     }
 
+    internal convenience init(
+        webView: WKWebView,
+        tokenizerUrl: URL,
+        request: CCTokenizerRequest,
+        supportedCardTypes: [String],
+        config: CreditcardTokenizerConfig
+    ) {
+        self.init(
+            tokenizerUrl: tokenizerUrl,
+            request: request,
+            supportedCardTypes: supportedCardTypes,
+            config: config
+        )
+        self.webView = webView
+    }
+
     @available(*, unavailable)
     public required init?(coder _: NSCoder) {
         fatalError("\(#function ) has not been implemented")
@@ -44,7 +60,8 @@ import WebKit
 
 extension CreditcardTokenizerViewController {
     private func setupWebView() {
-        let webView = makeInjectedWebView()
+        let webView = self.webView ?? WKWebView(frame: CGRect.zero)
+        webView.navigationDelegate = self
         self.webView = webView
         view.addSubview(webView)
 
@@ -56,12 +73,6 @@ extension CreditcardTokenizerViewController {
 
         let request = URLRequest(url: tokenizerUrl)
         webView.load(request)
-    }
-
-    private func makeInjectedWebView() -> WKWebView {
-        let webView = WKWebView(frame: CGRect.zero)
-        webView.navigationDelegate = self
-        return webView
     }
 
     private func initialize() {
