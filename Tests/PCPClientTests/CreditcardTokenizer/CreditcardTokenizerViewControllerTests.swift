@@ -14,10 +14,11 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
 
     // MARK: - Properties
 
+    private let mockNavigation = WKNavigation()
     // swiftlint:disable implicitly_unwrapped_optional force_unwrapping
     private var sut: CreditcardTokenizerViewController!
     private var webView: MockWKWebView!
-    private let tokenizerURL = URL(string: "https://payone.com")!
+    private let tokenizerURL = URL(string: "https://payone-test-app-very-long-title.com")!
     // swiftlint:enable implicitly_unwrapped_optional force_unwrapping
 
     // MARK: - Test Lifecycle
@@ -57,6 +58,64 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
         sut.viewWillAppear(false)
 
         XCTAssert(sut.view.subviews.contains(webView))
+    }
+
+    internal func test_didFinish_withJSEvaluationSuccessForSubmitCheck_injectsPayoneScript() throws {
+        webView = MockWKWebView(evaluateJavaScriptResult: (true, nil))
+        webView.loadHTMLString("""
+        <html>
+        <body><button id="submitButton">Check</button></body>
+        </html>
+        """, baseURL: nil)
+        sut = makeSUT(webView: webView)
+        sut.viewWillAppear(false)
+
+        sut.webView(webView, didFinish: mockNavigation)
+
+        XCTAssertEqual(webView.invokedEvaluateJavaScriptParametersList.count, 2)
+        let firstScript = try XCTUnwrap(webView.invokedEvaluateJavaScriptParametersList.first)
+        XCTAssertEqual(firstScript, "document.querySelector(\'#submitButton\') !== null")
+        let secondScript = try XCTUnwrap(webView.invokedEvaluateJavaScriptParametersList.last)
+        XCTAssert(
+            secondScript.contains(
+                "script.src = 'https://secure.prelive.pay1-test.de/client-api/js/v1/payone_hosted_min.js';"
+            )
+        )
+    }
+
+    internal func test_didFinish_withoutSubmitButtonElement_checksForSubmitButtonButInjectsNothingAfter() {
+        webView.loadHTMLString("""
+        <html>
+        <body></body>
+        </html>
+        """, baseURL: nil)
+        sut.viewWillAppear(false)
+
+        sut.webView(webView, didFinish: mockNavigation)
+
+        XCTAssertEqual(
+            webView.invokedEvaluateJavaScriptParametersList,
+            ["document.querySelector(\'#submitButton\') !== null"]
+        )
+    }
+
+    internal func test_didFinish_withJSEvaluationSuccessForSubmitCheck_addsMessageHandlerForLoadedAndError() {
+        let mockUserContentController = MockUserContentController()
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = mockUserContentController
+        webView = MockWKWebView(evaluateJavaScriptResult: (true, nil), configuration: configuration)
+        webView.loadHTMLString("""
+        <html>
+        <body><button id="submitButton">Check</button></body>
+        </html>
+        """, baseURL: nil)
+        sut = makeSUT(webView: webView)
+        sut.viewWillAppear(false)
+
+        sut.webView(webView, didFinish: mockNavigation)
+
+        XCTAssert(mockUserContentController.addedHandlers.contains(CCScriptMessageType.scriptLoaded.rawValue))
+        XCTAssert(mockUserContentController.addedHandlers.contains(CCScriptMessageType.scriptError.rawValue))
     }
 
     // MARK: - Helpers

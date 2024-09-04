@@ -13,9 +13,12 @@ internal final class MockWKWebView: WKWebView {
     internal var invokedEvaluateJavaScriptParametersList = [String]()
     internal var evaluateJavaScriptResult: ((Any?, (any Error)?))
 
-    internal init(evaluateJavaScriptResult: (Any?, (any Error)?)) {
+    internal init(
+        evaluateJavaScriptResult: (Any?, (any Error)?),
+        configuration: WKWebViewConfiguration = WKWebViewConfiguration()
+    ) {
         self.evaluateJavaScriptResult = evaluateJavaScriptResult
-        super.init(frame: CGRect.zero, configuration: WKWebViewConfiguration())
+        super.init(frame: CGRect.zero, configuration: configuration)
     }
 
     @available(*, unavailable)
