@@ -230,7 +230,6 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
             )
         )
 
-        print("### \(receivedResults)")
         XCTAssertEqual(receivedResults.count, 1)
         let receivedResult = receivedResults.first
         guard case let .success(receivedResponse) = receivedResult else {
