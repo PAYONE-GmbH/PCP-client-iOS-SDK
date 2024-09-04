@@ -24,6 +24,24 @@ import Foundation
     @objc public let errorCode: String?
     @objc public let errorMessage: String?
     @objc public let pseudoCardpan: String?
-    @objc public let status: String?
+    @objc public let status: String
     @objc public let truncatedCardpan: String?
+
+    internal init(
+        status: String,
+        cardExpireDate: String?,
+        cardType: String?,
+        pseudoCardpan: String?,
+        truncatedCardpan: String?,
+        errorCode: String? = nil,
+        errorMessage: String? = nil
+    ) {
+        self.status = status
+        self.cardExpireDate = cardExpireDate
+        self.cardType = cardType
+        self.pseudoCardpan = pseudoCardpan
+        self.truncatedCardpan = truncatedCardpan
+        self.errorCode = errorCode
+        self.errorMessage = errorMessage
+    }
 }

@@ -118,6 +118,134 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
         XCTAssert(mockUserContentController.addedHandlers.contains(CCScriptMessageType.scriptError.rawValue))
     }
 
+    internal func test_didReceiveScriptErrorMessage_shouldTriggerScriptFailureCompletion() {
+        var receivedResults = [Result<CCTokenizerResponse, CCTokenizerError>]()
+        let config = makeConfig { result in
+            receivedResults.append(result)
+        }
+        sut = makeSUT(webView: MockWKWebView(evaluateJavaScriptResult: (nil, nil)), config: config)
+
+        sut.userContentController(
+            webView.configuration.userContentController,
+            didReceive: MockWKScriptMessage(name: CCScriptMessageType.scriptError.rawValue)
+        )
+
+        XCTAssertEqual(receivedResults, [.failure(.loadingScriptFailed)])
+    }
+
+    internal func test_didReceiveScriptLoadedMessage_shouldAddMessageHandler() {
+        let mockUserContentController = MockUserContentController()
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = mockUserContentController
+        webView = MockWKWebView(evaluateJavaScriptResult: (nil, nil), configuration: configuration)
+        sut = makeSUT(webView: webView)
+
+        sut.userContentController(
+            webView.configuration.userContentController,
+            didReceive: MockWKScriptMessage(name: CCScriptMessageType.scriptLoaded.rawValue)
+        )
+
+        XCTAssert(mockUserContentController.addedHandlers.contains(CCScriptMessageType.submitButtonClicked.rawValue))
+    }
+
+    internal func test_didReceiveScriptLoadedMessage_shouldInjectScriptAndOnFailureCompleteWithHTMLFailed() {
+        let mockUserContentController = MockUserContentController()
+        let webViewConfiguration = WKWebViewConfiguration()
+        var receivedResults = [Result<CCTokenizerResponse, CCTokenizerError>]()
+        let config = makeConfig { result in
+            receivedResults.append(result)
+        }
+        webViewConfiguration.userContentController = mockUserContentController
+        webView = MockWKWebView(evaluateJavaScriptResult: (nil, FakeError.test), configuration: webViewConfiguration)
+        sut = makeSUT(webView: webView, config: config)
+
+        sut.userContentController(
+            webView.configuration.userContentController,
+            didReceive: MockWKScriptMessage(name: CCScriptMessageType.scriptLoaded.rawValue)
+        )
+
+        XCTAssertEqual(receivedResults, [.failure(.populatingHTMLFailed)])
+    }
+
+    internal func test_didReceiveSubmitButtonClickedMessage_shouldInjectScriptAndAddMessageHandler() throws {
+        let mockUserContentController = MockUserContentController()
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = mockUserContentController
+        webView = MockWKWebView(evaluateJavaScriptResult: (nil, nil), configuration: configuration)
+        sut = makeSUT(webView: webView)
+
+        sut.userContentController(
+            webView.configuration.userContentController,
+            didReceive: MockWKScriptMessage(name: CCScriptMessageType.submitButtonClicked.rawValue)
+        )
+
+        XCTAssert(mockUserContentController.addedHandlers.contains(CCScriptMessageType.responseReceived.rawValue))
+        let lastScript = try XCTUnwrap(webView.invokedEvaluateJavaScriptParametersList.last)
+        XCTAssert(lastScript.contains("iframes.creditCardCheck('payCallback');"))
+    }
+
+    internal func test_didReceiveResponseMessage_withInvalidResponse_shouldTriggerWithInvalidResponseCompletion() {
+        var receivedResults = [Result<CCTokenizerResponse, CCTokenizerError>]()
+        let config = makeConfig { result in
+            receivedResults.append(result)
+        }
+        webView = MockWKWebView(evaluateJavaScriptResult: (nil, nil))
+        sut = makeSUT(webView: webView, config: config)
+
+        sut.userContentController(
+            webView.configuration.userContentController,
+            didReceive: MockWKScriptMessage(
+                name: CCScriptMessageType.responseReceived.rawValue,
+                body: ["wrong": "value"]
+            )
+        )
+
+        XCTAssertEqual(receivedResults, [.failure(.invalidResponse)])
+    }
+
+    internal func test_didReceiveResponseMessage_withValidResponse_shouldTriggerSuccessWithResponseCompletion() {
+        var receivedResults = [Result<CCTokenizerResponse, CCTokenizerError>]()
+        let expectedStatus = "VALID"
+        let expectedCardType = "V"
+        let expectedPseudoCardPan = "mockPseudoCardPan"
+        let expectedTruncatedCardPan = "mockTruncatedCardPan"
+        let expectedExpireDate = "2026-01-10"
+        let config = makeConfig { result in
+            receivedResults.append(result)
+        }
+        webView = MockWKWebView(evaluateJavaScriptResult: (nil, nil))
+        sut = makeSUT(webView: webView, config: config)
+
+        sut.userContentController(
+            webView.configuration.userContentController,
+            didReceive: MockWKScriptMessage(
+                name: CCScriptMessageType.responseReceived.rawValue,
+                body: [
+                    "cardexpiredate": expectedExpireDate,
+                    "cardtype": expectedCardType,
+                    "pseudocardpan": expectedPseudoCardPan,
+                    "truncatedcardpan": expectedTruncatedCardPan,
+                    "status": expectedStatus
+                ]
+            )
+        )
+
+        print("### \(receivedResults)")
+        XCTAssertEqual(receivedResults.count, 1)
+        let receivedResult = receivedResults.first
+        guard case let .success(receivedResponse) = receivedResult else {
+            XCTFail("Expected response result, got \(String(describing: receivedResult))")
+            return
+        }
+        XCTAssertEqual(receivedResponse.status, expectedStatus)
+        XCTAssertEqual(receivedResponse.cardExpireDate, expectedExpireDate)
+        XCTAssertEqual(receivedResponse.cardType, expectedCardType)
+        XCTAssertNil(receivedResponse.errorCode)
+        XCTAssertNil(receivedResponse.errorMessage)
+        XCTAssertEqual(receivedResponse.pseudoCardpan, expectedPseudoCardPan)
+        XCTAssertEqual(receivedResponse.truncatedCardpan, expectedTruncatedCardPan)
+    }
+
     // MARK: - Helpers
 
     private func makeTokenizerRequest() -> CCTokenizerRequest {
@@ -130,7 +258,9 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
         )
     }
 
-    private func makeConfig() -> CreditcardTokenizerConfig {
+    private func makeConfig(
+        creditcardCheckCallback: ((Result<CCTokenizerResponse, CCTokenizerError>) -> Void)? = nil
+    ) -> CreditcardTokenizerConfig {
         CreditcardTokenizerConfig(
             cardPan: Field(
                 selector: "cardPan",
@@ -172,20 +302,23 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
             language: .english,
             error: "error",
             submitButtonId: "submitButton",
-            creditCardCheckCallback: { _ in
+            creditCardCheckCallback: creditcardCheckCallback ?? { _ in
                 // Not implemented yet
             }
         )
     }
 
-    private func makeSUT(webView: WKWebView?) -> CreditcardTokenizerViewController {
+    private func makeSUT(
+        webView: WKWebView?,
+        config: CreditcardTokenizerConfig? = nil
+    ) -> CreditcardTokenizerViewController {
         if let webView {
             return CreditcardTokenizerViewController(
                 webView: webView,
                 tokenizerUrl: tokenizerURL,
                 request: makeTokenizerRequest(),
                 supportedCardTypes: ["M", "J"],
-                config: makeConfig()
+                config: config ?? makeConfig()
             )
         }
         return CreditcardTokenizerViewController(
