@@ -9,13 +9,21 @@ import Foundation
 import PassKit
 import SwiftUI
 
+/// Apple Pay handling object which can send updates when user payment information changes and send the payment
+/// token to your server.
 @objc public class ApplePayHandler: NSObject, PKPaymentAuthorizationControllerDelegate {
+    /// `PKPaymentAuthorizationController` which usually shouldn't be changed or needed.
     @objc public var paymentController: PKPaymentAuthorizationController?
+    /// Completion to call when the payment authorization result was retrieved.
     @objc public var didAuthorizePayment: ((PKPaymentAuthorizationResult) -> Void)?
+    /// Completion to call when the shipping contact did change.
     @objc public var didSelectShippingContact: ((PKContact) -> Void)?
-
+    
+    /// Completion to call when the shipping method did change.
     @objc public var onShippingMethodDidChange: ((PKShippingMethod) -> PKPaymentRequestShippingMethodUpdate)?
+    /// Completion to call when the payment method was selected.
     @objc public var onDidSelectPaymentMethod: ((PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate)?
+    /// Completion to call when a coupon was applied.
     @objc public var onChangeCouponCode: ((String) -> PKPaymentRequestCouponCodeUpdate)?
 
     private var paymentStatus: PKPaymentAuthorizationStatus = .failure
@@ -24,6 +32,9 @@ import SwiftUI
     private let urlSession: URLSession
     internal var request: PKPaymentRequest?
 
+    /// - Parameters:
+    ///   - processPaymentServerUrl: The URL where the handler should send your the payment token to.
+    ///   - urlSession: Optional `URLSession`, will use `URLSession.shared` as default.
     @objc public init(
         processPaymentServerUrl: URL,
         urlSession: URLSession = URLSession.shared
@@ -31,7 +42,10 @@ import SwiftUI
         self.processPaymentServerUrl = processPaymentServerUrl
         self.urlSession = urlSession
     }
-
+    
+    /// Tells whether or not Apple Pay is supported depending on your request. Use this to show and hide the
+    /// Apple Pay button.
+    /// - Returns: True if Apple Pay is supported.
     @objc public func supportsApplePay() -> Bool {
         guard let request else {
             return PKPaymentAuthorizationController.canMakePayments()
@@ -42,7 +56,12 @@ import SwiftUI
                 capabilities: request.merchantCapabilities
             )
     }
-
+    
+    /// Initializes the payment and completes if Apple Pay process did work.
+    /// - Parameters:
+    ///   - request: The `PKPaymentRequest`.
+    ///   - onDidSelectPaymentMethod: A completion that will be triggered when the payment method changes.
+    ///   - completion: The completion that will be triggered when the process is finished.
     @objc public func startPayment(
         request: PKPaymentRequest,
         onDidSelectPaymentMethod: @escaping @convention(block) (PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate,

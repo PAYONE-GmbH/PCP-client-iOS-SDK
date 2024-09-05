@@ -9,6 +9,7 @@
 import CommonCrypto
 import Foundation
 
+/// The creditcard tokenizer request with the needed parameters for the SDK setup the tokenizer.
 @objc public class CCTokenizerRequest: NSObject {
     internal let mid: String
     internal let aid: String

@@ -9,6 +9,7 @@
 import UIKit
 import WebKit
 
+/// The `UIViewController` to set up the creditcard tokenizer.
 @objc public class CreditcardTokenizerViewController: UIViewController {
     private let tokenizerUrl: URL
     private let supportedCardTypes: [String]
@@ -17,6 +18,13 @@ import WebKit
 
     internal var webView: WKWebView?
 
+    /// - Parameters:
+    ///   - tokenizerUrl: The URL where the HTML for the creditcard tokenizer is hosted.
+    ///   In this page the script will be injected and the logic will run.
+    ///   - request: The request object with different IDs and keys.
+    ///   - supportedCardTypes: The supported card types to pay. Use the `SupportedCardType` identifier property.
+    ///   - config: The config object with information regarding the HTML and styling.
+    ///   Also includes the callback that you can use on to get the result.
     @objc public init(
         tokenizerUrl: URL,
         request: CCTokenizerRequest,

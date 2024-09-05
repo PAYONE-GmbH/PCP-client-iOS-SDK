@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// The creditcard tokenizer response that consists of a status and either data or error entries.
 @objc public class CCTokenizerResponse: NSObject, Codable {
     internal enum CodingKeys: String, CodingKey {
         case cardExpireDate = "cardexpiredate"
