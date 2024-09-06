@@ -9,9 +9,16 @@
 import Foundation
 import PCPClient
 
+/// Wraps the `FingerprintTokenizer` so it can be used by Objective-C apps.
 @objc public class FingerprintTokenizerWrapper: NSObject {
-    private let tokenizer: FingerprintTokenizer
+    internal let tokenizer: FingerprintTokenizer
 
+    /// Initializes the wrapper and therefore the `FingerprintTokenizer`.
+    /// - Parameters:
+    ///   - paylaPartnerId: The Payla partner ID.
+    ///   - partnerMerchantId: Your partner merchant ID.
+    ///   - environment: The `PCPEnvironment` you want to use. Either `test` or `production`.
+    ///   - sessionId: An optional session ID that you want created on your own.`
     @objc public init(
         paylaPartnerId: String,
         partnerMerchantId: String,
@@ -26,6 +33,10 @@ import PCPClient
         )
     }
 
+    /// Attempts to get the snippet token, could fail during the process.
+    /// - Parameters:
+    ///   - success: Handle the token after successfully retrieving it.
+    ///   - failure: Handle potential error cases in this block.
     @objc public func getSnippetToken(
         success: @escaping (String) -> Void,
         failure: @escaping (FingerprintErrorWrapper) -> Void

@@ -9,6 +9,7 @@
 import SwiftUI
 import UIKit
 
+/// `UIViewControllerRepresentable` to use the `CreditcardTokenizerViewController` with SwiftUI.
 public struct CreditcardTokenizerView: UIViewControllerRepresentable {
     internal let tokenizerUrl: URL
     internal let request: CCTokenizerRequest

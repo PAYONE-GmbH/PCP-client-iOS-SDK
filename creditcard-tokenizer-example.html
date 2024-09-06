@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Credit Card Tokenizer Demo</title>
+    <style>
+      header svg {
+        width: 100px;
+      }
+
+      .input-row {
+        display: flex;
+        align-items: center;
+      }
+
+      .payment-methods svg {
+        width: 32px;
+        margin: 4px;
+      }
+
+      .inputIframe {
+        height: 50px;
+      }
+
+      input[type='button'] {
+        border-radius: 22px;
+        box-sizing: border-box;
+        display: inline-block;
+        border: 2px solid;
+        padding: 5px 10px;
+        font-size: 1.125rem;
+        line-height: 1.25rem;
+        width: inherit;
+        height: inherit;
+        cursor: pointer;
+        color: #0096d6;
+        background-color: #fff;
+        border-color: #0096d6;
+      }
+    </style>
+    <meta name="viewport" content="user-scalable=no, width=device-width" />
+  </head>
+  <body>
+    <header>
+      <h1>Credit Card Tokenizer Demo</h1>
+    </header>
+
+    <!-- HTML for displaying CC detection messages. -->
+    <div class="cc-message-wrap my-3">
+      <div id="error" class="alert alert-success" role="alert"></div>
+    </div>
+
+    <!-- CC icons container -->
+    <div id="cc-icons"></div>
+
+    <!-- The form the with IFrame fields. -->
+    <form name="paymentform" action="#" method="post">
+      <fieldset>
+        <div class="input-row">
+          <label for="cardpanInput">Cardpan:</label>
+
+          <!-- Mount element for PAN IFrame. -->
+          <span class="inputIframe" id="cardpan"></span>
+
+          <label for="cvcInput">CVC:</label>
+
+          <!-- Mount element for CVC IFrame. -->
+          <span class="inputIframe" id="cardcvc2"></span>
+        </div>
+        <div class="input-row">
+          <label for="expireInput">Expire date (mm/yyyy):</label>
+          <span class="inputIframe" id="expireInput">
+            <!-- Mount element for card expire month IFrame. -->
+            <span id="cardexpiremonth"></span>
+
+            <!-- Mount element for card expire year IFrame. -->
+            <span id="cardexpireyear"></span>
+          </span>
+        </div>
+        <div id="error"></div>
+        <input id="submit" type="button" value="Run credit card check" />
+      </fieldset>
+    </form>
+    <h2>Autodetection callback result</h2>
+    <div id="autodetectionResponse">
+      <pre id="autodetectionResponsePre">Nothing received yet.</pre>
+    </div>
+  </body>
+</html>
+

@@ -9,7 +9,9 @@
 import Foundation
 import PCPClient
 
+/// Objective-C wrapper for the `CreditcardTokenizerConfig`.
 @objc public class CreditcardTokenizerConfigWrapper: NSObject {
+    /// The `CreditcardTokenizerConfig` which can be used besides it's completion.
     @objc public let creditcardTokenizerConfig: CreditcardTokenizerConfig
 
     @objc public init(

@@ -8,10 +8,11 @@
 
 import Foundation
 
+/// The environment you want the SDK to run against.
 @objc public enum PCPEnvironment: Int {
     case test
     case production
-
+    
     internal var ccTokenizerIdentifier: String {
         switch self {
         case .test:

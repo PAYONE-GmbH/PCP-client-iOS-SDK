@@ -8,9 +8,6 @@
 
 import Foundation
 
-/// The creditcard tokenizer errors that can occur during tokenization of a creditcard.
-@objc public enum CCTokenizerError: Int, Error {
-    case loadingScriptFailed
-    case populatingHTMLFailed
-    case invalidResponse
+internal enum FakeError: Error {
+    case test
 }

@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Supported card types that can be passed via the identifier property to the `CreditcardTokenizerConfig`.
 @objc public enum SupportedCardType: Int {
     case visa
     case mastercard
@@ -19,6 +20,7 @@ import Foundation
     case uatp
     case girocard
 
+    /// The identifier that can be passed to the `CreditcardTokenizerConfig`.
     public var identifier: String {
         switch self {
         case .visa:

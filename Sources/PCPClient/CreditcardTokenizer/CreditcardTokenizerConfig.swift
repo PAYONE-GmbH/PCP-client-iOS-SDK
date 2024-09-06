@@ -9,6 +9,8 @@
 import Foundation
 
 // swiftlint:disable one_declaration_per_file
+/// A customizable field configuration for the required fields that will be injected into the website of the
+/// creditcard tokenizer.
 @objc public class Field: NSObject {
     internal let selector: String
     internal let style: String?
@@ -17,7 +19,16 @@ import Foundation
     internal let maxlength: String?
     internal let length: [String: Int]
     internal let iframe: [String: String]
-
+    
+    /// Initializer for the `Field` of the creditcard tokenizer.
+    /// - Parameters:
+    ///   - selector: The selector (HTML ID) in your provided HTML where the input field should be injected.
+    ///   - style: Customized style options (CSS).
+    ///   - type: The HTML type of the element. Recommended `input`.
+    ///   - size: -
+    ///   - maxlength: The maximum length of characters allowed.
+    ///   - length: The different lengths for card types. For example for a CVC with different lengths.
+    ///   - iframe: Different styling options to send to the iframe. Key-value like "width": "40px".
     @objc public init(
         selector: String,
         style: String?,
@@ -37,16 +48,7 @@ import Foundation
     }
 }
 
-@objc public class DefaultStyles: NSObject {
-    internal let htmlElementName: String
-    internal let styles: [String: String]
-
-    @objc public init(htmlElementName: String, styles: [String: String]) {
-        self.htmlElementName = htmlElementName
-        self.styles = styles
-    }
-}
-
+/// The language of the creditcard tokenizer. Currently English or German available.
 @objc public enum PayoneLanguage: Int {
     case english
     case german
@@ -61,6 +63,7 @@ import Foundation
     }
 }
 
+/// The configuration object to set up the creditcard tokenizer.
 public class CreditcardTokenizerConfig: NSObject {
     internal let submitButtonId: String
     internal let cardPan: Field
