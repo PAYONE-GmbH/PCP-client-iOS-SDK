@@ -145,7 +145,7 @@ The Creditcard tokenizer injects code and PCI DSS conform input fields into a we
   <button id="submit">Submit</button>
   ```
 
-For a more sophisticated example, see this [index.html](./Sources/PCPClient/CreditcardTokenizer/index.html).
+For a more sophisticated example, see this [creditcard-tokenizer-example.html](./creditcard-tokenizer-example.html).
 
 #### 2. Import the PCPClient modules
 
