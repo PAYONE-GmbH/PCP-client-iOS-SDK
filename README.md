@@ -107,8 +107,14 @@ Finally, click again on 'Add Package'.
 
 Add the following entry to your Podfile:
 
+**Swift**
 ```rb
 pod 'PCPClient'
+```
+
+**Objective-C**
+```rb
+pod 'PCPClient/PCPClientBridge'
 ```
 
 Then run `pod install`.
@@ -122,8 +128,10 @@ import PCPClient
 **Objective-C**
 ```objectivec
 @import PCPClient;
-@import PCPClientBridge;
 ```
+
+> [!NOTE]
+>  When using SPM for the integration in an Objective-C project, you will also need the following import: `@import PCPClientBridge;`. If you did the integration via CocoaPods, simply importing PCPClient will be enough.
 
 ## Usage
 
