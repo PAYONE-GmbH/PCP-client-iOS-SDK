@@ -60,7 +60,7 @@ To integrate using Apple's Swift package manager, you have two options.
 Add the following as a dependency to your `Package.swift`:
 
 ```swift
-.package(url: "https://https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.0.0"))
+.package(url: "https://https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.0.1"))
 ```
 
 and then specify `"PCPClient"` as a dependency of the Target in which you wish to use PCPClient.
@@ -78,7 +78,7 @@ let package = Package(
             targets: ["MyPackage"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.0.0"))
+        .package(url: "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.0.1"))
     ],
     targets: [
         .target(
@@ -107,8 +107,14 @@ Finally, click again on 'Add Package'.
 
 Add the following entry to your Podfile:
 
+**Swift**
 ```rb
 pod 'PCPClient'
+```
+
+**Objective-C**
+```rb
+pod 'PCPClient/PCPClientBridge'
 ```
 
 Then run `pod install`.
@@ -122,8 +128,10 @@ import PCPClient
 **Objective-C**
 ```objectivec
 @import PCPClient;
-@import PCPClientBridge;
 ```
+
+> [!NOTE]
+>  When using SPM for the integration in an Objective-C project, you will also need the following import: `@import PCPClientBridge;`. If you did the integration via CocoaPods, simply importing PCPClient will be enough.
 
 ## Usage
 
