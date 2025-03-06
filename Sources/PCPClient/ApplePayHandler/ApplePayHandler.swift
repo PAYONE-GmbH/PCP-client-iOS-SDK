@@ -108,7 +108,7 @@ import SwiftUI
                 completion(result)
                 self?.didAuthorizePayment?(result)
             } else if let data {
-                let dataString = String(decoding: data, as: UTF8.self)
+                let dataString = String(data: data, encoding: .utf8) ?? ""
                 PCPLogger.info("Received data:\n\(dataString)")
                 self?.paymentStatus = .success
                 let result = PKPaymentAuthorizationResult(status: .success, errors: nil)
