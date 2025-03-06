@@ -55,3 +55,5 @@ xcodebuild.log
 .swiftpm
 /.bundle
 *.zip
+
+Coverage.xcresult/*
