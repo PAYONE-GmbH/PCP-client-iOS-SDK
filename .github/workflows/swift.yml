@@ -5,46 +5,46 @@ name: Swift
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: ['main', 'develop']
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: swift-actions/setup-swift@v2.1.0
-      with:
-        swift-version: "5.10.1"
-    - name: Install SwiftLint
-      run: brew install swiftlint
-    - name: Build
-      run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=17.0'
-    - name: Run SwiftLint
-      run: |
+      - uses: actions/checkout@v4
+      - uses: swift-actions/setup-swift@v2.1.0
+        with:
+          swift-version: '5.10.1'
+      - name: Install SwiftLint
+        run: brew install swiftlint
+      - name: Build
+        run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16'
+      - name: Run SwiftLint
+        run: |
           set -o pipefail
           swiftlint lint --strict --quiet | sed -E 's/^(.*):([0-9]+):([0-9]+): (warning|error|[^:]+): (.*)/::\4 title=Lint error,file=\1,line=\2,col=\3::\5\n\1:\2:\3/'
-    - name: Run tests
-      run: xcodebuild -scheme 'PCPClient-Package' -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -skipPackagePluginValidation -derivedDataPath Build/ -enableCodeCoverage YES clean build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -resultBundlePath Coverage.xcresult test
-    - name: Make Sonar Compatible Code Coverage Report
-      run: bash xccov-to-sonarqube-generic.sh Coverage.xcresult >Coverage.xml
-    - name: Upload Coverage XML
-      uses: actions/upload-artifact@v4
-      with:
-        name: Coverage
-        path: Coverage.xml 
-        retention-days: 1
+      - name: Run tests
+        run: xcodebuild -scheme 'PCPClient-Package' -destination 'platform=iOS Simulator,name=iPhone 16 Pro' -skipPackagePluginValidation -derivedDataPath Build/ -enableCodeCoverage YES clean build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -resultBundlePath Coverage.xcresult test
+      - name: Make Sonar Compatible Code Coverage Report
+        run: bash xccov-to-sonarqube-generic.sh Coverage.xcresult >Coverage.xml
+      - name: Upload Coverage XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: Coverage
+          path: Coverage.xml
+          retention-days: 1
   sonarcloud:
     name: SonarCloud
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build]
 
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
       - name: Download Coverage XML
         uses: actions/download-artifact@v4
         with:
@@ -52,10 +52,10 @@ jobs:
       - name: Update Paths for SonarCloud
         uses: jacobtomlinson/gha-find-replace@v3
         with:
-          find: "/Users/runner/work/PCP-client-iOS-SDK/PCP-client-iOS-SDK/"
-          replace: ""
+          find: '/Users/runner/work/PCP-client-iOS-SDK/PCP-client-iOS-SDK/'
+          replace: ''
           regex: false
-          include: "Coverage.xml"
+          include: 'Coverage.xml'
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:

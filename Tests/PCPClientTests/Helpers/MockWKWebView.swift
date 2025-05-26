@@ -27,8 +27,7 @@ internal final class MockWKWebView: WKWebView {
     }
 
     override internal func evaluateJavaScript(
-        _ javaScriptString: String,
-        completionHandler: ((Any?, (any Error)?) -> Void)? = nil
+        _ javaScriptString: String, completionHandler: (@MainActor @Sendable (Any?, (any Error)?) -> Void)? = nil
     ) {
         invokedEvaluateJavaScriptParametersList.append(javaScriptString)
         completionHandler?(evaluateJavaScriptResult.0, evaluateJavaScriptResult.1)
