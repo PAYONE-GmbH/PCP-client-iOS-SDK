@@ -11,38 +11,28 @@ import PCPClient
 
 /// Objective-C wrapper for the `CreditcardTokenizerConfig`.
 @objc public class CreditcardTokenizerConfigWrapper: NSObject {
-    /// The `CreditcardTokenizerConfig` which can be used besides it's completion.
-    @objc public let creditcardTokenizerConfig: CreditcardTokenizerConfig
+  /// The `CreditcardTokenizerConfig` which can be used besides it's completion.
+  @objc public let creditcardTokenizerConfig: CreditcardTokenizerConfig
 
-    @objc public init(
-        cardPan: Field,
-        cardCvc2: Field,
-        cardExpireMonth: Field,
-        cardExpireYear: Field,
-        defaultStyles: [String: String],
-        language: PayoneLanguage,
-        error: String,
-        submitButtonId: String,
-        success: @escaping (CCTokenizerResponse) -> Void,
-        failure: @escaping (CCTokenizerError) -> Void
-    ) {
-        creditcardTokenizerConfig = CreditcardTokenizerConfig(
-            cardPan: cardPan,
-            cardCvc2: cardCvc2,
-            cardExpireMonth: cardExpireMonth,
-            cardExpireYear: cardExpireYear,
-            defaultStyles: defaultStyles,
-            language: language,
-            error: error,
-            submitButtonId: submitButtonId,
-            creditCardCheckCallback: { result in
-                switch result {
-                case let .success(response):
-                    success(response)
-                case let .failure(error):
-                    failure(error)
-                }
-            }
-        )
-    }
+  @objc public init(
+    iframeConfig: IframeConfig? = nil,
+    uiConfig: UIConfig? = nil,
+    locale: String? = nil,
+    submitButtonConfig: SubmitButtonConfig? = nil,
+    environment: String,
+    error: String? = nil,
+    success: @escaping (Int, String, [String: Any]?) -> Void,
+    failure: @escaping (Int, [String: Any]?) -> Void
+  ) {
+    creditcardTokenizerConfig = CreditcardTokenizerConfig(
+      iframeConfig: iframeConfig,
+      uiConfig: uiConfig,
+      locale: locale,
+      submitButtonConfig: submitButtonConfig,
+      environment: environment,
+      error: error,
+      tokenizationSuccessCallback: success,
+      tokenizationFailureCallback: failure
+    )
+  }
 }
