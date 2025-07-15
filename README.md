@@ -4,7 +4,7 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=PAYONE-GmbH_PCP-client-iOS-SDK&metric=coverage)](https://sonarcloud.io/summary/new_code?id=PAYONE-GmbH_PCP-client-iOS-SDK)
 [![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)
 [![CocoaPods](https://img.shields.io/cocoapods/v/PCPClient.svg?style=flat)](https://cocoapods.org/pods/PCPClient)
-![iOS 10.0+](https://img.shields.io/badge/iOS-15.0%2B-blue.svg)
+![iOS 15.0+](https://img.shields.io/badge/iOS-15.0%2B-blue.svg)
 [![GitHub License](https://img.shields.io/github/license/PAYONE-GmbH/PCP-client-iOS-SDK)](https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK/blob/main/LICENSE)
 
 Welcome to the PAYONE Commerce Platform Client iOS SDK for the PAYONE Commerce Platform. This SDK provides everything a client needs to easily complete payments using Credit or Debit Card, PAYONE Buy Now Pay Later (BNPL) and Apple Pay.
@@ -16,10 +16,14 @@ Welcome to the PAYONE Commerce Platform Client iOS SDK for the PAYONE Commerce P
 - [Installation](#installation)
 - [Usage](#usage)
   - [Creditcard Tokenizer](#creditcard-tokenizer)
-    - [1. Upload an HTML page](#1-upload-an-html-page)
-    - [2. Import PCPClient modules](#2-import-the-pcpclient-modules)
-    - [3. Setup the View or ViewController](#3-setup-the-view-or-viewcontroller)
-    - [4. Display the View or ViewController](#4-display-the-view-or-viewcontroller)
+    - [1. Host your HTML page](#1-host-your-html-page)
+    - [2. Import PCPClient modules](#2-import-pcpclient-modules)
+    - [3. Configure the Tokenizer](#3-configure-the-tokenizer)
+    - [4. Fetch the JWT Token from your Backend](#4-fetch-the-jwt-token-from-your-backend)
+    - [5. Initialize and display the Tokenizer](#5-initialize-and-display-the-tokenizer)
+    - [6. Customization and Callbacks](#6-customization-and-callbacks)
+    - [7. PCI DSS & Security](#7-pci-dss--security)
+    - [8. Migration Note](#8-migration-note)
   - [Fingerprint Tokenizer](#fingerprint-tokenizer)
     - [1. Import PCPClient modules](#1-import-pcpclient-modules)
     - [2. Create a new Fingerprint tokenizer instance](#2-create-a-new-fingerprint-tokenizer-instance)
@@ -57,6 +61,7 @@ In order to use the SDK you need to have at least iOS 15.
 To integrate using Apple's Swift package manager, you have two options.
 
 #### Package.swift
+
 Add the following as a dependency to your `Package.swift`:
 
 ```swift
@@ -91,15 +96,16 @@ let package = Package(
 #### Via Xcode
 
 Select `File` -> `Add Package Dependencies...`. In the upcoming dialog paste the URL of this repository.
+
 ```
 https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK
-``` 
+```
 
-Specify the version you want to use and click on 'Add Package'. This will pop up a dialog to chose which package products should be added to your target. 
+Specify the version you want to use and click on 'Add Package'. This will pop up a dialog to chose which package products should be added to your target.
 
-For Swift add `PCPClient` to your target and select `None` in the `Add to target` dropdown for `PCPClientBridge`. 
+For Swift add `PCPClient` to your target and select `None` in the `Add to target` dropdown for `PCPClientBridge`.
 
-For Objective-C add both package products to your target. 
+For Objective-C add both package products to your target.
 
 Finally, click again on 'Add Package'.
 
@@ -108,11 +114,13 @@ Finally, click again on 'Add Package'.
 Add the following entry to your Podfile:
 
 **Swift**
+
 ```rb
 pod 'PCPClient'
 ```
 
 **Objective-C**
+
 ```rb
 pod 'PCPClient/PCPClientBridge'
 ```
@@ -122,327 +130,170 @@ Then run `pod install`.
 Don't forget to import the module(s) in every file you'd like to use PCPClient.
 
 **Swift**
+
 ```swift
 import PCPClient
 ```
+
 **Objective-C**
+
 ```objectivec
 @import PCPClient;
 ```
 
 > [!NOTE]
->  When using SPM for the integration in an Objective-C project, you will also need the following import: `@import PCPClientBridge;`. If you did the integration via CocoaPods, simply importing PCPClient will be enough.
+> When using SPM for the integration in an Objective-C project, you will also need the following import: `@import PCPClientBridge;`. If you did the integration via CocoaPods, simply importing PCPClient will be enough.
 
 ## Usage
 
 ### Creditcard Tokenizer
 
-The Credit Card Tokenizer is an essential component for handling payments on the PAYONE Commerce Platform. It securely collects and processes credit or debit card information to generate a `paymentProcessingToken`, which is required for the Server-SDK to complete the payment process. Without this token, the server cannot perform the transaction. The tokenizer ensures that sensitive card details are handled securely and is PCI DSS (Payment Card Industry Data Security Standard) compliant.
+The Creditcard Tokenizer uses the new PAYONE Hosted Tokenization SDK. It securely collects and processes credit or debit card information in a PCI DSS-compliant way, returning a token for use in your server-side payment process.
 
-To integrate the Creditcard Tokenizer feature into your application, follow these steps:
+To integrate the Creditcard Tokenizer feature into your iOS application, follow these steps:
 
-#### 1. Upload an HTML page
+#### 1. Host your HTML page
 
-The Creditcard tokenizer injects code and PCI DSS conform input fields into a webpage. To assure this process works, you need to setup the correct containers and submit button.
+Host your HTML page locally (for development) or on a server. The page must contain the payment IFrame and submit button:
 
 ```html
-  <div id="cardpanInput"></div>
-  <div id="cardcvc2Input"></div>
-  <div id="cardExpireMonthInput"></div>
-  <div id="cardExpireYearInput"></div>
-  <button id="submit">Submit</button>
-  ```
+<div id="payment-IFrame"></div> <button id="submit">Submit</button>
+```
 
-For a more sophisticated example, see this [creditcard-tokenizer-example.html](./creditcard-tokenizer-example.html).
+For a more sophisticated example, see [creditcard-tokenizer-example.html](./creditcard-tokenizer-example.html) or the demo app in `Examples/PCPClientSwiftDemo`.
 
-#### 2. Import the PCPClient modules
+#### 2. Import PCPClient modules
 
 **Swift**
+
 ```swift
 import PCPClient
 ```
 
 **Objective-C**
+
 ```objectivec
 @import PCPClient;
 @import PCPClientBridge;
 ```
 
-#### 3. Setup the View or ViewController
+#### 3. Configure the Tokenizer
 
-##### SwiftUI
-
-For SwiftUI use the `CreditcardTokenizerView`.
+Create a config object to customize the UI and behavior. See the demo app for more advanced usage.
 
 ```swift
-CreditcardTokenizerView(
-  tokenizerUrl: URL(...),
-  request: CCTokenizerRequest(...),
-  supportedCardTypes: [...],
-  config: CreditcardTokenizerConfig(...)
+let uiConfig = UIConfig(
+    formBgColor: "#64bbb7",
+    fieldBgColor: "wheat",
+    fieldBorder: "1px solid #b33cd8",
+    fieldOutline: "#101010 solid 5px",
+    fieldLabelColor: "#d3d83c",
+    fieldPlaceholderColor: "blue",
+    fieldTextColor: "crimson",
+    fieldErrorCodeColor: "green"
+)
+
+let config = CreditcardTokenizerConfig(
+    iframeConfig: IframeConfig(
+        iframeWrapperId: "payment-IFrame",
+        height: 400,
+        width: 400
+    ),
+    uiConfig: uiConfig,
+    locale: "de_DE",
+    submitButtonConfig: SubmitButtonConfig(
+        selector: "#submit",
+    ),
+    environment: "test", // Use "live" for production
+    tokenizationSuccessCallback: { statusCode, token, cardDetails in
+        print("Tokenized card successfully: Status: \(statusCode), Token: \(token), Card Details: \(String(describing: cardDetails))")
+    },
+    tokenizationFailureCallback: { statusCode, errorResponse in
+        print("Tokenization failed: Status: \(statusCode), Error: \(String(describing: errorResponse["error"]))")
+    }
 )
 ```
 
-##### UIKit
+For Objective-C, use the `CreditcardTokenizerConfigWrapper`:
 
-For UIKit use the `CreditcardTokenizerViewController`.
+```objectivec
+ CreditcardTokenizerConfigWrapper *config = [
+    [CreditcardTokenizerConfigWrapper alloc]
+        initWithIframeConfig:iframeConfig
+        uiConfig:uiConfig
+        locale:@"de_DE"
+        submitButtonConfig:submitButtonConfig
+        environment:@"test"
+        tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, NSDictionary *cardDetails) {
+             NSLog(@"Tokenized card successfully: %ld %@ %@", (long)statusCode, token, cardDetails);
+        }
+        tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
+            NSLog(@"Tokenization failed: %ld %@", (long)statusCode, errorResponse);
+        }
+];
+```
 
-**Swift**
+#### 4. Fetch the JWT Token from your Backend
+
+You must fetch the JWT from your backend before initializing the SDK.
+
 ```swift
-CreditcardTokenizerViewController(
-  tokenizerUrl: URL(...),
-  request: CCTokenizerRequest(...),
-  supportedCardTypes: [...],
-  config: CreditcardTokenizerConfig(...)
+let jwtToken = fetchJwtTokenFromBackend() // Implement this in your backend
+```
+
+#### 5. Initialize and display the Tokenizer
+
+Use the provided SwiftUI view or UIKit view controller. Pass the config, JWT token, and the URL to your hosted HTML page.
+
+**SwiftUI**
+
+```swift
+CreditcardTokenizerView(
+    tokenizerUrl: URL(string: "https://your-server/creditcard-tokenizer-example.html")!,
+    jwtToken: jwtToken,
+    config: config
+)
+```
+
+**UIKit**
+
+```swift
+let viewController = CreditcardTokenizerViewController(
+    tokenizerUrl: URL(string: "https://your-server/creditcard-tokenizer-example.html")!,
+    jwtToken: jwtToken,
+    config: config
 )
 ```
 
 **Objective-C**
+
 ```objectivec
-CreditcardTokenizerViewController *viewController = [
-  [CreditcardTokenizerViewController alloc]
-      initWithTokenizerUrl:[URL ...]
-      request:[CCTokenizerRequest...]
-      supportedCardTypes:@[...]
-      config:[CreditcardTokenizerConfigWrapper ...]
-];
+CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewController alloc]
+    initWithTokenizerUrl:[NSURL URLWithString:@"https://your-server/creditcard-tokenizer-example.html"]
+    jwtToken:jwtToken
+    config:config];
 ```
 
-##### Tokenizer URL
+#### 6. Customization and Callbacks
 
-This is the URL where your HTML code can be found and this should include a valid HTML with the later specified fields and submit button.
+- `iframeConfig`: Configure the container and size for the payment iframe.
+- `uiConfig`: Customize the look and feel of the form fields.
+- `locale`: Set the language/locale for the form.
+- `submitButtonConfig`: Provide a selector or element for the submit button.
+- `tokenizationSuccessCallback`: Handle the token and card details on success.
+- `tokenizationFailureCallback`: Handle errors on failure.
+- `environment`: Choose "test" or "live" for the SDK environment.
 
-<details>
-  <summary>Example:</summary>
+#### 7. PCI DSS & Security
 
-```swift
-URL(string: "https://github.com")!
-```
-</details>
+- The SDK uses a JWT from your backend for secure initialization.
+- All card data is handled inside the iframe and never touches your application code.
 
-> [!CAUTION]  
-> Do not use local HTML since this won't work. The scripts that are used need a valid origin to send updates to, Therefore, it's currently a limitation that the HTML must be hosted.
+#### 8. Migration Note
 
-##### Request
+If you previously used the classic PAYONE Hosted IFrames, update your integration to use the new Hosted Tokenization SDK as shown above. The old `fields`, `defaultStyle`, and related config are no longer used.
 
-The `CCTokenizerRequest` object includes several configuration keys and settings. These are your AID, MID, Portal ID, PMI Portal Key and lastly the environment to run your code against (test or production).
-
-<details>
-  <summary>Example:</summary>
-  
-```swift
-CCTokenizerRequest(
-  mid: "123",
-  aid: "456",
-  portalId: "789",
-  environment: .test,
-  pmiPortalKey: "a1b2"
-)
-```
-</details>
-
-##### Supported Card Types
-
-A `String` array of supported card types. You should use the `SupportedCardType` enum and it's identifier property to receive valid values.
-
-<details>
-  <summary>Example:</summary>
-
-```swift
-[SupportedCardType.visa.identifier, SupportedCardType.mastercard.identifier]
-```
-</details>
-
-##### Config
-
-The config including the different required [fields](#fields), the callback(s), certain CSS styles, submit button ID, and the used language.
-
-> [!Important]
-> For Objective-C you must use the `CreditcardTokenizerConfigWrapper` since Swift completion handlers are not supported by Objective-C.
-
-<details>
-  <summary>Swift Example:</summary>
-  
-```swift
-CreditcardTokenizerConfig(
-  cardPan: Field(
-      selector: "cardpan",
-      style: "font-size: 14px; border: 1px solid #000;",
-      type: "input",
-      size: nil,
-      maxlength: nil,
-      length: nil,
-      iframe: nil
-  ),
-  cardCvc2: Field(
-      selector: "cardcvc2",
-      style: "font-size: 14px; border: 1px solid #000;",
-      type: "password",
-      size: "4",
-      maxlength: "4",
-      length: [
-          "V": 3,
-          "M": 3
-      ],
-      iframe: nil
-  ),
-  cardExpireMonth: Field(
-      selector: "cardexpiremonth",
-      style: "font-size: 14px; width: 30px; border: solid 1px #000; height: 22px;",
-      type: "text",
-      size: "2",
-      maxlength: "2",
-      length: nil,
-      iframe: [
-          "width": "40px"
-      ]
-  ),
-  cardExpireYear: Field(
-      selector: "cardexpireyear",
-      style: nil,
-      type: "text",
-      size: nil,
-      maxlength: nil,
-      length: nil,
-      iframe: [
-          "width": "50px"
-      ]
-  ),
-  defaultStyles: [
-      "input": "font-size: 1em; border: 1px solid #000; width: 175px;",
-      "select": "font-size: 1em; border: 1px solid #000;",
-      "iframe": "height: 22px, width: 180px"
-  ],
-  language: .german,
-  error: "error",
-  submitButtonId: "submit",
-  creditCardCheckCallback: { result in
-      switch result {
-      case let .success(response):
-          print(response)
-      case let .failure(error):
-          print("\(error.localizedDescription)")
-      }
-  }
-)
-```
-</details>
-
-<details>
-  <summary>Objective-C Example:</summary>
-  
-```objectivec
-CreditcardTokenizerConfigWrapper *config = [
-  [CreditcardTokenizerConfigWrapper alloc]
-  initWithCardPan:[
-      [Field alloc]
-      initWithSelector:@"cardpan"
-      style:@"font-size: 14px; border: 1px solid #000;"
-      type:@"input" 
-      size:NULL
-      maxlength:NULL
-      length:NULL
-      iframe:NULL
-  ]
-  cardCvc2:[
-      [Field alloc]
-      initWithSelector:@"cardcvc2"
-      style:@"font-size: 14px; border: 1px solid #000;"
-      type:@"password"
-      size:@"4"
-      maxlength:@"4"
-      length:@{@"V": @3, @"M": @4}
-      iframe:NULL
-  ]
-  cardExpireMonth:[
-      [Field alloc]
-      initWithSelector:@"cardexpiremonth"
-      style:@"font-size: 14px; width: 30px; border: solid 1px #000; height: 22px;"
-      type:@"text"
-      size:@"2"
-      maxlength:@"2"
-      length:NULL
-      iframe:@{@"width": @"40px"}
-  ]
-  cardExpireYear:[
-      [Field alloc]
-      initWithSelector:@"cardexpireyear"
-      style:NULL
-      type:@"text"
-      size:NULL
-      maxlength:NULL
-      length:NULL
-      iframe:@{@"width": @"50px"}
-  ]
-  defaultStyles:@{
-      @"input": @"font-size: 1em; border: 1px solid #000; width: 175px;",
-      @"select": @"font-size: 1em; border: 1px solid #000;",
-      @"iframe": @"height: 22px, width: 180px"
-  }
-  language:PayoneLanguageGerman
-  error:@"error"
-  submitButtonId:@"submit"
-  success:^(CCTokenizerResponse *response) {
-      NSLog(@"%@", response);
-  }
-  failure:^(enum CCTokenizerError error) {
-      NSLog(@"%@", [NSString stringWithFormat:@"%ld", (long)error]);
-  }
-];
-```
-</details>
-
-##### Fields
-
-Defines the various input fields for credit card details.
-
-| Property          | Type                             | Description                                        |
-| ----------------- | -------------------------------- | -------------------------------------------------- |
-| `cardpan`         | `Field`                    | Configuration for the card number field.           |
-| `cardcvc2`        | `Field`                    | Configuration for the card CVC2 field.             |
-| `cardexpiremonth` | `Field`                    | Configuration for the card expiration month field. |
-| `cardexpireyear`  | `Field`                    | Configuration for the card expiration year field.  |
-
-##### Field properties
-
-- **selector**: `String`  
-  The CSS selector for the input element.
-
-- **element**: `String` (optional)  
-  The actual DOM element if not using a selector.
-
-- **size**: `String` (optional)  
-  The size attribute for the input element.
-
-- **maxlength**: `String` (optional)  
-  The maximum length of input allowed.
-
-- **length**: `[String: Int]` 
-  Specifies the length for various card types (e.g., `[V: 3, M: 3, A: 4, J: 0 ]`).
-
-- **type**: `String`  
-  The type attribute for the input element (e.g., `text`, `password`).
-
-- **style**: `String` (optional)  
-  CSS styles applied to the input element.
-
-- **iframe**: `[String: String]` 
-  Dimensions for the iframe if used (pass only width and height properties).
-
-##### Other configurations fields
-
-| Property                           | Type                                                                                                                                                       | Description                                                                                                                                            |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `language`                         | `PayoneLanguage`                                                                                                                                                   | The language for the SDK (`.german` or `.english` for now).                                                                                                               |
-| `submitButtonId`                     | `String`                                                                                                                                       | HTML ID of the  submit button.                                                                                                                 
-| `error`                            | `String`                                                                                                                                        | HTML ID of the div-container where error messages should be displayed.                                                                                |
-| `creditCardCheckCallback`          | `@escaping ((Result<CCTokenizerResponse, CCTokenizerError>) -> Void)`  | Callback function for credit card check responses (Swift only).                                                                                                     |
-| `success`          | `@escaping (CCTokenizerResponse) -> Void` | Callback function for credit card check success (Objective-C Wrapper only).                                                                                                     |
-| `success`          | `@escaping (CCTokenizerError) -> Void`  | Callback function for credit card check failure (Objective-C Wrapper only).                                                                                                     |
-
-#### 4. Display the View or ViewController
-
-This will heavily depend on your the platform and navigation technique your are using.
+**For more details, see the [demo project](Examples/) folder.**
 
 **[back to top](#table-of-contents)**
 
@@ -455,11 +306,13 @@ To integrate the Fingerprint Tokenizer feature into your application, follow the
 #### 1. Import PCPClient Modules
 
 **Swift**
+
 ```swift
 import PCPClient
 ```
 
 **Objective-C**
+
 ```objectivec
 @import PCPClient;
 @import PCPClientBridge;
@@ -479,20 +332,21 @@ private let fingerprintTokenizer = FingerprintTokenizer(
     environment: .test
 )
 ```
+
 </details>
 
 <details>
   <summary>Objective-C Example:</summary>
 
 ```objectivec
-self.tokenizerWrapper = [[FingerprintTokenizerWrapper alloc] 
-  initWithPaylaPartnerId:@"YOUR_PARTNER_ID" 
-  partnerMerchantId:@"YOUR_MERCHANT_ID" 
+self.tokenizerWrapper = [[FingerprintTokenizerWrapper alloc]
+  initWithPaylaPartnerId:@"YOUR_PARTNER_ID"
+  partnerMerchantId:@"YOUR_MERCHANT_ID"
   environment:PCPEnvironmentTest sessionId:nil
 ];
 ```
-</details>
 
+</details>
 
 #### 3. Get the snippet token
 
@@ -512,6 +366,7 @@ fingerprintTokenizer.getSnippetToken { result in
 }
 
 ```
+
 </details>
 
 <details>
@@ -525,10 +380,10 @@ fingerprintTokenizer.getSnippetToken { result in
   }
 ];
 ```
+
 </details>
 
 This snippet token is automatically generated when the `FingerprintTokenizer` instance is created and is also stored by Payla for payment verification. You need to send this snippet token to your server so that it can be included in the payment request. Add the token to the property `paymentMethodSpecificInput.customerDevice.deviceToken`.
-
 
 For further information see: https://docs.payone.com/pcp/commerce-platform-payment-methods/payone-bnpl/payone-secured-invoice
 
@@ -553,11 +408,13 @@ Make sure that your server is set up and your environment is configured correctl
 #### 3. Import PCPClient Modules
 
 **Swift**
+
 ```swift
 import PCPClient
 ```
 
 **Objective-C**
+
 ```objectivec
 @import PCPClient;
 @import PCPClientBridge;
@@ -568,11 +425,13 @@ import PCPClient
 The `ApplePayHandler` expects a `processPaymentServerUrl` which will be used to process the payment to your server.
 
 **Swift**
+
 ```swift
 private let applePayHandler = ApplePayHandler(processPaymentServerUrl: url)
 ```
 
 **Objective-C**
+
 ```objectivec
 self.applePayHandler = [[ApplePayHandler alloc] initWithProcessPaymentServerUrl:url];
 ```
@@ -603,6 +462,7 @@ VStack {
 }
 
 ```
+
 </details>
 
 <details>
@@ -620,8 +480,8 @@ VStack {
     }
 }
 ```
-</details>
 
+</details>
 
 #### 6. Create a PKPaymentRequest
 
@@ -656,6 +516,7 @@ private func makeRequest() -> PKPaymentRequest {
     return request
 }
 ```
+
 </details>
 
 <details>
@@ -693,6 +554,7 @@ private func makeRequest() -> PKPaymentRequest {
     return request;
 }
 ```
+
 </details>
 
 #### 7. Handle different events
@@ -700,6 +562,7 @@ private func makeRequest() -> PKPaymentRequest {
 There are different events that can happen where you will receive callbacks for from the `ApplePayHandler`. You have to set a completion on the handlers like this:
 
 **Swift**
+
 ```swift
 applePayHandler.didAuthorizePayment = { result in
     print(result)
@@ -707,6 +570,7 @@ applePayHandler.didAuthorizePayment = { result in
 ```
 
 **Objective-C**
+
 ```objectivec
 self.applePayHandler.didAuthorizePayment = ^(PKPaymentAuthorizationResult *result) {
     NSLog(@"%@", result);
@@ -718,19 +582,20 @@ self.applePayHandler.didAuthorizePayment = ^(PKPaymentAuthorizationResult *resul
 
 ##### Different event callbacks
 
-| Callback  |  Note |
-|----------|------|
-| didAuthorizePayment | Sent after the user has acted on the payment request. |
-| didSelectShippingContact | Sent when the user has selected a new shipping method. |
+| Callback                  | Note                                                   |
+| ------------------------- | ------------------------------------------------------ |
+| didAuthorizePayment       | Sent after the user has acted on the payment request.  |
+| didSelectShippingContact  | Sent when the user has selected a new shipping method. |
 | onShippingMethodDidChange | Sent when the user has selected a new shipping method. |
-| onDidSelectPaymentMethod | Sent when the user has selected a new payment card. | 
-| onChangeCouponCode | Sent when the user has selected a new coupon code. |
+| onDidSelectPaymentMethod  | Sent when the user has selected a new payment card.    |
+| onChangeCouponCode        | Sent when the user has selected a new coupon code.     |
 
 #### 8. Initiate the payment and handle the result
 
 This will ultimately initiate the payment, you should see Apple Pay open up and the callbacks should be called when a change was made. Lastly when the user concludes the payment, a request will be sent to your provided `processPaymentServerUrl`.
 
 **Swift**
+
 ```swift
 applePayHandler.startPayment(
     request: request,
@@ -742,8 +607,10 @@ applePayHandler.startPayment(
     print("Payment did work \(success)")
 }
 ```
+
 **Objective-C**
-```objectivec 
+
+```objectivec
 [self.applePayHandler startPaymentWithRequest:request onDidSelectPaymentMethod:^PKPaymentRequestPaymentMethodUpdate * _Nonnull(PKPaymentMethod *paymentMethod) {
     return [[PKPaymentRequestPaymentMethodUpdate alloc] initWithPaymentSummaryItems:request.paymentSummaryItems];
 } completion:^(BOOL success) {
@@ -761,7 +628,7 @@ You can find a demonstration project for each language including all features in
 - **Objective-C**: See the [PCPClientObjcDemo](./Examples/PCPClientObjcDemo) folder.
 
 > [!IMPORTANT]
->Be aware that you will need to provide your own properties, for example AID, MID, PortalKey or Apple Pay server URL at all places which are prefixed with "YOUR_".
+> Be aware that you will need to provide your own properties, for example AID, MID, PortalKey or Apple Pay server URL at all places which are prefixed with "YOUR\_".
 
 ## Contributing
 
@@ -783,9 +650,3 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md)
 This project is licensed under the MIT License. For more details, see the [LICENSE](./LICENSE) file.
 
 **[back to top](#table-of-contents)**
-
-
-
-
-
-
