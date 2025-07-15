@@ -97,7 +97,7 @@
     
     SubmitButtonConfig *submitButtonConfig = [[SubmitButtonConfig alloc] initWithSelector:@"#submit" element:nil];
     
-    CreditcardTokenizerConfig *config = [[CreditcardTokenizerConfig alloc] initWithIframeConfig:iframeConfig uiConfig:uiConfig locale:@"de_DE" submitButtonConfig:submitButtonConfig environment:@"test" error:nil tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, NSDictionary *cardDetails) {
+    CreditcardTokenizerConfig *config = [[CreditcardTokenizerConfig alloc] initWithIframeConfig:iframeConfig uiConfig:uiConfig locale:@"de_DE" submitButtonConfig:submitButtonConfig environment:@"test" tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, NSDictionary *cardDetails) {
         self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Success: %ld %@ %@", (long)statusCode, token, cardDetails];
         [self.navigationController popViewControllerAnimated:true];
     } tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
