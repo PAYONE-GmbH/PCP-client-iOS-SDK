@@ -26,7 +26,7 @@
     [super viewDidLoad];
 
     NSURL *url = [[NSURL alloc] initWithString:@"YOUR_URL"];
-    self.applePayHandler = [[ApplePayHandler alloc] initWithProcessPaymentServerUrl:url];
+    self.applePayHandler = [[ApplePayHandler alloc] initWithProcessPaymentServerUrl:url urlSession:NSURLSession.sharedSession];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -85,32 +85,27 @@
 - (IBAction)startCreditcardTokenizer:(id)sender {
     NSURL *url = [[NSURL alloc] initWithString:@"YOUR_URL"];
     UIConfig *uiConfig = [[UIConfig alloc] initWithFormBgColor:@"#fff"
-        fieldBgColor:@"#f9f9f9"
-        fieldBorder:@"1px solid #000"
-        fieldOutline:@"none"
-        fieldLabelColor:@"#333"
-        fieldPlaceholderColor:@"#aaa"
-        fieldTextColor:@"#000"
-        fieldErrorCodeColor:@"#f00"];
-
+                                                  fieldBgColor:@"#f9f9f9"
+                                                   fieldBorder:@"1px solid #000"
+                                                  fieldOutline:@"none"
+                                               fieldLabelColor:@"#333"
+                                         fieldPlaceholderColor:@"#aaa"
+                                                fieldTextColor:@"#000"
+                                           fieldErrorCodeColor:@"#f00"];
+    
     IframeConfig *iframeConfig = [[IframeConfig alloc] initWithIframeWrapperId:@"payment-IFrame" height:@400 width:@400];
-
+    
     SubmitButtonConfig *submitButtonConfig = [[SubmitButtonConfig alloc] initWithSelector:@"#submit" element:nil];
+    
+    CreditcardTokenizerConfig *config = [[CreditcardTokenizerConfig alloc] initWithIframeConfig:iframeConfig uiConfig:uiConfig locale:@"de_DE" submitButtonConfig:submitButtonConfig environment:@"test" error:nil tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, NSDictionary *cardDetails) {
+        self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Success: %ld %@ %@", (long)statusCode, token, cardDetails];
+        [self.navigationController popViewControllerAnimated:true];
+    } tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
+        self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Failure: %ld %@", (long)statusCode, errorResponse];
+        [self.navigationController popViewControllerAnimated:true];
+    }
+ ];
 
-    CreditcardTokenizerConfig *config = [[CreditcardTokenizerConfig alloc] initWithIframeConfig:iframeConfig
-        uiConfig:uiConfig
-        locale:@"de_DE"
-        submitButtonConfig:submitButtonConfig
-        environment:@"test"
-        tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, NSDictionary *cardDetails) {
-            self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Success: %ld %@ %@", (long)statusCode, token, cardDetails];
-            [self.navigationController popViewControllerAnimated:true];
-        }
-        tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
-            self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Failure: %ld %@", (long)statusCode, errorResponse];
-            [self.navigationController popViewControllerAnimated:true];
-        }
-    ];
     CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewController alloc] initWithTokenizerUrl:url config:config jwtToken:@"<Token to be retrieved from the CommercePlatform-API>"];
     [self.navigationController pushViewController:viewController animated:true];
 }

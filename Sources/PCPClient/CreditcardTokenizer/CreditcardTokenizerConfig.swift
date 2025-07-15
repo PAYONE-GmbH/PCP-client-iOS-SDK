@@ -102,7 +102,7 @@ import Foundation
 }
 
 /// The configuration object to set up the creditcard tokenizer.
-public class CreditcardTokenizerConfig: NSObject {
+@objc public class CreditcardTokenizerConfig: NSObject {
   public let iframeConfig: IframeConfig?
   public let uiConfig: UIConfig?
   public let locale: String?
@@ -113,12 +113,12 @@ public class CreditcardTokenizerConfig: NSObject {
   public let tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)?
 
   @objc public init(
-    iframeConfig: IframeConfig? = nil,
-    uiConfig: UIConfig? = nil,
-    locale: String? = nil,
-    submitButtonConfig: SubmitButtonConfig? = nil,
+    iframeConfig: IframeConfig?,
+    uiConfig: UIConfig?,
+    locale: String?,
+    submitButtonConfig: SubmitButtonConfig?,
     environment: String,
-    error: String? = nil,
+    error: String?,
     tokenizationSuccessCallback: ((Int, String, [String: Any]?) -> Void)? = nil,
     tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)? = nil
   ) {
