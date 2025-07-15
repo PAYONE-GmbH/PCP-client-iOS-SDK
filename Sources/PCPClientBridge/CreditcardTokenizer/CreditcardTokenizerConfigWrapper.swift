@@ -20,9 +20,8 @@ import PCPClient
     locale: String? = nil,
     submitButtonConfig: SubmitButtonConfig? = nil,
     environment: String,
-    error: String? = nil,
-    success: @escaping (Int, String, [String: Any]?) -> Void,
-    failure: @escaping (Int, [String: Any]?) -> Void
+    tokenizationSuccessCallback: ((Int, String, [String: Any]?) -> Void)? = nil,
+    tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)? = nil
   ) {
     creditcardTokenizerConfig = CreditcardTokenizerConfig(
       iframeConfig: iframeConfig,
@@ -30,8 +29,8 @@ import PCPClient
       locale: locale,
       submitButtonConfig: submitButtonConfig,
       environment: environment,
-      tokenizationSuccessCallback: success,
-      tokenizationFailureCallback: failure
+      tokenizationSuccessCallback: tokenizationSuccessCallback,
+      tokenizationFailureCallback: tokenizationFailureCallback
     )
   }
 }
