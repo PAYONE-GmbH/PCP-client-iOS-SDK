@@ -108,7 +108,6 @@ import Foundation
   public let locale: String?
   public let submitButtonConfig: SubmitButtonConfig?
   public let environment: String  // "test" or "live"
-  public let error: String?
   public let tokenizationSuccessCallback: ((Int, String, [String: Any]?) -> Void)?
   public let tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)?
 
@@ -118,7 +117,6 @@ import Foundation
     locale: String?,
     submitButtonConfig: SubmitButtonConfig?,
     environment: String,
-    error: String?,
     tokenizationSuccessCallback: ((Int, String, [String: Any]?) -> Void)? = nil,
     tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)? = nil
   ) {
