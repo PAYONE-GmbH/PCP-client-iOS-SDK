@@ -99,13 +99,19 @@
     
     CreditcardTokenizerConfigWrapper *config = [
             [CreditcardTokenizerConfigWrapper alloc]
-            initWithIframeConfig:iframeConfig uiConfig:uiConfig locale:@"de_DE" submitButtonConfig:submitButtonConfig environment:@"test" tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, NSDictionary *cardDetails) {
-                self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Success: %ld %@ %@", (long)statusCode, token, cardDetails];
-                [self.navigationController popViewControllerAnimated:true];
-            } tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
-                self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Failure: %ld %@", (long)statusCode, errorResponse];
-                [self.navigationController popViewControllerAnimated:true];
-            }
+                    initWithIframeConfig:iframeConfig
+                    uiConfig:uiConfig
+                    locale:@"de_DE"
+                    submitButtonConfig:submitButtonConfig 
+                    environment:@"test"
+                    tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, NSDictionary *cardDetails) {
+                        self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Success: %ld %@ %@", (long)statusCode, token, cardDetails];
+                        [self.navigationController popViewControllerAnimated:true];
+                    }   
+                    tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
+                        self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Failure: %ld %@", (long)statusCode, errorResponse];
+                        [self.navigationController popViewControllerAnimated:true];
+                    }
     ];
 
     CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewController alloc] initWithTokenizerUrl:url config:config.creditcardTokenizerConfig jwtToken:@"<Token to be retrieved from the CommercePlatform-API>"];

@@ -15,13 +15,13 @@ import PCPClient
   @objc public let creditcardTokenizerConfig: CreditcardTokenizerConfig
 
   @objc public init(
-    iframeConfig: IframeConfig? = nil,
-    uiConfig: UIConfig? = nil,
-    locale: String? = nil,
-    submitButtonConfig: SubmitButtonConfig? = nil,
+    iframeConfig: IframeConfig?,
+    uiConfig: UIConfig?,
+    locale: String?,
+    submitButtonConfig: SubmitButtonConfig?,
     environment: String,
-    tokenizationSuccessCallback: ((Int, String, [String: Any]?) -> Void)? = nil,
-    tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)? = nil
+    tokenizationSuccessCallback: ((Int, String, [String: Any]?) -> Void)?,
+    tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)?
   ) {
     creditcardTokenizerConfig = CreditcardTokenizerConfig(
       iframeConfig: iframeConfig,
