@@ -125,7 +125,6 @@ import Foundation
     self.locale = locale
     self.submitButtonConfig = submitButtonConfig
     self.environment = environment
-    self.error = error
     self.tokenizationSuccessCallback = tokenizationSuccessCallback
     self.tokenizationFailureCallback = tokenizationFailureCallback
   }
