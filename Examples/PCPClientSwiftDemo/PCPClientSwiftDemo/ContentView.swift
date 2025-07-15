@@ -39,9 +39,7 @@ struct ContentView: View {
         .frame(maxWidth: .infinity)
         Text("Fingerprint Token:")
         Text(fingerprintToken)
-        NavigationLink(destination: creditcardTokenizer) { Text("Create Creditcard Token") }
-        Text("Creditcard Token Result:")
-        Text(creditcardTokenResult)
+        NavigationLink(destination: creditcardTokenizer) { Text("Go to Creditcard Tokenizer") }
         Spacer()
 
         if shouldShowApplePay {
