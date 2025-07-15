@@ -9,20 +9,20 @@
 import WebKit
 
 internal final class MockWKScriptMessage: WKScriptMessage {
-    private var mockName: String
-    private var mockBody: [String: String?]
+  private var mockName: String
+  private var mockBody: [String: Any]
 
-    override internal var name: String {
-        mockName
-    }
+  override internal var name: String {
+    mockName
+  }
 
-    override internal var body: Any {
-        mockBody
-    }
+  override internal var body: Any {
+    mockBody
+  }
 
-    internal init(name: String, body: [String: String?] = [:]) {
-        mockName = name
-        mockBody = body
-        super.init()
-    }
+  internal init(name: String, body: [String: Any] = [:]) {
+    mockName = name
+    mockBody = body
+    super.init()
+  }
 }
