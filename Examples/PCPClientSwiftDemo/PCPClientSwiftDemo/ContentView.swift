@@ -134,15 +134,13 @@ struct ContentView: View {
         submitButtonConfig: SubmitButtonConfig(selector: "#submit"),
         environment: "test",
         tokenizationSuccessCallback: { statusCode, token, cardDetails in
-          creditcardTokenResult = "Success: "
-          statusCode
-          token
-          cardDetails
+          print("SuccessCallback statusCode:", statusCode)
+          print("SuccessCallback token:", token)
+          print("SuccessCallback cardDetails:", cardDetails ?? {})
         },
         tokenizationFailureCallback: { statusCode, errorResponse in
-          creditcardTokenResult = "Failure: "
-          statusCode
-          errorResponse
+          print("FailureCallback statusCode:", statusCode)
+          print("FailureCallback errorResponse:", errorResponse ?? [:])
         }
       ),
       jwtToken: "<Token to be retrieved from the CommercePlatform-API>"  // Fetch this from your backend

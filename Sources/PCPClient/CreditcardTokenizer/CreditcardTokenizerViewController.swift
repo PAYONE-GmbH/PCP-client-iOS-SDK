@@ -60,8 +60,6 @@ import WebKit
 
 extension CreditcardTokenizerViewController {
   private func setupWebView() {
-    PCPLogger.info(
-      "Setting up CreditcardTokenizerViewController with URL: \(tokenizerUrl.absoluteString)")
     let webView = self.webView ?? WKWebView(frame: CGRect.zero)
     webView.navigationDelegate = self
     self.webView = webView
@@ -73,22 +71,27 @@ extension CreditcardTokenizerViewController {
     webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
     webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
+    if #available(iOS 16.4, *) {
+      webView.isInspectable = true
+    } else {
+      // Fallback on earlier versions
+    }
+
     let request = URLRequest(url: tokenizerUrl)
     webView.load(request)
-    PCPLogger.info(
-      "Loading CreditcardTokenizerViewController with URL: \(tokenizerUrl.absoluteString)")
   }
 
   private func initialize() {
-    PCPLogger.info("Initializing CreditcardTokenizerViewController.")
-    PCPLogger.info("Adding script message handlers.")
-    addScriptMessageHandler(key: CCScriptMessageType.scriptLoaded.rawValue)
+    let script = makeScriptToLoadPayoneHostedScript()
+    let userScript = WKUserScript(
+      source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
     addScriptMessageHandler(key: CCScriptMessageType.scriptError.rawValue)
-    PCPLogger.info("CreditcardTokenizerViewController initialized successfully.")
+    addScriptMessageHandler(key: CCScriptMessageType.responseReceived.rawValue)
+    webView?.configuration.userContentController.addUserScript(userScript)
+    webView?.evaluateJavaScript(script)
   }
 
   private func makeScriptToLoadPayoneHostedScript() -> String {
-    PCPLogger.info("Creating script to load Payone Hosted Tokenization SDK.")
     let env = config.environment ?? "test"
     let sdkScriptEnv: [String: [String: String]] = [
       "test": [
@@ -104,117 +107,73 @@ extension CreditcardTokenizerViewController {
     let scriptInfo = sdkScriptEnv[env] ?? sdkScriptEnv["test"]!
     let scriptSrc = scriptInfo["src"]!
     let scriptIntegrity = scriptInfo["integrity"]!
-    PCPLogger.info(
-      "Using script source: \(scriptSrc) with integrity: \(scriptIntegrity) for environment: \(env)"
-    )
+
+    let uiConfigJson =
+      (try? JSONEncoder().encode(config.uiConfig)).flatMap { String(data: $0, encoding: .utf8) }
+      ?? "{}"
+    let iframeConfigJson =
+      (try? JSONEncoder().encode(config.iframeConfig)).flatMap { String(data: $0, encoding: .utf8) }
+      ?? "{}"
+    let locale = config.locale ?? "de_DE"
+    let submitButtonSelector = config.submitButtonConfig?.selector ?? "#submit"
+
     return """
-      (function() {
-          try {
-              console.log('[PayoneSDK] Attempting to inject script:', '\(scriptSrc)');
-              if (!document.getElementById('hosted-tokenization-sdk')) {
-                  console.log('[PayoneSDK] Script not found, injecting new script.');
-                  var script = document.createElement('script');
-                  script.type = 'text/javascript';
-                  script.src = '\(scriptSrc)';
-                  script.id = 'hosted-tokenization-sdk';
-                  script.setAttribute('integrity', '\(scriptIntegrity)');
-                  script.setAttribute('crossorigin', 'anonymous');
-                  script.onload = function() {
-                      console.log('[PayoneSDK] Script loaded successfully:', script.src);
-                      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.CCScriptMessageType && window.webkit.messageHandlers.CCScriptMessageType.scriptLoaded) {
-                          window.webkit.messageHandlers.CCScriptMessageType.scriptLoaded.postMessage('');
+      if (!document.getElementById('hosted-tokenization-sdk')) {
+          var script = document.createElement('script');
+          script.type = 'text/javascript';
+          script.src = '\(scriptSrc)';
+          script.id = 'hosted-tokenization-sdk';
+          script.setAttribute('integrity', '\(scriptIntegrity)');
+          script.setAttribute('crossorigin', 'anonymous');
+          script.onload = function() {
+                var sdkConfig = {
+                        iframe: \(iframeConfigJson),
+                        uiConfig: \(uiConfigJson),
+                        locale: '\(locale)',
+                        token: '\(jwtToken)'
+                      };
+                      if (window.HostedTokenizationSdk) {
+                        window.HostedTokenizationSdk.init().then(function() {
+                          window.HostedTokenizationSdk.getPaymentPage(sdkConfig);
+                          var submitBtn = document.querySelector('\(submitButtonSelector)');
+                          if (submitBtn) {
+                            submitBtn.onclick = function() {
+                              window.HostedTokenizationSdk.submitForm(
+                                function(statusCode, token, cardDetails) {
+                                    window.webkit.messageHandlers.responseReceived.postMessage({statusCode, token, cardDetails});
+                                },
+                                function(statusCode, errorResponse) {
+                                    window.webkit.messageHandlers.responseReceived.postMessage({statusCode, errorResponse});
+                                }
+                              );
+                            };
+                          }
+                        }).catch(function(error) {
+                         console.error(error);
+                        });
                       }
-                  };
-                  script.onerror = function(e) {
-                      console.error('[PayoneSDK] Error loading script:', script.src, e);
-                      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.CCScriptMessageType && window.webkit.messageHandlers.CCScriptMessageType.scriptError) {
-                          window.webkit.messageHandlers.CCScriptMessageType.scriptError.postMessage('');
-                      }
-                  };
-                  document.head.appendChild(script);
-                  console.log('[PayoneSDK] Script appended to head:', script.src);
-              } else {
-                  console.log('[PayoneSDK] Script already present, skipping injection.');
-              }
-          } catch (err) {
-              console.error('[PayoneSDK] Exception during script injection:', err);
-              if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.CCScriptMessageType && window.webkit.messageHandlers.CCScriptMessageType.scriptError) {
-                  window.webkit.messageHandlers.CCScriptMessageType.scriptError.postMessage('');
-              }
-          }
-      })();
+          };
+          script.onerror = function(e) {
+            console.error(e);
+          };
+          document.head.appendChild(script);
+      }
+      null
       """
   }
 
-  private func makeScriptToPopulateHTML() -> String {
-    PCPLogger.info("Creating script to populate HTML with inputs.")
-    let uiConfigJson =
-      try? String(data: JSONEncoder().encode(config.uiConfig), encoding: .utf8) ?? "{}"
-    let iframeConfigJson =
-      try? String(data: JSONEncoder().encode(config.iframeConfig), encoding: .utf8) ?? "{}"
-    let locale = config.locale ?? "de_DE"
-    let submitButtonSelector = config.submitButtonConfig?.selector ?? "#submit"
-    return """
-      var sdkConfig = {
-        iframe: [iframeConfigJson],
-        uiConfig: [uiConfigJson],
-        locale: '[locale]',
-        token: '[jwtToken]'
-      };
-      if (window.HostedTokenizationSdk) {
-        window.HostedTokenizationSdk.init().then(function() {
-          window.HostedTokenizationSdk.getPaymentPage(sdkConfig);
-          var submitBtn = document.querySelector('[submitButtonSelector]');
-          if (submitBtn) {
-            submitBtn.onclick = function() {
-              window.HostedTokenizationSdk.submitForm(
-                function(statusCode, token, cardDetails) {
-                  window.webkit.messageHandlers.CCScriptMessageType.responseReceived.rawValue.postMessage({statusCode: statusCode, token: token, cardDetails: cardDetails});
-                },
-                function(statusCode, errorResponse) {
-                  window.webkit.messageHandlers.CCScriptMessageType.responseReceived.rawValue.postMessage({statusCode: statusCode, errorResponse: errorResponse});
-                }
-              );
-            };
-          }
-        }).catch(function(error) {
-          window.webkit.messageHandlers.CCScriptMessageType.scriptError.rawValue.postMessage('');
-        });
-      }
-      """
-  }
 }
 
 extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessageHandler {
   // swiftlint:disable implicitly_unwrapped_optional
   public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-    PCPLogger.info("WebView did finish loading \(webView.url?.absoluteString ?? "unknown URL").")
-    // Inject the script only after the page is fully loaded
-    let script = makeScriptToLoadPayoneHostedScript()
-    let userScript = WKUserScript(
-      source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
-    webView.configuration.userContentController.addUserScript(userScript)
-    PCPLogger.info("Injecting script to load Payone Hosted Tokenization SDK after page load.")
-    webView.evaluateJavaScript(script)
-    PCPLogger.info("WebView finished loading and initialized successfully.")
+    initialize()
   }
   // swiftlint:enable implicitly_unwrapped_optional
 
   public func userContentController(_: WKUserContentController, didReceive message: WKScriptMessage)
   {
-    PCPLogger.info("Received message from WebView: \(message.name)")
     switch message.name {
-    case CCScriptMessageType.scriptLoaded.rawValue:
-      webView?.evaluateJavaScript(
-        self.makeScriptToPopulateHTML(),
-        completionHandler: { [weak self] _, error in
-          if let error {
-            PCPLogger.error(
-              "Populating HTML with inputs failed with \(error.localizedDescription).")
-            self?.config.tokenizationFailureCallback?(500, ["error": "PopulatingHTMLFailed"])
-          }
-        }
-      )
     case CCScriptMessageType.scriptError.rawValue:
       PCPLogger.error("Loading Hosted Tokenization SDK failed.")
       config.tokenizationFailureCallback?(500, ["error": "LoadingScriptFailed"])
