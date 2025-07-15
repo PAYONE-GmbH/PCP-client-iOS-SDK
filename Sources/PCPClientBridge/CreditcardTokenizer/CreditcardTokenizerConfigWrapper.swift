@@ -30,7 +30,6 @@ import PCPClient
       locale: locale,
       submitButtonConfig: submitButtonConfig,
       environment: environment,
-      error: error,
       tokenizationSuccessCallback: success,
       tokenizationFailureCallback: failure
     )
