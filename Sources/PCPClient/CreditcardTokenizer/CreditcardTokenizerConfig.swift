@@ -86,21 +86,6 @@ import Foundation
   }
 }
 
-/// The language of the creditcard tokenizer. Currently English or German available.
-@objc public enum PayoneLanguage: Int {
-  case english
-  case german
-
-  internal var configValue: String {
-    switch self {
-    case .english:
-      return "Payone.ClientApi.Language.en"
-    case .german:
-      return "Payone.ClientApi.Language.de"
-    }
-  }
-}
-
 /// The configuration object to set up the creditcard tokenizer.
 @objc public class CreditcardTokenizerConfig: NSObject {
   public let iframeConfig: IframeConfig?
