@@ -44,7 +44,8 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
     let testConfig =
       config
       ?? CreditcardTokenizerConfig(
-        iframeConfig: IframeConfig(iframeWrapperId: "payment-IFrame", height: 400, width: 400),
+        iframeConfig: IframeConfig(
+          iframeWrapperId: "payment-IFrame", height: Double(400), width: Double(400)),
         uiConfig: UIConfig(formBgColor: "#fff"),
         locale: "de_DE",
         submitButtonConfig: SubmitButtonConfig(selector: "#submit", element: nil),
@@ -52,7 +53,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
         tokenizationSuccessCallback: { _, _, _ in },
         tokenizationFailureCallback: { _, _ in }
       )
-    if let webView = webView {
+    if let webView {
       return CreditcardTokenizerViewController(
         webView: webView,
         tokenizerUrl: tokenizerURL,
@@ -69,7 +70,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
 
   func test_initialization_setsPropertiesCorrectly() {
     let config = CreditcardTokenizerConfig(
-      iframeConfig: IframeConfig(iframeWrapperId: "id", height: 1, width: 2),
+      iframeConfig: IframeConfig(iframeWrapperId: "id", height: Double(1), width: Double(2)),
       uiConfig: UIConfig(formBgColor: "#abc"),
       locale: "en",
       submitButtonConfig: SubmitButtonConfig(selector: "#btn", element: nil),
@@ -112,7 +113,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
         called = true
         XCTAssertEqual(status, 200)
         XCTAssertEqual(token, "tok")
-        XCTAssertEqual(details?["card"] as? String, "details")
+        XCTAssertEqual(details["card"] as? String, "details")
       },
       tokenizationFailureCallback: nil
     )
@@ -123,7 +124,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
       body: [
         "statusCode": 200,
         "token": "tok",
-        "cardDetails": ["card": "details"],
+        "cardDetails": ["card": "details"]
       ]
     )
     sut.userContentController(WKUserContentController(), didReceive: message)
@@ -142,7 +143,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
       tokenizationFailureCallback: { status, error in
         called = true
         XCTAssertEqual(status, 500)
-        XCTAssertEqual(error?["error"] as? String, "LoadingScriptFailed")
+        XCTAssertEqual(error["error"] as? String, "LoadingScriptFailed")
       }
     )
     let sut = makeSUT(config: config)
@@ -163,7 +164,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
       tokenizationFailureCallback: { status, error in
         called = true
         XCTAssertEqual(status, 500)
-        XCTAssertEqual(error?["error"] as? String, "InvalidResponse")
+        XCTAssertEqual(error["error"] as? String, "InvalidResponse")
       }
     )
     let sut = makeSUT(config: config)
@@ -178,5 +179,4 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
     sut.webView?.configuration.userContentController.removeScriptMessageHandler(forName: "test")
     // No assertion needed, just ensure no crash
   }
-
 }

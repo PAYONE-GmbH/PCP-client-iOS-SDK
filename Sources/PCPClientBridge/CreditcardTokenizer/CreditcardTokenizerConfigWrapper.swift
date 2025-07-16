@@ -20,8 +20,8 @@ import PCPClient
     locale: String?,
     submitButtonConfig: SubmitButtonConfig?,
     environment: String,
-    tokenizationSuccessCallback: ((Int, String, [String: Any]?) -> Void)?,
-    tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)?
+    tokenizationSuccessCallback: ((Int, String, [String: Any]) -> Void)?,
+    tokenizationFailureCallback: ((Int, [String: Any]) -> Void)?
   ) {
     creditcardTokenizerConfig = CreditcardTokenizerConfig(
       iframeConfig: iframeConfig,

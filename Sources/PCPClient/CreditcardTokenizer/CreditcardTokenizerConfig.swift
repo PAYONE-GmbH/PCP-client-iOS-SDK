@@ -43,17 +43,30 @@ import Foundation
 
 @objc public class IframeConfig: NSObject, Encodable {
   public let iframeWrapperId: String
-  public let height: NSNumber?
-  public let width: NSNumber?
+  public let height: Double?
+  public let width: Double?
 
-  @objc public init(
+  public init(
     iframeWrapperId: String,
-    height: NSNumber? = nil,
-    width: NSNumber? = nil
+    height: Double? = nil,
+    width: Double? = nil
   ) {
     self.iframeWrapperId = iframeWrapperId
     self.height = height
     self.width = width
+  }
+
+  // Objective-C convenience initializer
+  @objc public convenience init(
+    iframeWrapperId: String,
+    height: NSNumber?,
+    width: NSNumber?
+  ) {
+    self.init(
+      iframeWrapperId: iframeWrapperId,
+      height: height?.doubleValue,
+      width: width?.doubleValue
+    )
   }
 
   private enum CodingKeys: String, CodingKey {
@@ -63,11 +76,11 @@ import Foundation
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(iframeWrapperId, forKey: .iframeWrapperId)
-    if let height = height {
-      try container.encode(height.doubleValue, forKey: .height)
+    if let height {
+      try container.encode(height, forKey: .height)
     }
-    if let width = width {
-      try container.encode(width.doubleValue, forKey: .width)
+    if let width {
+      try container.encode(width, forKey: .width)
     }
   }
 }
@@ -93,8 +106,8 @@ import Foundation
   public let locale: String?
   public let submitButtonConfig: SubmitButtonConfig?
   public let environment: String  // "test" or "live"
-  public let tokenizationSuccessCallback: ((Int, String, [String: Any]?) -> Void)?
-  public let tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)?
+  public let tokenizationSuccessCallback: ((Int, String, [String: Any]) -> Void)?
+  public let tokenizationFailureCallback: ((Int, [String: Any]) -> Void)?
 
   @objc public init(
     iframeConfig: IframeConfig?,
@@ -102,8 +115,8 @@ import Foundation
     locale: String?,
     submitButtonConfig: SubmitButtonConfig?,
     environment: String,
-    tokenizationSuccessCallback: ((Int, String, [String: Any]?) -> Void)? = nil,
-    tokenizationFailureCallback: ((Int, [String: Any]?) -> Void)? = nil
+    tokenizationSuccessCallback: ((Int, String, [String: Any]) -> Void)? = nil,
+    tokenizationFailureCallback: ((Int, [String: Any]) -> Void)? = nil
   ) {
     self.iframeConfig = iframeConfig
     self.uiConfig = uiConfig

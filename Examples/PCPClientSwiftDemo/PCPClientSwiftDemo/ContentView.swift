@@ -117,7 +117,7 @@ struct ContentView: View {
     CreditcardTokenizerView(
       tokenizerUrl: URL(string: "YOUR_URL")!,
       config: CreditcardTokenizerConfig(
-        iframeConfig: IframeConfig(iframeWrapperId: "payment-IFrame", height: 400, width: 400),
+        iframeConfig: IframeConfig(iframeWrapperId: "payment-IFrame", height: Double(400), width: Double(400)),
         uiConfig: UIConfig(
           formBgColor: "#fff",
           fieldBgColor: "#f9f9f9",
@@ -134,11 +134,11 @@ struct ContentView: View {
         tokenizationSuccessCallback: { statusCode, token, cardDetails in
           print("SuccessCallback statusCode:", statusCode)
           print("SuccessCallback token:", token)
-          print("SuccessCallback cardDetails:", cardDetails ?? {})
+          print("SuccessCallback cardDetails:", cardDetails)
         },
         tokenizationFailureCallback: { statusCode, errorResponse in
           print("FailureCallback statusCode:", statusCode)
-          print("FailureCallback errorResponse:", errorResponse ?? [:])
+          print("FailureCallback errorResponse:", errorResponse)
         }
       ),
       jwtToken: "<Token to be retrieved from the CommercePlatform-API>"  // Fetch this from your backend

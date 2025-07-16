@@ -17,10 +17,14 @@ import WebKit
 
   internal var webView: WKWebView?
 
-  /// - Parameters:
-  ///   - tokenizerUrl: The URL where the HTML for the creditcard tokenizer is hosted. The script will be injected and the logic will run in this page.
-  ///   - config: The configuration object containing all options for the tokenizer, including environment, UI, and callbacks.
-  ///   - jwtToken: The JWT token received from your backend, used for authentication and authorization.
+  /**
+   - Parameters:
+     - tokenizerUrl: The URL where the HTML for the creditcard tokenizer is hosted.
+       The script will be injected and the logic will run in this page.
+     - config: The configuration object containing all options for the tokenizer,
+       including environment, UI, and callbacks.
+     - jwtToken: The JWT token received from your backend, used for authentication and authorization.
+   */
   @objc public init(
     tokenizerUrl: URL,
     config: CreditcardTokenizerConfig,
@@ -84,7 +88,10 @@ extension CreditcardTokenizerViewController {
   private func initialize() {
     let script = makeScriptToLoadPayoneHostedScript()
     let userScript = WKUserScript(
-      source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+      source: script,
+      injectionTime: .atDocumentEnd,
+      forMainFrameOnly: true
+    )
     addScriptMessageHandler(key: CCScriptMessageType.scriptError.rawValue)
     addScriptMessageHandler(key: CCScriptMessageType.responseReceived.rawValue)
     webView?.configuration.userContentController.addUserScript(userScript)
@@ -97,16 +104,16 @@ extension CreditcardTokenizerViewController {
       "test": [
         "src":
           "https://sdk.preprod.tokenization.secure.payone.com/1.0.1/hosted-tokenization-sdk.js",
-        "integrity": "sha384-Ec6OPQvn8poHUzTwcUYWC/pwd5wgVuVB+jKl+Eml5MWou154pm6j2MdhhJb9uqML",
+        "integrity": "sha384-Ec6OPQvn8poHUzTwcUYWC/pwd5wgVuVB+jKl+Eml5MWou154pm6j2MdhhJb9uqML"
       ],
       "live": [
         "src": "https://sdk.tokenization.secure.payone.com/1.0.1/hosted-tokenization-sdk.js",
-        "integrity": "sha384-Ec6OPQvn8poHUzTwcUYWC/pwd5wgVuVB+jKl+Eml5MWou154pm6j2MdhhJb9uqML",
-      ],
+        "integrity": "sha384-Ec6OPQvn8poHUzTwcUYWC/pwd5wgVuVB+jKl+Eml5MWou154pm6j2MdhhJb9uqML"
+      ]
     ]
-    let scriptInfo = sdkScriptEnv[env] ?? sdkScriptEnv["test"]!
-    let scriptSrc = scriptInfo["src"]!
-    let scriptIntegrity = scriptInfo["integrity"]!
+    let scriptInfo = sdkScriptEnv[env] ?? sdkScriptEnv["test"] ?? [:]
+    let scriptSrc = scriptInfo["src"] ?? ""
+    let scriptIntegrity = scriptInfo["integrity"] ?? ""
 
     let uiConfigJson =
       (try? JSONEncoder().encode(config.uiConfig)).flatMap { String(data: $0, encoding: .utf8) }
@@ -140,33 +147,48 @@ extension CreditcardTokenizerViewController {
                             submitBtn.onclick = function() {
                               window.HostedTokenizationSdk.submitForm(
                                 function(statusCode, token, cardDetails) {
-                                    window.webkit.messageHandlers.responseReceived.postMessage({statusCode, token, cardDetails});
+                                    window.webkit.messageHandlers.responseReceived.postMessage({
+                                      statusCode,
+                                      token,
+                                      cardDetails
+                                    });
                                 },
                                 function(statusCode, errorResponse) {
-                                    window.webkit.messageHandlers.responseReceived.postMessage({statusCode, errorResponse});
+                                    window.webkit.messageHandlers.responseReceived
+                                      .postMessage({statusCode, errorResponse});
                                 }
                               );
                             };
                           }
                         }).catch(function(error) {
                          console.error(error);
+                         window.webkit.messageHandlers.scriptError.postMessage({
+                           statusCode: 500,
+                           error: 'LoadingScriptFailed'
+                         });
                         });
                       }
           };
           script.onerror = function(e) {
             console.error(e);
+            window.webkit.messageHandlers.scriptError.postMessage({
+              statusCode: 500,
+              error: 'LoadingScriptFailed'
+            });
           };
           document.head.appendChild(script);
       }
       null
       """
   }
-
 }
 
 extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessageHandler {
+  private enum ErrorCode {
+    static let loadingScriptFailed = 500
+  }
   // swiftlint:disable implicitly_unwrapped_optional
-  public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+  public func webView(_: WKWebView, didFinish _: WKNavigation!) {
     initialize()
   }
   // swiftlint:enable implicitly_unwrapped_optional
@@ -176,7 +198,10 @@ extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessa
     switch message.name {
     case CCScriptMessageType.scriptError.rawValue:
       PCPLogger.error("Loading Hosted Tokenization SDK failed.")
-      config.tokenizationFailureCallback?(500, ["error": "LoadingScriptFailed"])
+      config.tokenizationFailureCallback?(
+        ErrorCode.loadingScriptFailed,
+        ["error": "LoadingScriptFailed"]
+      )
     case CCScriptMessageType.responseReceived.rawValue:
       if let dict = message.body as? [String: Any] {
         if let statusCode = dict["statusCode"] as? Int, let token = dict["token"] as? String,
@@ -188,10 +213,16 @@ extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessa
         {
           config.tokenizationFailureCallback?(statusCode, errorResponse)
         } else {
-          config.tokenizationFailureCallback?(500, ["error": "InvalidResponse"])
+          config.tokenizationFailureCallback?(
+            ErrorCode.loadingScriptFailed,
+            ["error": "InvalidResponse"]
+          )
         }
       } else {
-        config.tokenizationFailureCallback?(500, ["error": "InvalidResponse"])
+        config.tokenizationFailureCallback?(
+          ErrorCode.loadingScriptFailed,
+          ["error": "InvalidResponse"]
+        )
       }
     default:
       PCPLogger.warning("Unknown message send from WebView \(message.name).")
