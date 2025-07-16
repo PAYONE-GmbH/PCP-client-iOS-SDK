@@ -65,7 +65,7 @@ To integrate using Apple's Swift package manager, you have two options.
 Add the following as a dependency to your `Package.swift`:
 
 ```swift
-.package(url: "https://https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.0.1"))
+.package(url: "https://https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.1.0"))
 ```
 
 and then specify `"PCPClient"` as a dependency of the Target in which you wish to use PCPClient.
@@ -83,7 +83,7 @@ let package = Package(
             targets: ["MyPackage"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.0.1"))
+        .package(url: "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.1.0"))
     ],
     targets: [
         .target(
@@ -640,6 +640,11 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 - Checkout develop branch.
 - Do the required changes.
+- Use the version script to update to new version, e.g:
+  ```sh
+  # from the root folder
+  sh version.sh 1.2.3
+  ```
 - Create a pull-request into main branch.
 - After merging the develop branch create a Git tag with the version.
 
