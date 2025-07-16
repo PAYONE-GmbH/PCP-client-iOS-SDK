@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,8 +11,11 @@
 		95EB6E482C7FB785005243D3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EB6E472C7FB785005243D3 /* ContentView.swift */; };
 		95EB6E4A2C7FB786005243D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95EB6E492C7FB786005243D3 /* Assets.xcassets */; };
 		95EB6E4D2C7FB786005243D3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95EB6E4C2C7FB786005243D3 /* Preview Assets.xcassets */; };
-		95EB6E552C7FB7E8005243D3 /* PCPClient in Frameworks */ = {isa = PBXBuildFile; productRef = 95EB6E542C7FB7E8005243D3 /* PCPClient */; };
 		95EB6E572C7FFE28005243D3 /* ApplePayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EB6E562C7FFE28005243D3 /* ApplePayButton.swift */; };
+		D60421C82E24F9860008424F /* PCPClient in Frameworks */ = {isa = PBXBuildFile; productRef = D60421C72E24F9860008424F /* PCPClient */; };
+		D60421CA2E24F9860008424F /* PCPClientBridge in Frameworks */ = {isa = PBXBuildFile; productRef = D60421C92E24F9860008424F /* PCPClientBridge */; };
+		D60421CC2E24FA7E0008424F /* PCPClient in Frameworks */ = {isa = PBXBuildFile; productRef = D60421CB2E24FA7E0008424F /* PCPClient */; };
+		D60421CE2E24FA7E0008424F /* PCPClientBridge in Frameworks */ = {isa = PBXBuildFile; productRef = D60421CD2E24FA7E0008424F /* PCPClientBridge */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,7 +32,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				95EB6E552C7FB7E8005243D3 /* PCPClient in Frameworks */,
+				D60421CA2E24F9860008424F /* PCPClientBridge in Frameworks */,
+				D60421CC2E24FA7E0008424F /* PCPClient in Frameworks */,
+				D60421CE2E24FA7E0008424F /* PCPClientBridge in Frameworks */,
+				D60421C82E24F9860008424F /* PCPClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,7 +95,10 @@
 			);
 			name = PCPClientSwiftDemo;
 			packageProductDependencies = (
-				95EB6E542C7FB7E8005243D3 /* PCPClient */,
+				D60421C72E24F9860008424F /* PCPClient */,
+				D60421C92E24F9860008424F /* PCPClientBridge */,
+				D60421CB2E24FA7E0008424F /* PCPClient */,
+				D60421CD2E24FA7E0008424F /* PCPClientBridge */,
 			);
 			productName = PCPClientSwiftDemo;
 			productReference = 95EB6E422C7FB785005243D3 /* PCPClientSwiftDemo.app */;
@@ -120,7 +129,7 @@
 			);
 			mainGroup = 95EB6E392C7FB785005243D3;
 			packageReferences = (
-				95EB6E532C7FB7E8005243D3 /* XCRemoteSwiftPackageReference "PCP-client-iOS-SDK" */,
+				D6CFD5C12E24F76300A993E7 /* XCLocalSwiftPackageReference "../../../PCP-client-iOS-SDK" */,
 			);
 			productRefGroup = 95EB6E432C7FB785005243D3 /* Products */;
 			projectDirPath = "";
@@ -355,22 +364,29 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		95EB6E532C7FB7E8005243D3 /* XCRemoteSwiftPackageReference "PCP-client-iOS-SDK" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		D6CFD5C12E24F76300A993E7 /* XCLocalSwiftPackageReference "../../../PCP-client-iOS-SDK" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../PCP-client-iOS-SDK";
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		95EB6E542C7FB7E8005243D3 /* PCPClient */ = {
+		D60421C72E24F9860008424F /* PCPClient */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 95EB6E532C7FB7E8005243D3 /* XCRemoteSwiftPackageReference "PCP-client-iOS-SDK" */;
 			productName = PCPClient;
+		};
+		D60421C92E24F9860008424F /* PCPClientBridge */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PCPClientBridge;
+		};
+		D60421CB2E24FA7E0008424F /* PCPClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PCPClient;
+		};
+		D60421CD2E24FA7E0008424F /* PCPClientBridge */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PCPClientBridge;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

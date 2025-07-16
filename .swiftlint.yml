@@ -1,10 +1,6 @@
 # Directory and file filters
 included:
   - Sources
-  - Tests
-
-excluded:
-  - Tests/PCPClientTests/Helpers/ApplePayHandlerMocks.swift
 
 # Enabled/disabled rules
 analyzer_rules:
@@ -30,6 +26,9 @@ disabled_rules:
   - no_grouping_extension
   - explicit_enum_raw_value
   - inclusive_language
+  - indentation_width
+  - type_contents_order
+  - legacy_objc_type
 
 file_header:
   required_pattern: |

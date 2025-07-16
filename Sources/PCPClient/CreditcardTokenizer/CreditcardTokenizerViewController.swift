@@ -11,285 +11,226 @@ import WebKit
 
 /// The `UIViewController` to set up the creditcard tokenizer.
 @objc public class CreditcardTokenizerViewController: UIViewController {
-    private let tokenizerUrl: URL
-    private let supportedCardTypes: [String]
-    private let config: CreditcardTokenizerConfig
-    private let request: CCTokenizerRequest
+  private let tokenizerUrl: URL
+  private let config: CreditcardTokenizerConfig
+  private let jwtToken: String
 
-    internal var webView: WKWebView?
+  internal var webView: WKWebView?
 
-    /// - Parameters:
-    ///   - tokenizerUrl: The URL where the HTML for the creditcard tokenizer is hosted.
-    ///   In this page the script will be injected and the logic will run.
-    ///   - request: The request object with different IDs and keys.
-    ///   - supportedCardTypes: The supported card types to pay. Use the `SupportedCardType` identifier property.
-    ///   - config: The config object with information regarding the HTML and styling.
-    ///   Also includes the callback that you can use on to get the result.
-    @objc public init(
-        tokenizerUrl: URL,
-        request: CCTokenizerRequest,
-        supportedCardTypes: [String],
-        config: CreditcardTokenizerConfig
-    ) {
-        self.tokenizerUrl = tokenizerUrl
-        self.supportedCardTypes = supportedCardTypes
-        self.request = request
-        self.config = config
-        super.init(nibName: nil, bundle: nil)
-    }
+  /**
+   - Parameters:
+     - tokenizerUrl: The URL where the HTML for the creditcard tokenizer is hosted.
+       The script will be injected and the logic will run in this page.
+     - config: The configuration object containing all options for the tokenizer,
+       including environment, UI, and callbacks.
+     - jwtToken: The JWT token received from your backend, used for authentication and authorization.
+   */
+  @objc public init(
+    tokenizerUrl: URL,
+    config: CreditcardTokenizerConfig,
+    jwtToken: String
+  ) {
+    self.tokenizerUrl = tokenizerUrl
+    self.config = config
+    self.jwtToken = jwtToken
+    super.init(nibName: nil, bundle: nil)
+  }
 
-    internal convenience init(
-        webView: WKWebView,
-        tokenizerUrl: URL,
-        request: CCTokenizerRequest,
-        supportedCardTypes: [String],
-        config: CreditcardTokenizerConfig
-    ) {
-        self.init(
-            tokenizerUrl: tokenizerUrl,
-            request: request,
-            supportedCardTypes: supportedCardTypes,
-            config: config
-        )
-        self.webView = webView
-    }
+  internal convenience init(
+    webView: WKWebView,
+    tokenizerUrl: URL,
+    config: CreditcardTokenizerConfig,
+    jwtToken: String
+  ) {
+    self.init(
+      tokenizerUrl: tokenizerUrl,
+      config: config,
+      jwtToken: jwtToken
+    )
+    self.webView = webView
+  }
 
-    @available(*, unavailable)
-    public required init?(coder _: NSCoder) {
-        fatalError("\(#function ) has not been implemented")
-    }
+  @available(*, unavailable)
+  public required init?(coder _: NSCoder) {
+    fatalError("\(#function ) has not been implemented")
+  }
 
-    override public func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+  override public func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
 
-        setupWebView()
-    }
+    setupWebView()
+  }
 }
 
 extension CreditcardTokenizerViewController {
-    private func setupWebView() {
-        let webView = self.webView ?? WKWebView(frame: CGRect.zero)
-        webView.navigationDelegate = self
-        self.webView = webView
-        view.addSubview(webView)
+  private func setupWebView() {
+    let webView = self.webView ?? WKWebView(frame: CGRect.zero)
+    webView.navigationDelegate = self
+    self.webView = webView
+    view.addSubview(webView)
 
-        webView.translatesAutoresizingMaskIntoConstraints = false
-        webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+    webView.translatesAutoresizingMaskIntoConstraints = false
+    webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+    webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+    webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+    webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
-        let request = URLRequest(url: tokenizerUrl)
-        webView.load(request)
+    if #available(iOS 16.4, *) {
+      webView.isInspectable = true
+    } else {
+      // Fallback on earlier versions
     }
 
-    private func initialize() {
-        checkRequiredElements(onCheckResult: { [weak self] isSetUpCorrectly in
-            guard let self else {
-                PCPLogger.fault("Self already released before completion block was executed.")
-                return
-            }
+    let request = URLRequest(url: tokenizerUrl)
+    webView.load(request)
+  }
 
-            guard isSetUpCorrectly else {
-                PCPLogger.error("Not all required elements are available.")
-                return
-            }
+  private func initialize() {
+    let script = makeScriptToLoadPayoneHostedScript()
+    let userScript = WKUserScript(
+      source: script,
+      injectionTime: .atDocumentEnd,
+      forMainFrameOnly: true
+    )
+    addScriptMessageHandler(key: CCScriptMessageType.scriptError.rawValue)
+    addScriptMessageHandler(key: CCScriptMessageType.responseReceived.rawValue)
+    webView?.configuration.userContentController.addUserScript(userScript)
+    webView?.evaluateJavaScript(script)
+  }
 
-            let script = makeScriptToLoadPayoneHostedScript()
-            let userScript = WKUserScript(source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
-            addScriptMessageHandler(key: CCScriptMessageType.scriptLoaded.rawValue)
-            addScriptMessageHandler(key: CCScriptMessageType.scriptError.rawValue)
-            webView?.configuration.userContentController.addUserScript(userScript)
-            webView?.evaluateJavaScript(script)
-        })
-    }
+  private func makeScriptToLoadPayoneHostedScript() -> String {
+    let env = config.environment ?? "test"
+    let sdkScriptEnv: [String: [String: String]] = [
+      "test": [
+        "src":
+          "https://sdk.preprod.tokenization.secure.payone.com/1.0.1/hosted-tokenization-sdk.js",
+        "integrity": "sha384-Ec6OPQvn8poHUzTwcUYWC/pwd5wgVuVB+jKl+Eml5MWou154pm6j2MdhhJb9uqML"
+      ],
+      "live": [
+        "src": "https://sdk.tokenization.secure.payone.com/1.0.1/hosted-tokenization-sdk.js",
+        "integrity": "sha384-Ec6OPQvn8poHUzTwcUYWC/pwd5wgVuVB+jKl+Eml5MWou154pm6j2MdhhJb9uqML"
+      ]
+    ]
+    let scriptInfo = sdkScriptEnv[env] ?? sdkScriptEnv["test"] ?? [:]
+    let scriptSrc = scriptInfo["src"] ?? ""
+    let scriptIntegrity = scriptInfo["integrity"] ?? ""
 
-    private func generateKeyValuePairs(from field: Field) -> String {
-        var result = "selector: \"\(field.selector)\", type: \"\(field.type)\""
+    let uiConfigJson =
+      (try? JSONEncoder().encode(config.uiConfig)).flatMap { String(data: $0, encoding: .utf8) }
+      ?? "{}"
+    let iframeConfigJson =
+      (try? JSONEncoder().encode(config.iframeConfig)).flatMap { String(data: $0, encoding: .utf8) }
+      ?? "{}"
+    let locale = config.locale ?? "de_DE"
+    let submitButtonSelector = config.submitButtonConfig?.selector ?? "#submit"
 
-        if let style = field.style {
-            result += ", style: \"\(style)\""
-        }
-
-        if let size = field.size {
-            result += ", size: \"\(size)\""
-        }
-
-        if let maxlength = field.maxlength {
-            result += ", maxlength: \"\(maxlength)\""
-        }
-
-        if !field.length.isEmpty {
-            let lengthString = field.length.map { "\($0.key): \"\($0.value)\"" }.joined(separator: ", ")
-            result += ", length: { \(lengthString) }"
-        }
-
-        if !field.iframe.isEmpty {
-            let iframeString = field.iframe.map { "\($0.key): \"\($0.value)\"" }.joined(separator: ", ")
-            result += ", iframe: { \(iframeString) }"
-        }
-
-        return "{ \(result) }"
-    }
-
-    private func generateDefaultStyleKeyValuePairs() -> String {
-        config.defaultStyles.map { "\($0.key): \"\($0.value)\"" }.joined(separator: ",\n")
-    }
-
-    private func makeScriptToLoadPayoneHostedScript() -> String {
-        """
-        if (!document.getElementById('payone-hosted-script')) {
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = 'https://secure.prelive.pay1-test.de/client-api/js/v1/payone_hosted_min.js';
-            script.id = 'payone-hosted-script';
-            script.onload = function() {
-                \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: "Script loaded."))
-            }
-            script.onerror = function() {
-                \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: "Failed to load Payone script."))
-            }
-            document.head.appendChild(script);
-        }
-        null
-        """
-    }
-
-    private func makeScriptToPopulateHTML() -> String {
-        """
-        var supportedCardtypes = \(supportedCardTypes.map { "\($0)" })
-        var config = {
-            fields: {
-                cardpan: \(generateKeyValuePairs(from: config.cardPan)),
-                cardcvc2: \(generateKeyValuePairs(from: config.cardCvc2)),
-                cardexpiremonth: \(generateKeyValuePairs(from: config.cardExpireMonth)),
-                cardexpireyear: \(generateKeyValuePairs(from: config.cardExpireYear))
-            },
-            defaultStyle: {
-                \(generateDefaultStyleKeyValuePairs())
-            },
-            autoCardtypeDetection: {
-                supportedCardtypes: supportedCardtypes,
-                callback: function(detectedCardtype) {
-                    // For the output container below.
-                    document.getElementById('autodetectionResponsePre').innerHTML = detectedCardtype;
-
-                    if (detectedCardtype === 'V') {
-                        document.getElementById('visa').style.borderColor = '#00F';
-                        document.getElementById('mastercard').style.borderColor = '#FFF';
-                    } else if (detectedCardtype === 'M') {
-                        document.getElementById('visa').style.borderColor = '#FFF';
-                        document.getElementById('mastercard').style.borderColor = '#00F';
-                    } else {
-                        document.getElementById('visa').style.borderColor = '#FFF';
-                        document.getElementById('mastercard').style.borderColor = '#FFF';
-                    }
-                } //,
-                // deactivate: true // To turn off automatic card type detection.
-            },
-            language: \(config.language.configValue),
-            error: "\(config.error)"
-        };
-        var request = {
-            request: 'creditcardcheck',
-            responsetype: 'JSON',
-            mode: '\(request.environment.ccTokenizerIdentifier)',
-            mid: '\(request.mid)',
-            aid: '\(request.aid)',
-            portalid: '\(request.portalId)',
-            encoding: 'UTF-8',
-            storecarddata: 'yes',
-            hash: '\(request.generatedHash)'
-        };
-        document.getElementById('\(config.submitButtonId)').onclick = function() {
-            \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: ""))
-        };
-
-        var iframes = new window.Payone.ClientApi.HostedIFrames(config, request);
-        window.payoneIFrames = iframes;
-        ;null
-        """
-    }
-
-    private func makeScriptToInitiateAndHandleCheck() -> String {
-        """
-        var iframes = window.payoneIFrames;
-
-        function payCallback(response) {
-            \(CCScriptMessageType.responseReceived.makeWebkitMessageString(body: "response"))
-        }
-
-        iframes.creditCardCheck('payCallback');
-        """
-    }
-
-    private func checkRequiredElements(onCheckResult: @escaping (Bool) -> Void) {
-        var hasSubmitButton: Bool = true
-
-        checkIfElementExists(elementId: config.submitButtonId) { isSubmitButtonAvailable in
-            hasSubmitButton = isSubmitButtonAvailable
-            onCheckResult(hasSubmitButton)
-        }
-    }
-
-    private func checkIfElementExists(elementId: String, onCheckResult: @escaping (Bool) -> Void) {
-        let script = "document.querySelector('#\(elementId)') !== null"
-        guard let webView else {
-            onCheckResult(false)
-            return
-        }
-        webView.evaluateJavaScript(script) { result, _ in
-            if let exists = result as? Bool {
-                onCheckResult(exists)
-            } else {
-                onCheckResult(false)
-            }
-        }
-    }
+    return """
+      if (!document.getElementById('hosted-tokenization-sdk')) {
+          var script = document.createElement('script');
+          script.type = 'text/javascript';
+          script.src = '\(scriptSrc)';
+          script.id = 'hosted-tokenization-sdk';
+          script.setAttribute('integrity', '\(scriptIntegrity)');
+          script.setAttribute('crossorigin', 'anonymous');
+          script.onload = function() {
+                var sdkConfig = {
+                        iframe: \(iframeConfigJson),
+                        uiConfig: \(uiConfigJson),
+                        locale: '\(locale)',
+                        token: '\(jwtToken)'
+                      };
+                      if (window.HostedTokenizationSdk) {
+                        window.HostedTokenizationSdk.init().then(function() {
+                          window.HostedTokenizationSdk.getPaymentPage(sdkConfig);
+                          var submitBtn = document.querySelector('\(submitButtonSelector)');
+                          if (submitBtn) {
+                            submitBtn.onclick = function() {
+                              window.HostedTokenizationSdk.submitForm(
+                                function(statusCode, token, cardDetails) {
+                                    window.webkit.messageHandlers.responseReceived.postMessage({
+                                      statusCode,
+                                      token,
+                                      cardDetails
+                                    });
+                                },
+                                function(statusCode, errorResponse) {
+                                    window.webkit.messageHandlers.responseReceived
+                                      .postMessage({statusCode, errorResponse});
+                                }
+                              );
+                            };
+                          }
+                        }).catch(function(error) {
+                         console.error(error);
+                         window.webkit.messageHandlers.scriptError.postMessage({
+                           statusCode: 500,
+                           error: 'LoadingScriptFailed'
+                         });
+                        });
+                      }
+          };
+          script.onerror = function(e) {
+            console.error(e);
+            window.webkit.messageHandlers.scriptError.postMessage({
+              statusCode: 500,
+              error: 'LoadingScriptFailed'
+            });
+          };
+          document.head.appendChild(script);
+      }
+      null
+      """
+  }
 }
 
 extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessageHandler {
-    // swiftlint:disable implicitly_unwrapped_optional
-    public func webView(_: WKWebView, didFinish _: WKNavigation!) {
-        initialize()
-    }
-    // swiftlint:enable implicitly_unwrapped_optional
+  private enum ErrorCode {
+    static let loadingScriptFailed = 500
+  }
+  // swiftlint:disable implicitly_unwrapped_optional
+  public func webView(_: WKWebView, didFinish _: WKNavigation!) {
+    initialize()
+  }
+  // swiftlint:enable implicitly_unwrapped_optional
 
-    public func userContentController(_: WKUserContentController, didReceive message: WKScriptMessage) {
-        switch message.name {
-        case CCScriptMessageType.scriptLoaded.rawValue:
-            webView?.evaluateJavaScript(
-                self.makeScriptToPopulateHTML(),
-                completionHandler: { [weak self] _, error in
-                    if let error {
-                        PCPLogger.error("Populating HTML with inputs failed with \(error.localizedDescription).")
-                        self?.config.creditCardCheckCallback(.failure(.populatingHTMLFailed))
-                    }
-                }
-            )
-            addScriptMessageHandler(key: CCScriptMessageType.submitButtonClicked.rawValue)
-        case CCScriptMessageType.scriptError.rawValue:
-            PCPLogger.error("Loading Payone Script failed.")
-            config.creditCardCheckCallback(.failure(.loadingScriptFailed))
-        case CCScriptMessageType.submitButtonClicked.rawValue:
-            webView?.evaluateJavaScript(makeScriptToInitiateAndHandleCheck())
-            addScriptMessageHandler(key: CCScriptMessageType.responseReceived.rawValue)
-        case CCScriptMessageType.responseReceived.rawValue:
-            guard let dictionary = message.body as? [String: String?],
-                let data = try? JSONEncoder().encode(dictionary),
-                let response = try? JSONDecoder().decode(CCTokenizerResponse.self, from: data) else {
-                PCPLogger.error("Invalid response received.")
-                config.creditCardCheckCallback(.failure(.invalidResponse))
-                return
-            }
-            config.creditCardCheckCallback(.success(response))
-        default:
-            PCPLogger.warning("Unknown message send from WebView \(message.name).")
+  public func userContentController(_: WKUserContentController, didReceive message: WKScriptMessage)
+  {
+    switch message.name {
+    case CCScriptMessageType.scriptError.rawValue:
+      PCPLogger.error("Loading Hosted Tokenization SDK failed.")
+      config.tokenizationFailureCallback?(
+        ErrorCode.loadingScriptFailed,
+        ["error": "LoadingScriptFailed"]
+      )
+    case CCScriptMessageType.responseReceived.rawValue:
+      if let dict = message.body as? [String: Any] {
+        if let statusCode = dict["statusCode"] as? Int, let token = dict["token"] as? String,
+          let cardDetails = dict["cardDetails"] as? [String: Any]
+        {
+          config.tokenizationSuccessCallback?(statusCode, token, cardDetails)
+        } else if let statusCode = dict["statusCode"] as? Int,
+          let errorResponse = dict["errorResponse"] as? [String: Any]
+        {
+          config.tokenizationFailureCallback?(statusCode, errorResponse)
+        } else {
+          config.tokenizationFailureCallback?(
+            ErrorCode.loadingScriptFailed,
+            ["error": "InvalidResponse"]
+          )
         }
+      } else {
+        config.tokenizationFailureCallback?(
+          ErrorCode.loadingScriptFailed,
+          ["error": "InvalidResponse"]
+        )
+      }
+    default:
+      PCPLogger.warning("Unknown message send from WebView \(message.name).")
     }
+  }
 
-    private func addScriptMessageHandler(key: String) {
-        webView?.configuration.userContentController.removeScriptMessageHandler(forName: key)
-        webView?.configuration.userContentController.add(self, name: key)
-    }
+  private func addScriptMessageHandler(key: String) {
+    webView?.configuration.userContentController.removeScriptMessageHandler(forName: key)
+    webView?.configuration.userContentController.add(self, name: key)
+  }
 }
