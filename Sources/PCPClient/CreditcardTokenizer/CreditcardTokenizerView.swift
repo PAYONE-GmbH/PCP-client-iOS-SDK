@@ -11,33 +11,29 @@ import UIKit
 
 /// `UIViewControllerRepresentable` to use the `CreditcardTokenizerViewController` with SwiftUI.
 public struct CreditcardTokenizerView: UIViewControllerRepresentable {
-    internal let tokenizerUrl: URL
-    internal let request: CCTokenizerRequest
-    internal let supportedCardTypes: [String]
-    internal let config: CreditcardTokenizerConfig
+  internal let tokenizerUrl: URL
+  internal let config: CreditcardTokenizerConfig
+  internal let jwtToken: String
 
-    public init(
-        tokenizerUrl: URL,
-        request: CCTokenizerRequest,
-        supportedCardTypes: [String],
-        config: CreditcardTokenizerConfig
-    ) {
-        self.tokenizerUrl = tokenizerUrl
-        self.request = request
-        self.supportedCardTypes = supportedCardTypes
-        self.config = config
-    }
+  public init(
+    tokenizerUrl: URL,
+    config: CreditcardTokenizerConfig,
+    jwtToken: String
+  ) {
+    self.tokenizerUrl = tokenizerUrl
+    self.config = config
+    self.jwtToken = jwtToken
+  }
 
-    public func makeUIViewController(context _: Context) -> CreditcardTokenizerViewController {
-        CreditcardTokenizerViewController(
-            tokenizerUrl: tokenizerUrl,
-            request: request,
-            supportedCardTypes: supportedCardTypes,
-            config: config
-        )
-    }
+  public func makeUIViewController(context _: Context) -> CreditcardTokenizerViewController {
+    CreditcardTokenizerViewController(
+      tokenizerUrl: tokenizerUrl,
+      config: config,
+      jwtToken: jwtToken
+    )
+  }
 
-    public func updateUIViewController(_: CreditcardTokenizerViewController, context _: Context) {
-        // Update the view controller if needed
-    }
+  public func updateUIViewController(_: CreditcardTokenizerViewController, context _: Context) {
+    // Update the view controller if needed
+  }
 }

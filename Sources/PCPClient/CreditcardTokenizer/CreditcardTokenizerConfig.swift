@@ -9,92 +9,122 @@
 import Foundation
 
 // swiftlint:disable one_declaration_per_file
-/// A customizable field configuration for the required fields that will be injected into the website of the
-/// creditcard tokenizer.
-@objc public class Field: NSObject {
-    internal let selector: String
-    internal let style: String?
-    internal let type: String
-    internal let size: String?
-    internal let maxlength: String?
-    internal let length: [String: Int]
-    internal let iframe: [String: String]
-    
-    /// Initializer for the `Field` of the creditcard tokenizer.
-    /// - Parameters:
-    ///   - selector: The selector (HTML ID) in your provided HTML where the input field should be injected.
-    ///   - style: Customized style options (CSS).
-    ///   - type: The HTML type of the element. Recommended `input`.
-    ///   - size: -
-    ///   - maxlength: The maximum length of characters allowed.
-    ///   - length: The different lengths for card types. For example for a CVC with different lengths.
-    ///   - iframe: Different styling options to send to the iframe. Key-value like "width": "40px".
-    @objc public init(
-        selector: String,
-        style: String?,
-        type: String,
-        size: String?,
-        maxlength: String?,
-        length: [String: Int],
-        iframe: [String: String]
-    ) {
-        self.selector = selector
-        self.style = style
-        self.type = type
-        self.size = size
-        self.maxlength = maxlength
-        self.length = length
-        self.iframe = iframe
-    }
+
+@objc public class UIConfig: NSObject, Encodable {
+  public let formBgColor: String?
+  public let fieldBgColor: String?
+  public let fieldBorder: String?
+  public let fieldOutline: String?
+  public let fieldLabelColor: String?
+  public let fieldPlaceholderColor: String?
+  public let fieldTextColor: String?
+  public let fieldErrorCodeColor: String?
+
+  @objc public init(
+    formBgColor: String? = nil,
+    fieldBgColor: String? = nil,
+    fieldBorder: String? = nil,
+    fieldOutline: String? = nil,
+    fieldLabelColor: String? = nil,
+    fieldPlaceholderColor: String? = nil,
+    fieldTextColor: String? = nil,
+    fieldErrorCodeColor: String? = nil
+  ) {
+    self.formBgColor = formBgColor
+    self.fieldBgColor = fieldBgColor
+    self.fieldBorder = fieldBorder
+    self.fieldOutline = fieldOutline
+    self.fieldLabelColor = fieldLabelColor
+    self.fieldPlaceholderColor = fieldPlaceholderColor
+    self.fieldTextColor = fieldTextColor
+    self.fieldErrorCodeColor = fieldErrorCodeColor
+  }
 }
 
-/// The language of the creditcard tokenizer. Currently English or German available.
-@objc public enum PayoneLanguage: Int {
-    case english
-    case german
+@objc public class IframeConfig: NSObject, Encodable {
+  public let iframeWrapperId: String
+  public let height: Double?
+  public let width: Double?
 
-    internal var configValue: String {
-        switch self {
-        case .english:
-            return "Payone.ClientApi.Language.en"
-        case .german:
-            return "Payone.ClientApi.Language.de"
-        }
+  public init(
+    iframeWrapperId: String,
+    height: Double? = nil,
+    width: Double? = nil
+  ) {
+    self.iframeWrapperId = iframeWrapperId
+    self.height = height
+    self.width = width
+  }
+
+  // Objective-C convenience initializer
+  @objc public convenience init(
+    iframeWrapperId: String,
+    height: NSNumber?,
+    width: NSNumber?
+  ) {
+    self.init(
+      iframeWrapperId: iframeWrapperId,
+      height: height?.doubleValue,
+      width: width?.doubleValue
+    )
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case iframeWrapperId, height, width
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(iframeWrapperId, forKey: .iframeWrapperId)
+    if let height {
+      try container.encode(height, forKey: .height)
     }
+    if let width {
+      try container.encode(width, forKey: .width)
+    }
+  }
+}
+
+@objc public class SubmitButtonConfig: NSObject {
+  public let selector: String?
+  // For iOS, element can be a UIView reference, but for now keep as AnyObject?
+  public let element: AnyObject?
+
+  @objc public init(
+    selector: String? = nil,
+    element: AnyObject? = nil
+  ) {
+    self.selector = selector
+    self.element = element
+  }
 }
 
 /// The configuration object to set up the creditcard tokenizer.
-public class CreditcardTokenizerConfig: NSObject {
-    internal let submitButtonId: String
-    internal let cardPan: Field
-    internal let cardCvc2: Field
-    internal let cardExpireMonth: Field
-    internal let cardExpireYear: Field
-    internal let defaultStyles: [String: String]
-    internal let language: PayoneLanguage
-    internal let error: String
-    internal let creditCardCheckCallback: ((Result<CCTokenizerResponse, CCTokenizerError>) -> Void)
+@objc public class CreditcardTokenizerConfig: NSObject {
+  public let iframeConfig: IframeConfig?
+  public let uiConfig: UIConfig?
+  public let locale: String?
+  public let submitButtonConfig: SubmitButtonConfig?
+  public let environment: String  // "test" or "live"
+  public let tokenizationSuccessCallback: ((Int, String, [String: Any]) -> Void)?
+  public let tokenizationFailureCallback: ((Int, [String: Any]) -> Void)?
 
-    public init(
-        cardPan: Field,
-        cardCvc2: Field,
-        cardExpireMonth: Field,
-        cardExpireYear: Field,
-        defaultStyles: [String: String],
-        language: PayoneLanguage,
-        error: String,
-        submitButtonId: String,
-        creditCardCheckCallback: @escaping ((Result<CCTokenizerResponse, CCTokenizerError>) -> Void)
-    ) {
-        self.cardPan = cardPan
-        self.cardCvc2 = cardCvc2
-        self.cardExpireMonth = cardExpireMonth
-        self.cardExpireYear = cardExpireYear
-        self.defaultStyles = defaultStyles
-        self.language = language
-        self.error = error
-        self.submitButtonId = submitButtonId
-        self.creditCardCheckCallback = creditCardCheckCallback
-    }
+  @objc public init(
+    iframeConfig: IframeConfig?,
+    uiConfig: UIConfig?,
+    locale: String?,
+    submitButtonConfig: SubmitButtonConfig?,
+    environment: String,
+    tokenizationSuccessCallback: ((Int, String, [String: Any]) -> Void)? = nil,
+    tokenizationFailureCallback: ((Int, [String: Any]) -> Void)? = nil
+  ) {
+    self.iframeConfig = iframeConfig
+    self.uiConfig = uiConfig
+    self.locale = locale
+    self.submitButtonConfig = submitButtonConfig
+    self.environment = environment
+    self.tokenizationSuccessCallback = tokenizationSuccessCallback
+    self.tokenizationFailureCallback = tokenizationFailureCallback
+  }
 }
 // swiftlint:enable one_declaration_per_file
