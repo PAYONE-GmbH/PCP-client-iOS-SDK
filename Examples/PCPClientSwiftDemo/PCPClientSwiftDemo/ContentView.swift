@@ -40,6 +40,12 @@ struct ContentView: View {
         Text("Fingerprint Token:")
         Text(fingerprintToken)
         NavigationLink(destination: creditcardTokenizer) { Text("Go to Creditcard Tokenizer") }
+
+        NavigationLink(destination: PayPalCardView()) {
+          Text("PayPal Card Payment")
+            .padding(.vertical, 8)
+        }
+
         Spacer()
 
         if shouldShowApplePay {
@@ -117,7 +123,8 @@ struct ContentView: View {
     CreditcardTokenizerView(
       tokenizerUrl: URL(string: "YOUR_URL")!,
       config: CreditcardTokenizerConfig(
-        iframeConfig: IframeConfig(iframeWrapperId: "payment-IFrame", height: Double(400), width: Double(400)),
+        iframeConfig: IframeConfig(
+          iframeWrapperId: "payment-IFrame", height: Double(400), width: Double(400)),
         uiConfig: UIConfig(
           formBgColor: "#fff",
           fieldBgColor: "#f9f9f9",
