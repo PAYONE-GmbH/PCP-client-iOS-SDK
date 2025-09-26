@@ -16,13 +16,6 @@
 		D60421CA2E24F9860008424F /* PCPClientBridge in Frameworks */ = {isa = PBXBuildFile; productRef = D60421C92E24F9860008424F /* PCPClientBridge */; };
 		D60421CC2E24FA7E0008424F /* PCPClient in Frameworks */ = {isa = PBXBuildFile; productRef = D60421CB2E24FA7E0008424F /* PCPClient */; };
 		D60421CE2E24FA7E0008424F /* PCPClientBridge in Frameworks */ = {isa = PBXBuildFile; productRef = D60421CD2E24FA7E0008424F /* PCPClientBridge */; };
-		D63D9CF02E856C24004A8F35 /* CorePayments in Frameworks */ = {isa = PBXBuildFile; productRef = D63D9CEF2E856C24004A8F35 /* CorePayments */; };
-		D63D9CF22E856C24004A8F35 /* FraudProtection in Frameworks */ = {isa = PBXBuildFile; productRef = D63D9CF12E856C24004A8F35 /* FraudProtection */; };
-		D63D9CF42E856C24004A8F35 /* PayPalWebPayments in Frameworks */ = {isa = PBXBuildFile; productRef = D63D9CF32E856C24004A8F35 /* PayPalWebPayments */; };
-		D63D9CF62E856C24004A8F35 /* PaymentButtons in Frameworks */ = {isa = PBXBuildFile; productRef = D63D9CF52E856C24004A8F35 /* PaymentButtons */; };
-		D63D9CFB2E856D45004A8F35 /* PayPal-README.md in Resources */ = {isa = PBXBuildFile; fileRef = D63D9CF72E856D45004A8F35 /* PayPal-README.md */; };
-		D63D9CFC2E856D45004A8F35 /* PayPalWebPaymentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D63D9CFA2E856D45004A8F35 /* PayPalWebPaymentsView.swift */; };
-		D63D9D082E857B64004A8F35 /* PayPalViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D63D9D072E857B64004A8F35 /* PayPalViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,9 +25,6 @@
 		95EB6E492C7FB786005243D3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95EB6E4C2C7FB786005243D3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		95EB6E562C7FFE28005243D3 /* ApplePayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplePayButton.swift; sourceTree = "<group>"; };
-		D63D9CF72E856D45004A8F35 /* PayPal-README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "PayPal-README.md"; sourceTree = "<group>"; };
-		D63D9CFA2E856D45004A8F35 /* PayPalWebPaymentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayPalWebPaymentsView.swift; sourceTree = "<group>"; };
-		D63D9D072E857B64004A8F35 /* PayPalViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayPalViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -42,11 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D63D9CF02E856C24004A8F35 /* CorePayments in Frameworks */,
 				D60421CA2E24F9860008424F /* PCPClientBridge in Frameworks */,
-				D63D9CF42E856C24004A8F35 /* PayPalWebPayments in Frameworks */,
-				D63D9CF62E856C24004A8F35 /* PaymentButtons in Frameworks */,
-				D63D9CF22E856C24004A8F35 /* FraudProtection in Frameworks */,
 				D60421CC2E24FA7E0008424F /* PCPClient in Frameworks */,
 				D60421CE2E24FA7E0008424F /* PCPClientBridge in Frameworks */,
 				D60421C82E24F9860008424F /* PCPClient in Frameworks */,
@@ -75,9 +61,6 @@
 		95EB6E442C7FB785005243D3 /* PCPClientSwiftDemo */ = {
 			isa = PBXGroup;
 			children = (
-				D63D9D072E857B64004A8F35 /* PayPalViewModel.swift */,
-				D63D9CF72E856D45004A8F35 /* PayPal-README.md */,
-				D63D9CFA2E856D45004A8F35 /* PayPalWebPaymentsView.swift */,
 				95EB6E452C7FB785005243D3 /* PCPClientSwiftDemoApp.swift */,
 				95EB6E472C7FB785005243D3 /* ContentView.swift */,
 				95EB6E492C7FB786005243D3 /* Assets.xcassets */,
@@ -116,10 +99,6 @@
 				D60421C92E24F9860008424F /* PCPClientBridge */,
 				D60421CB2E24FA7E0008424F /* PCPClient */,
 				D60421CD2E24FA7E0008424F /* PCPClientBridge */,
-				D63D9CEF2E856C24004A8F35 /* CorePayments */,
-				D63D9CF12E856C24004A8F35 /* FraudProtection */,
-				D63D9CF32E856C24004A8F35 /* PayPalWebPayments */,
-				D63D9CF52E856C24004A8F35 /* PaymentButtons */,
 			);
 			productName = PCPClientSwiftDemo;
 			productReference = 95EB6E422C7FB785005243D3 /* PCPClientSwiftDemo.app */;
@@ -151,7 +130,6 @@
 			mainGroup = 95EB6E392C7FB785005243D3;
 			packageReferences = (
 				D6CFD5C12E24F76300A993E7 /* XCLocalSwiftPackageReference "../../../PCP-client-iOS-SDK" */,
-				D63D9CEE2E856C24004A8F35 /* XCRemoteSwiftPackageReference "paypal-ios" */,
 			);
 			productRefGroup = 95EB6E432C7FB785005243D3 /* Products */;
 			projectDirPath = "";
@@ -169,7 +147,6 @@
 			files = (
 				95EB6E4D2C7FB786005243D3 /* Preview Assets.xcassets in Resources */,
 				95EB6E4A2C7FB786005243D3 /* Assets.xcassets in Resources */,
-				D63D9CFB2E856D45004A8F35 /* PayPal-README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,8 +159,6 @@
 			files = (
 				95EB6E572C7FFE28005243D3 /* ApplePayButton.swift in Sources */,
 				95EB6E482C7FB785005243D3 /* ContentView.swift in Sources */,
-				D63D9CFC2E856D45004A8F35 /* PayPalWebPaymentsView.swift in Sources */,
-				D63D9D082E857B64004A8F35 /* PayPalViewModel.swift in Sources */,
 				95EB6E462C7FB785005243D3 /* PCPClientSwiftDemoApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -396,17 +371,6 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		D63D9CEE2E856C24004A8F35 /* XCRemoteSwiftPackageReference "paypal-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/paypal/paypal-ios/";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
 		D60421C72E24F9860008424F /* PCPClient */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -423,26 +387,6 @@
 		D60421CD2E24FA7E0008424F /* PCPClientBridge */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PCPClientBridge;
-		};
-		D63D9CEF2E856C24004A8F35 /* CorePayments */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D63D9CEE2E856C24004A8F35 /* XCRemoteSwiftPackageReference "paypal-ios" */;
-			productName = CorePayments;
-		};
-		D63D9CF12E856C24004A8F35 /* FraudProtection */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D63D9CEE2E856C24004A8F35 /* XCRemoteSwiftPackageReference "paypal-ios" */;
-			productName = FraudProtection;
-		};
-		D63D9CF32E856C24004A8F35 /* PayPalWebPayments */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D63D9CEE2E856C24004A8F35 /* XCRemoteSwiftPackageReference "paypal-ios" */;
-			productName = PayPalWebPayments;
-		};
-		D63D9CF52E856C24004A8F35 /* PaymentButtons */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D63D9CEE2E856C24004A8F35 /* XCRemoteSwiftPackageReference "paypal-ios" */;
-			productName = PaymentButtons;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
