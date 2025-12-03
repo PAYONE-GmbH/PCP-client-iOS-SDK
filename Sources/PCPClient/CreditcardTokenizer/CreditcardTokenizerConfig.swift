@@ -414,43 +414,6 @@ import Foundation
   }
 }
 
-// MARK: - CustomTextConfig
-@objc public class CustomTextConfig: NSObject, Encodable {
-  public let en: LocaleTextConfig?
-  public let de: LocaleTextConfig?
-  public let locales: [String: LocaleTextConfig]?
-
-  @objc public init(
-    en: LocaleTextConfig? = nil,
-    de: LocaleTextConfig? = nil,
-    locales: [String: LocaleTextConfig]? = nil
-  ) {
-    self.en = en
-    self.de = de
-    self.locales = locales
-  }
-
-  private enum CodingKeys: String, CodingKey {
-    case en, de
-  }
-
-  public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    if let en {
-      try container.encode(en, forKey: .en)
-    }
-    if let de {
-      try container.encode(de, forKey: .de)
-    }
-    // For additional locales, we need to handle them dynamically
-    if let locales {
-      for (key, value) in locales where key != "en" && key != "de" {
-        guard let codingKey = CodingKeys(stringValue: key) else { continue }
-        try container.encode(value, forKey: codingKey)
-      }
-    }
-  }
-}
 
 // MARK: - CardDetails
 @objc public class CardDetails: NSObject {
@@ -497,7 +460,7 @@ import Foundation
   public let token: String
   public let mode: String?  // "test" or "live"
   public let allowedCardSchemes: [String]?
-  public let customTextConfig: CustomTextConfig?
+  public let customTextConfig: [String: LocaleTextConfig]?
   public let submitButtonConfig: SubmitButtonConfig
   public let tokenizationSuccessCallback: ((Int, String, CardDetails, String) -> Void)?
   public let tokenizationFailureCallback: ((Int, [String: Any]) -> Void)?
@@ -509,7 +472,7 @@ import Foundation
     token: String,
     mode: String?,
     allowedCardSchemes: [String]?,
-    customTextConfig: CustomTextConfig?,
+    customTextConfig: [String: LocaleTextConfig]?,
     submitButtonConfig: SubmitButtonConfig,
     tokenizationSuccessCallback: ((Int, String, CardDetails, String) -> Void)? = nil,
     tokenizationFailureCallback: ((Int, [String: Any]) -> Void)? = nil

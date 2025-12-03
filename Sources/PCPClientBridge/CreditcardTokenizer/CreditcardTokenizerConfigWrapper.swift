@@ -21,7 +21,7 @@ import PCPClient
     token: String,
     mode: String?,
     allowedCardSchemes: [String]?,
-    customTextConfig: CustomTextConfig?,
+    customTextConfig: [String: LocaleTextConfig]?,
     submitButtonConfig: SubmitButtonConfig,
     tokenizationSuccessCallback: ((Int, String, CardDetails, String) -> Void)?,
     tokenizationFailureCallback: ((Int, [String: Any]) -> Void)?
