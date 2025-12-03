@@ -209,12 +209,15 @@ let config = CreditcardTokenizerConfig(
     ),
     uiConfig: uiConfig,
     locale: "de_DE",
+    token: "<Token to be retrieved from the CommercePlatform-API>", // Fetch from your backend
+    mode: "live", // or "test"
+    allowedCardSchemes: nil, // Optional: e.g., ["visa", "mastercard", "amex"]
+    customTextConfig: nil, // Optional: custom text configuration
     submitButtonConfig: SubmitButtonConfig(
-        selector: "#submit",
+        selector: "#submit"
     ),
-    environment: "test", // Use "live" for production
-    tokenizationSuccessCallback: { statusCode, token, cardDetails in
-        print("Tokenized card successfully: Status: \(statusCode), Token: \(token), Card Details: \(String(describing: cardDetails))")
+    tokenizationSuccessCallback: { statusCode, token, cardDetails, inputMode in
+        print("Tokenized card successfully: Status: \(statusCode), Token: \(token), Card Details: \(cardDetails), Input Mode: \(inputMode)")
     },
     tokenizationFailureCallback: { statusCode, errorResponse in
         print("Tokenization failed: Status: \(statusCode), Error: \(String(describing: errorResponse["error"]))")
@@ -230,10 +233,13 @@ For Objective-C, use the `CreditcardTokenizerConfigWrapper`:
         initWithIframeConfig:iframeConfig
         uiConfig:uiConfig
         locale:@"de_DE"
+        token:@"<Token to be retrieved from the CommercePlatform-API>"
+        mode:@"live"
+        allowedCardSchemes:nil
+        customTextConfig:nil
         submitButtonConfig:submitButtonConfig
-        environment:@"test"
-        tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, NSDictionary *cardDetails) {
-             NSLog(@"Tokenized card successfully: %ld %@ %@", (long)statusCode, token, cardDetails);
+        tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, CardDetails *cardDetails, NSString *inputMode) {
+             NSLog(@"Tokenized card successfully: %ld %@ %@ %@", (long)statusCode, token, cardDetails, inputMode);
         }
         tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
             NSLog(@"Tokenization failed: %ld %@", (long)statusCode, errorResponse);
@@ -241,24 +247,15 @@ For Objective-C, use the `CreditcardTokenizerConfigWrapper`:
 ];
 ```
 
-#### 4. Fetch the JWT Token from your Backend
+#### 4. Initialize and display the Tokenizer
 
-You must fetch the JWT from your backend before initializing the SDK.
-
-```swift
-let jwtToken = fetchJwtTokenFromBackend() // Implement this in your backend
-```
-
-#### 5. Initialize and display the Tokenizer
-
-Use the provided SwiftUI view or UIKit view controller. Pass the config, JWT token, and the URL to your hosted HTML page.
+Use the provided SwiftUI view or UIKit view controller. Pass the config and the URL to your hosted HTML page.
 
 **SwiftUI**
 
 ```swift
 CreditcardTokenizerView(
     tokenizerUrl: URL(string: "https://your-server/creditcard-tokenizer-example.html")!,
-    jwtToken: jwtToken,
     config: config
 )
 ```
@@ -268,7 +265,6 @@ CreditcardTokenizerView(
 ```swift
 let viewController = CreditcardTokenizerViewController(
     tokenizerUrl: URL(string: "https://your-server/creditcard-tokenizer-example.html")!,
-    jwtToken: jwtToken,
     config: config
 )
 ```
@@ -278,26 +274,28 @@ let viewController = CreditcardTokenizerViewController(
 ```objectivec
 CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewController alloc]
     initWithTokenizerUrl:[NSURL URLWithString:@"https://your-server/creditcard-tokenizer-example.html"]
-    jwtToken:jwtToken
     config:config];
 ```
 
-#### 6. Customization and Callbacks
+#### 5. Customization and Callbacks
 
 - `iframeConfig`: Configure the container and size for the payment iframe.
 - `uiConfig`: Customize the look and feel of the form fields.
 - `locale`: Set the language/locale for the form.
+- `token`: The JWT token from your backend (CommercePlatform-API).
+- `mode`: Choose "test" or "live" for the SDK environment.
+- `allowedCardSchemes`: Optional array of allowed card schemes (e.g., ["visa", "mastercard", "amex"]).
+- `customTextConfig`: Optional custom text configuration for localization.
 - `submitButtonConfig`: Provide a selector or element for the submit button.
-- `tokenizationSuccessCallback`: Handle the token and card details on success.
+- `tokenizationSuccessCallback`: Handle the token, card details, and input mode on success.
 - `tokenizationFailureCallback`: Handle errors on failure.
-- `environment`: Choose "test" or "live" for the SDK environment.
 
-#### 7. PCI DSS & Security
+#### 6. PCI DSS & Security
 
 - The SDK uses a JWT from your backend for secure initialization.
 - All card data is handled inside the iframe and never touches your application code.
 
-#### 8. Migration Note
+#### 7. Migration Note
 
 If you previously used the classic PAYONE Hosted IFrames, update your integration to use the new Hosted Tokenization SDK as shown above. The old `fields`, `defaultStyle`, and related config are no longer used.
 
