@@ -414,7 +414,6 @@ import Foundation
   }
 }
 
-
 // MARK: - CardDetails
 @objc public class CardDetails: NSObject {
   public let cardholderName: String
