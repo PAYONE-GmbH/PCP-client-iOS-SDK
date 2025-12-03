@@ -638,7 +638,7 @@ First, add the PayPal SDK to your project. You can use Swift Package Manager or 
 
 ```swift
 // Add to your Package.swift dependencies
-.package(url: "https://github.com/paypal/paypal-ios", .upToNextMajor(from: "1.3.0"))
+.package(url: "https://github.com/paypal/paypal-ios", .upToNextMajor(from: "2.0.0"))
 
 // Add these dependencies to your target
 .product(name: "PayPalWebPayments", package: "paypal-ios"),
