@@ -47,9 +47,12 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
           iframeWrapperId: "payment-IFrame", height: Double(400), width: Double(400)),
         uiConfig: UIConfig(formBgColor: "#fff"),
         locale: "de_DE",
+        token: "test-token",
+        mode: "test",
+        allowedCardSchemes: ["visa", "mastercard"],
+        customTextConfig: nil,
         submitButtonConfig: SubmitButtonConfig(selector: "#submit", element: nil),
-        environment: "test",
-        tokenizationSuccessCallback: { _, _, _ in },
+        tokenizationSuccessCallback: { _, _, _, _ in },
         tokenizationFailureCallback: { _, _ in }
       )
     if let webView {
@@ -70,8 +73,11 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
       iframeConfig: IframeConfig(iframeWrapperId: "id", height: Double(1), width: Double(2)),
       uiConfig: UIConfig(formBgColor: "#abc"),
       locale: "en",
-      submitButtonConfig: SubmitButtonConfig(selector: "#btn", element: nil),
-      environment: "live"
+      token: "test-token",
+      mode: "live",
+      allowedCardSchemes: ["visa"],
+      customTextConfig: nil,
+      submitButtonConfig: SubmitButtonConfig(selector: "#btn", element: nil)
     )
     let sut = makeSUT(config: config)
     XCTAssertNotNil(sut)
@@ -101,27 +107,36 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
   func test_scriptMessageHandler_successCallbackIsCalled() {
     var called = false
     let config = CreditcardTokenizerConfig(
-      iframeConfig: nil,
+      iframeConfig: IframeConfig(iframeWrapperId: "test", height: 400, width: 400),
       uiConfig: nil,
       locale: nil,
-      submitButtonConfig: nil,
-      environment: "test",
-      tokenizationSuccessCallback: { status, token, details in
+      token: "test-token",
+      mode: "test",
+      allowedCardSchemes: ["visa"],
+      customTextConfig: nil,
+      submitButtonConfig: SubmitButtonConfig(selector: "#btn", element: nil),
+      tokenizationSuccessCallback: { status, token, details, inputMode in
         called = true
         XCTAssertEqual(status, 200)
         XCTAssertEqual(token, "tok")
-        XCTAssertEqual(details["card"] as? String, "details")
+        XCTAssertEqual(details.cardholderName, "John Doe")
+        XCTAssertEqual(inputMode, "ocr")
       },
       tokenizationFailureCallback: nil
     )
     let sut = makeSUT(config: config)
-    // Simulate cardDetails as a dictionary, matching the expected input type
     let message = MockWKScriptMessage(
       name: "responseReceived",
       body: [
         "statusCode": 200,
         "token": "tok",
-        "cardDetails": ["card": "details"]
+        "cardDetails": [
+          "cardholderName": "John Doe",
+          "cardNumber": "1234",
+          "expiryDate": "12/25",
+          "cardType": "visa"
+        ],
+        "inputMode": "ocr"
       ]
     )
     sut.userContentController(WKUserContentController(), didReceive: message)
@@ -131,11 +146,14 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
   func test_scriptMessageHandler_failureCallbackIsCalledForScriptError() {
     var called = false
     let config = CreditcardTokenizerConfig(
-      iframeConfig: nil,
+      iframeConfig: IframeConfig(iframeWrapperId: "test", height: 400, width: 400),
       uiConfig: nil,
       locale: nil,
-      submitButtonConfig: nil,
-      environment: "test",
+      token: "test-token",
+      mode: "test",
+      allowedCardSchemes: ["visa"],
+      customTextConfig: nil,
+      submitButtonConfig: SubmitButtonConfig(selector: "#btn", element: nil),
       tokenizationSuccessCallback: nil,
       tokenizationFailureCallback: { status, error in
         called = true
@@ -152,11 +170,14 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
   func test_scriptMessageHandler_failureCallbackIsCalledForInvalidResponse() {
     var called = false
     let config = CreditcardTokenizerConfig(
-      iframeConfig: nil,
+      iframeConfig: IframeConfig(iframeWrapperId: "test", height: 400, width: 400),
       uiConfig: nil,
       locale: nil,
-      submitButtonConfig: nil,
-      environment: "test",
+      token: "test-token",
+      mode: "test",
+      allowedCardSchemes: ["visa"],
+      customTextConfig: nil,
+      submitButtonConfig: SubmitButtonConfig(selector: "#btn", element: nil),
       tokenizationSuccessCallback: nil,
       tokenizationFailureCallback: { status, error in
         called = true
