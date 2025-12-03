@@ -135,7 +135,7 @@ extension CreditcardTokenizerViewController {
     
     let locale = config.locale ?? "de_DE"
     let token = config.token
-    let mode = config.mode ?? "live"
+    let mode = config.mode ?? "test"
     let submitButtonSelector = config.submitButtonConfig.selector ?? "#submit"
 
     return """
