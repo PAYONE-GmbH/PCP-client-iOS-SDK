@@ -112,13 +112,15 @@ extension CreditcardTokenizerViewController {
     let uiConfigJson =
       (try? JSONEncoder().encode(config.uiConfig)).flatMap { String(data: $0, encoding: .utf8) }
       ?? "{}"
-    
+
     // Build iframe config with defaults matching Android implementation
+    let defaultWidth = 400
+    let defaultZIndex = 9999
     let iframeConfigDict: [String: Any] = [
       "iframeWrapperId": config.iframeConfig.iframeWrapperId,
       "height": config.iframeConfig.height ?? "auto",
-      "width": config.iframeConfig.width ?? 400,
-      "zIndex": config.iframeConfig.zIndex ?? 9999
+      "width": config.iframeConfig.width ?? defaultWidth,
+      "zIndex": config.iframeConfig.zIndex ?? defaultZIndex
     ]
     let iframeConfigJson = (try? JSONSerialization.data(withJSONObject: iframeConfigDict))
       .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"

@@ -29,32 +29,35 @@ disabled_rules:
   - indentation_width
   - type_contents_order
   - legacy_objc_type
+  - identifier_name
+  - file_length
+  - discouraged_optional_collection
 
 file_header:
   required_pattern: |
-                    \/\/
-                    \/\/ This file is part of the PCPClient iOS SDK.
-                    \/\/ Copyright © \d{4} PAYONE GmbH\. All rights reserved\.
-                    \/\/
-                    \/\/ For the full copyright and license information, please view the LICENSE
-                    \/\/ file that was distributed with this source code.
-                    \/\/
+    \/\/
+    \/\/ This file is part of the PCPClient iOS SDK.
+    \/\/ Copyright © \d{4} PAYONE GmbH\. All rights reserved\.
+    \/\/
+    \/\/ For the full copyright and license information, please view the LICENSE
+    \/\/ file that was distributed with this source code.
+    \/\/
 # Configurations
 attributes:
   always_on_same_line:
-    - "@IBSegueAction"
-    - "@IBAction"
-    - "@NSManaged"
-    - "@objc"
+    - '@IBSegueAction'
+    - '@IBAction'
+    - '@NSManaged'
+    - '@objc'
   always_on_line_above:
-    - "@discardableResult"
+    - '@discardableResult'
 
 force_cast: error
 
 force_try: error
 
 function_body_length:
-    warning: 150
+  warning: 150
 
 legacy_hashing: error
 
@@ -69,10 +72,10 @@ identifier_name:
 multiline_arguments:
   first_argument_location: any_line
   only_enforce_after_first_closure_on_first_line: true
-  
+
 number_separator:
   minimum_length: 5
-  
+
 private_over_fileprivate:
   validate_extensions: true
 

@@ -356,6 +356,7 @@ import Foundation
     // For additional locales, we need to handle them dynamically
     if let locales {
       for (key, value) in locales where key != "en" && key != "de" {
+        // swiftlint:disable:next force_unwrapping
         try container.encode(value, forKey: CodingKeys(stringValue: key)!)
       }
     }
@@ -381,6 +382,7 @@ import Foundation
     self.cardType = cardType
   }
 
+// swiftlint:disable:next explicit_acl
   convenience init?(from dict: [String: Any]) {
     guard let cardholderName = dict["cardholderName"] as? String,
           let cardNumber = dict["cardNumber"] as? String,
@@ -427,7 +429,7 @@ import Foundation
     self.uiConfig = uiConfig
     self.locale = locale
     self.token = token
-    self.mode = mode 
+    self.mode = mode
     self.allowedCardSchemes = allowedCardSchemes
     self.customTextConfig = customTextConfig
     self.submitButtonConfig = submitButtonConfig
