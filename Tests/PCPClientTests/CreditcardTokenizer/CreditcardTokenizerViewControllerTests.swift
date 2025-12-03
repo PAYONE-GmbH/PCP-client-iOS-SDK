@@ -39,7 +39,6 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
   private func makeSUT(
     webView: WKWebView? = nil,
     config: CreditcardTokenizerConfig? = nil,
-    jwtToken: String = "jwt-token"
   ) -> CreditcardTokenizerViewController {
     let testConfig =
       config
@@ -58,13 +57,11 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
         webView: webView,
         tokenizerUrl: tokenizerURL,
         config: testConfig,
-        jwtToken: jwtToken
       )
     }
     return CreditcardTokenizerViewController(
       tokenizerUrl: tokenizerURL,
       config: testConfig,
-      jwtToken: jwtToken
     )
   }
 
@@ -76,7 +73,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
       submitButtonConfig: SubmitButtonConfig(selector: "#btn", element: nil),
       environment: "live"
     )
-    let sut = makeSUT(config: config, jwtToken: "jwt")
+    let sut = makeSUT(config: config)
     XCTAssertNotNil(sut)
   }
 

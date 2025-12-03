@@ -19,7 +19,7 @@ Welcome to the PAYONE Commerce Platform Client iOS SDK for the PAYONE Commerce P
     - [1. Host your HTML page](#1-host-your-html-page)
     - [2. Import PCPClient modules](#2-import-pcpclient-modules)
     - [3. Configure the Tokenizer](#3-configure-the-tokenizer)
-    - [4. Fetch the JWT Token from your Backend](#4-fetch-the-jwt-token-from-your-backend)
+    - [4. Fetch the JWT from your Backend](#4-fetch-the-jwt-token-from-your-backend)
     - [5. Initialize and display the Tokenizer](#5-initialize-and-display-the-tokenizer)
     - [6. Customization and Callbacks](#6-customization-and-callbacks)
     - [7. PCI DSS & Security](#7-pci-dss--security)
@@ -282,7 +282,7 @@ CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewCon
 - `iframeConfig`: Configure the container and size for the payment iframe.
 - `uiConfig`: Customize the look and feel of the form fields.
 - `locale`: Set the language/locale for the form.
-- `token`: The JWT token from your backend (CommercePlatform-API).
+- `token`: The JWT from your backend (CommercePlatform-API).
 - `mode`: Choose "test" or "live" for the SDK environment.
 - `allowedCardSchemes`: Optional array of allowed card schemes (e.g., ["visa", "mastercard", "amex"]).
 - `customTextConfig`: Optional custom text configuration for localization.
