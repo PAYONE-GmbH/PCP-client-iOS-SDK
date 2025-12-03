@@ -249,17 +249,40 @@ import Foundation
   }
 }
 
+// MARK: - SecurityCodeErrors
+@objc public class SecurityCodeErrors: NSObject, Encodable {
+  public let isRequired: String?
+  public let amexCardSecurityCodeError: String?
+  public let generalSecurityCodeError: String?
+
+  @objc public init(
+    isRequired: String? = nil,
+    amexCardSecurityCodeError: String? = nil,
+    generalSecurityCodeError: String? = nil
+  ) {
+    self.isRequired = isRequired
+    self.amexCardSecurityCodeError = amexCardSecurityCodeError
+    self.generalSecurityCodeError = generalSecurityCodeError
+  }
+}
+
 // MARK: - LocaleTextLabels
 @objc public class LocaleTextLabels: NSObject, Encodable {
   public let cardNumber: String?
   public let cardholderName: String?
+  public let expiryDate: String?
+  public let securityCode: String?
 
   @objc public init(
     cardNumber: String? = nil,
-    cardholderName: String? = nil
+    cardholderName: String? = nil,
+    expiryDate: String? = nil,
+    securityCode: String? = nil
   ) {
     self.cardNumber = cardNumber
     self.cardholderName = cardholderName
+    self.expiryDate = expiryDate
+    self.securityCode = securityCode
   }
 }
 
@@ -267,13 +290,19 @@ import Foundation
 @objc public class LocaleTextPlaceholders: NSObject, Encodable {
   public let cardNumber: String?
   public let cardholderName: String?
+  public let expiryDate: String?
+  public let securityCode: String?
 
   @objc public init(
     cardNumber: String? = nil,
-    cardholderName: String? = nil
+    cardholderName: String? = nil,
+    expiryDate: String? = nil,
+    securityCode: String? = nil
   ) {
     self.cardNumber = cardNumber
     self.cardholderName = cardholderName
+    self.expiryDate = expiryDate
+    self.securityCode = securityCode
   }
 }
 
@@ -281,27 +310,87 @@ import Foundation
 @objc public class LocaleTextAriaLabels: NSObject, Encodable {
   public let cardNumber: String?
   public let cardholderName: String?
+  public let expiryDate: String?
+  public let securityCode: String?
 
   @objc public init(
     cardNumber: String? = nil,
-    cardholderName: String? = nil
+    cardholderName: String? = nil,
+    expiryDate: String? = nil,
+    securityCode: String? = nil
   ) {
     self.cardNumber = cardNumber
     self.cardholderName = cardholderName
+    self.expiryDate = expiryDate
+    self.securityCode = securityCode
+  }
+}
+
+// MARK: - CardNumberErrors
+@objc public class CardNumberErrors: NSObject, Encodable {
+  public let isRequired: String?
+  public let isInvalid: String?
+  public let isTooShort: String?
+  public let notSupported: String?
+
+  @objc public init(
+    isRequired: String? = nil,
+    isInvalid: String? = nil,
+    isTooShort: String? = nil,
+    notSupported: String? = nil
+  ) {
+    self.isRequired = isRequired
+    self.isInvalid = isInvalid
+    self.isTooShort = isTooShort
+    self.notSupported = notSupported
+  }
+}
+
+// MARK: - CardholderNameErrors
+@objc public class CardholderNameErrors: NSObject, Encodable {
+  public let isRequired: String?
+  public let isInvalid: String?
+
+  @objc public init(
+    isRequired: String? = nil,
+    isInvalid: String? = nil
+  ) {
+    self.isRequired = isRequired
+    self.isInvalid = isInvalid
+  }
+}
+
+// MARK: - ExpiryDateErrors
+@objc public class ExpiryDateErrors: NSObject, Encodable {
+  public let isRequired: String?
+  public let isInvalid: String?
+
+  @objc public init(
+    isRequired: String? = nil,
+    isInvalid: String? = nil
+  ) {
+    self.isRequired = isRequired
+    self.isInvalid = isInvalid
   }
 }
 
 // MARK: - LocaleTextErrors
 @objc public class LocaleTextErrors: NSObject, Encodable {
-  public let cardNumber: FieldErrors?
-  public let cardholderName: FieldErrors?
+  public let cardNumber: CardNumberErrors?
+  public let cardholderName: CardholderNameErrors?
+  public let expiryDate: ExpiryDateErrors?
+  public let securityCode: SecurityCodeErrors?
 
   @objc public init(
-    cardNumber: FieldErrors? = nil,
-    cardholderName: FieldErrors? = nil
+    cardNumber: CardNumberErrors? = nil,
+    cardholderName: CardholderNameErrors? = nil,
+    expiryDate: ExpiryDateErrors? = nil,
+    securityCode: SecurityCodeErrors? = nil
   ) {
     self.cardNumber = cardNumber
     self.cardholderName = cardholderName
+    self.expiryDate = expiryDate
+    self.securityCode = securityCode
   }
 }
 
@@ -356,8 +445,8 @@ import Foundation
     // For additional locales, we need to handle them dynamically
     if let locales {
       for (key, value) in locales where key != "en" && key != "de" {
-        // swiftlint:disable:next force_unwrapping
-        try container.encode(value, forKey: CodingKeys(stringValue: key)!)
+        guard let codingKey = CodingKeys(stringValue: key) else { continue }
+        try container.encode(value, forKey: codingKey)
       }
     }
   }

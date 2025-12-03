@@ -137,11 +137,10 @@
                     uiConfig:uiConfig
                     locale:@"de_DE"
                     token:@"<Token to be retrieved from the CommercePlatform-API>"
-                    mode:@"live"
+                    mode:@"test"
                     allowedCardSchemes:nil
                     customTextConfig:nil
                     submitButtonConfig:submitButtonConfig 
-                    environment:@"test"
                     tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, CardDetails *cardDetails, NSString *inputMode) {
                         self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Success: %ld %@ %@ %@", (long)statusCode, token, cardDetails, inputMode];
                         [self.navigationController popViewControllerAnimated:true];
