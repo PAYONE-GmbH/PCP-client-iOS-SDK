@@ -10,8 +10,8 @@ VERSION="$1"
 # Update version in PCPClient.podspec
 sed -i '' "s/\(s.version[[:space:]]*=[[:space:]]*'\)[^']*\('.*\)/\1$VERSION\2/" PCPClient.podspec
 
-# Update version in README.md (SPM and CocoaPods examples)
-sed -i '' "s/\(from: \"\)[^\"]*\(\"\)/\1$VERSION\2/g" README.md
+# Update version in README.md (only for PCP-client-iOS-SDK references)
+sed -i '' "/PCP-client-iOS-SDK/s/\(from: \"\)[^\"]*\(\"\)/\1$VERSION\2/g" README.md
 
 # Create git tag
 git tag -a "$VERSION" -m "$VERSION"

@@ -13,7 +13,6 @@ import WebKit
 @objc public class CreditcardTokenizerViewController: UIViewController {
   private let tokenizerUrl: URL
   private let config: CreditcardTokenizerConfig
-  private let jwtToken: String
 
   internal var webView: WKWebView?
 
@@ -22,30 +21,25 @@ import WebKit
      - tokenizerUrl: The URL where the HTML for the creditcard tokenizer is hosted.
        The script will be injected and the logic will run in this page.
      - config: The configuration object containing all options for the tokenizer,
-       including environment, UI, and callbacks.
-     - jwtToken: The JWT token received from your backend, used for authentication and authorization.
+       including mode, UI, and callbacks.
    */
   @objc public init(
     tokenizerUrl: URL,
-    config: CreditcardTokenizerConfig,
-    jwtToken: String
+    config: CreditcardTokenizerConfig
   ) {
     self.tokenizerUrl = tokenizerUrl
     self.config = config
-    self.jwtToken = jwtToken
     super.init(nibName: nil, bundle: nil)
   }
 
   internal convenience init(
     webView: WKWebView,
     tokenizerUrl: URL,
-    config: CreditcardTokenizerConfig,
-    jwtToken: String
+    config: CreditcardTokenizerConfig
   ) {
     self.init(
       tokenizerUrl: tokenizerUrl,
-      config: config,
-      jwtToken: jwtToken
+      config: config
     )
     self.webView = webView
   }
@@ -99,16 +93,16 @@ extension CreditcardTokenizerViewController {
   }
 
   private func makeScriptToLoadPayoneHostedScript() -> String {
-    let env = config.environment ?? "test"
+    let env = config.mode ?? "test"
     let sdkScriptEnv: [String: [String: String]] = [
       "test": [
         "src":
-          "https://sdk.preprod.tokenization.secure.payone.com/1.0.1/hosted-tokenization-sdk.js",
-        "integrity": "sha384-Ec6OPQvn8poHUzTwcUYWC/pwd5wgVuVB+jKl+Eml5MWou154pm6j2MdhhJb9uqML"
+          "https://sdk.preprod.tokenization.secure.payone.com/1.3.0/hosted-tokenization-sdk.js",
+        "integrity": "sha384-2mqrh4mWkGZN9XmQeJFzKX5t+i9at3NYnUT9qvS2GiMRe8a6pigcsaxGh5y7KwbG"
       ],
       "live": [
-        "src": "https://sdk.tokenization.secure.payone.com/1.0.1/hosted-tokenization-sdk.js",
-        "integrity": "sha384-Ec6OPQvn8poHUzTwcUYWC/pwd5wgVuVB+jKl+Eml5MWou154pm6j2MdhhJb9uqML"
+        "src": "https://sdk.tokenization.secure.payone.com/1.3.0/hosted-tokenization-sdk.js",
+        "integrity": "sha384-2mqrh4mWkGZN9XmQeJFzKX5t+i9at3NYnUT9qvS2GiMRe8a6pigcsaxGh5y7KwbG"
       ]
     ]
     let scriptInfo = sdkScriptEnv[env] ?? sdkScriptEnv["test"] ?? [:]
@@ -118,11 +112,31 @@ extension CreditcardTokenizerViewController {
     let uiConfigJson =
       (try? JSONEncoder().encode(config.uiConfig)).flatMap { String(data: $0, encoding: .utf8) }
       ?? "{}"
-    let iframeConfigJson =
-      (try? JSONEncoder().encode(config.iframeConfig)).flatMap { String(data: $0, encoding: .utf8) }
-      ?? "{}"
+
+    // Build iframe config with defaults matching Android implementation
+    let defaultWidth = 400
+    let defaultZIndex = 9999
+    let iframeConfigDict: [String: Any] = [
+      "iframeWrapperId": config.iframeConfig.iframeWrapperId,
+      "height": config.iframeConfig.height ?? "auto",
+      "width": config.iframeConfig.width ?? defaultWidth,
+      "zIndex": config.iframeConfig.zIndex ?? defaultZIndex
+    ]
+    let iframeConfigJson = (try? JSONSerialization.data(withJSONObject: iframeConfigDict))
+      .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+    
+    let customTextConfigJson =
+      (try? JSONEncoder().encode(config.customTextConfig)).flatMap { String(data: $0, encoding: .utf8) }
+      ?? "null"
+    
+    let allowedCardSchemesJson =
+      (try? JSONSerialization.data(withJSONObject: config.allowedCardSchemes ?? []))
+      .flatMap { String(data: $0, encoding: .utf8) } ?? "null"
+    
     let locale = config.locale ?? "de_DE"
-    let submitButtonSelector = config.submitButtonConfig?.selector ?? "#submit"
+    let token = config.token
+    let mode = config.mode ?? "test"
+    let submitButtonSelector = config.submitButtonConfig.selector ?? "#submit"
 
     return """
       if (!document.getElementById('hosted-tokenization-sdk')) {
@@ -137,7 +151,10 @@ extension CreditcardTokenizerViewController {
                         iframe: \(iframeConfigJson),
                         uiConfig: \(uiConfigJson),
                         locale: '\(locale)',
-                        token: '\(jwtToken)'
+                        token: '\(token)',
+                        mode: '\(mode)',
+                        allowedCardSchemes: \(allowedCardSchemesJson),
+                        customTextConfig: \(customTextConfigJson)
                       };
                       if (window.HostedTokenizationSdk) {
                         window.HostedTokenizationSdk.init().then(function() {
@@ -146,11 +163,12 @@ extension CreditcardTokenizerViewController {
                           if (submitBtn) {
                             submitBtn.onclick = function() {
                               window.HostedTokenizationSdk.submitForm(
-                                function(statusCode, token, cardDetails) {
+                                function(statusCode, token, cardDetails, inputMode) {
                                     window.webkit.messageHandlers.responseReceived.postMessage({
                                       statusCode,
                                       token,
-                                      cardDetails
+                                      cardDetails,
+                                      inputMode
                                     });
                                 },
                                 function(statusCode, errorResponse) {
@@ -205,9 +223,11 @@ extension CreditcardTokenizerViewController: WKNavigationDelegate, WKScriptMessa
     case CCScriptMessageType.responseReceived.rawValue:
       if let dict = message.body as? [String: Any] {
         if let statusCode = dict["statusCode"] as? Int, let token = dict["token"] as? String,
-          let cardDetails = dict["cardDetails"] as? [String: Any]
+          let cardDetailsDict = dict["cardDetails"] as? [String: Any],
+          let cardDetails = CardDetails(from: cardDetailsDict),
+          let inputMode = dict["inputMode"] as? String
         {
-          config.tokenizationSuccessCallback?(statusCode, token, cardDetails)
+          config.tokenizationSuccessCallback?(statusCode, token, cardDetails, inputMode)
         } else if let statusCode = dict["statusCode"] as? Int,
           let errorResponse = dict["errorResponse"] as? [String: Any]
         {

@@ -15,20 +15,26 @@ import PCPClient
   @objc public let creditcardTokenizerConfig: CreditcardTokenizerConfig
 
   @objc public init(
-    iframeConfig: IframeConfig?,
+    iframeConfig: IframeConfig,
     uiConfig: UIConfig?,
     locale: String?,
-    submitButtonConfig: SubmitButtonConfig?,
-    environment: String,
-    tokenizationSuccessCallback: ((Int, String, [String: Any]) -> Void)?,
+    token: String,
+    mode: String?,
+    allowedCardSchemes: [String]?,
+    customTextConfig: [String: LocaleTextConfig]?,
+    submitButtonConfig: SubmitButtonConfig,
+    tokenizationSuccessCallback: ((Int, String, CardDetails, String) -> Void)?,
     tokenizationFailureCallback: ((Int, [String: Any]) -> Void)?
   ) {
     creditcardTokenizerConfig = CreditcardTokenizerConfig(
       iframeConfig: iframeConfig,
       uiConfig: uiConfig,
       locale: locale,
+      token: token,
+      mode: mode,
+      allowedCardSchemes: allowedCardSchemes,
+      customTextConfig: customTextConfig,
       submitButtonConfig: submitButtonConfig,
-      environment: environment,
       tokenizationSuccessCallback: tokenizationSuccessCallback,
       tokenizationFailureCallback: tokenizationFailureCallback
     )
