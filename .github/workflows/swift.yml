@@ -21,7 +21,7 @@ jobs:
       - name: Install SwiftLint
         run: brew install swiftlint
       - name: Build
-        run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+        run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2'
       - name: Run SwiftLint
         run: |
           set -o pipefail
