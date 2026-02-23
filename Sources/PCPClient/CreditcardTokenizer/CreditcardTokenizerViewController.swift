@@ -97,20 +97,21 @@ extension CreditcardTokenizerViewController {
     let sdkScriptEnv: [String: [String: String]] = [
       "test": [
         "src":
-          "https://sdk.preprod.tokenization.secure.payone.com/1.3.0/hosted-tokenization-sdk.js",
-        "integrity": "sha384-2mqrh4mWkGZN9XmQeJFzKX5t+i9at3NYnUT9qvS2GiMRe8a6pigcsaxGh5y7KwbG"
+          "https://sdk.preprod.tokenization.secure.payone.com/1.4.0/hosted-tokenization-sdk.js",
+        "integrity": "sha384-gLgHigakYvqqMAmx6FuAl2EaUoWvG24i0xCyDH8YC7+mWpqgFjuzPM0xD3orrMZ4"
       ],
       "live": [
-        "src": "https://sdk.tokenization.secure.payone.com/1.3.0/hosted-tokenization-sdk.js",
-        "integrity": "sha384-2mqrh4mWkGZN9XmQeJFzKX5t+i9at3NYnUT9qvS2GiMRe8a6pigcsaxGh5y7KwbG"
+        "src": "https://sdk.tokenization.secure.payone.com/1.4.0/hosted-tokenization-sdk.js",
+        "integrity": "sha384-gLgHigakYvqqMAmx6FuAl2EaUoWvG24i0xCyDH8YC7+mWpqgFjuzPM0xD3orrMZ4"
       ]
     ]
     let scriptInfo = sdkScriptEnv[env] ?? sdkScriptEnv["test"] ?? [:]
     let scriptSrc = scriptInfo["src"] ?? ""
     let scriptIntegrity = scriptInfo["integrity"] ?? ""
 
+    let encoder = JSONEncoder()
     let uiConfigJson =
-      (try? JSONEncoder().encode(config.uiConfig)).flatMap { String(data: $0, encoding: .utf8) }
+      (try? encoder.encode(config.uiConfig)).flatMap { String(data: $0, encoding: .utf8) }
       ?? "{}"
 
     // Build iframe config with defaults matching Android implementation
@@ -124,19 +125,29 @@ extension CreditcardTokenizerViewController {
     ]
     let iframeConfigJson = (try? JSONSerialization.data(withJSONObject: iframeConfigDict))
       .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-    
+
     let customTextConfigJson =
-      (try? JSONEncoder().encode(config.customTextConfig)).flatMap { String(data: $0, encoding: .utf8) }
+      (try? encoder.encode(config.customTextConfig)).flatMap { String(data: $0, encoding: .utf8) }
       ?? "null"
-    
+
     let allowedCardSchemesJson =
       (try? JSONSerialization.data(withJSONObject: config.allowedCardSchemes ?? []))
       .flatMap { String(data: $0, encoding: .utf8) } ?? "null"
-    
+
+    let customIconsConfigJson =
+      (try? encoder.encode(config.customIconsConfig)).flatMap { String(data: $0, encoding: .utf8) }
+      ?? "null"
+
+    let ctpConfigJson =
+      (try? encoder.encode(config.ctpConfig)).flatMap { String(data: $0, encoding: .utf8) }
+      ?? "null"
+
     let locale = config.locale ?? "de_DE"
     let token = config.token
     let mode = config.mode ?? "test"
     let submitButtonSelector = config.submitButtonConfig.selector ?? "#submit"
+    let emailJson = config.email.map { "\"\($0)\"" } ?? "null"
+    let showCardholderName = config.showCardholderName ? "true" : "false"
 
     return """
       if (!document.getElementById('hosted-tokenization-sdk')) {
@@ -154,7 +165,11 @@ extension CreditcardTokenizerViewController {
                         token: '\(token)',
                         mode: '\(mode)',
                         allowedCardSchemes: \(allowedCardSchemesJson),
-                        customTextConfig: \(customTextConfigJson)
+                        customTextConfig: \(customTextConfigJson),
+                        email: \(emailJson),
+                        showCardholderName: \(showCardholderName),
+                        customIconsConfig: \(customIconsConfigJson),
+                        CTPConfig: \(ctpConfigJson)
                       };
                       if (window.HostedTokenizationSdk) {
                         window.HostedTokenizationSdk.init().then(function() {
