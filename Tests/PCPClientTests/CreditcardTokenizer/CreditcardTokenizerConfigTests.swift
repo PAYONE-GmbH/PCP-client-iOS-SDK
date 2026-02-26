@@ -526,4 +526,239 @@ internal final class CreditcardTokenizerConfigTests: XCTestCase {
     XCTAssertNotNil(config.customTextConfig?["en"])
     XCTAssertNotNil(config.customTextConfig?["en"]?.labels)
   }
+
+  // MARK: - CustomIconsConfig Tests
+
+  func test_customIconsConfig_initialization() {
+    let iconsConfig = CustomIconsConfig(
+      useCustomValidationIcons: true,
+      showCardBrandIcons: false,
+      successIcon: "/valid.svg",
+      errorIcon: "/invalid.svg"
+    )
+
+    XCTAssertTrue(iconsConfig.useCustomValidationIcons)
+    XCTAssertFalse(iconsConfig.showCardBrandIcons)
+    XCTAssertEqual(iconsConfig.successIcon, "/valid.svg")
+    XCTAssertEqual(iconsConfig.errorIcon, "/invalid.svg")
+  }
+
+  func test_customIconsConfig_defaultValues() {
+    let iconsConfig = CustomIconsConfig()
+
+    XCTAssertFalse(iconsConfig.useCustomValidationIcons)
+    XCTAssertFalse(iconsConfig.showCardBrandIcons)
+    XCTAssertNil(iconsConfig.successIcon)
+    XCTAssertNil(iconsConfig.errorIcon)
+  }
+
+  func test_customIconsConfig_encoding() throws {
+    let iconsConfig = CustomIconsConfig(
+      useCustomValidationIcons: true,
+      showCardBrandIcons: true,
+      successIcon: "/ok.png",
+      errorIcon: "/fail.png"
+    )
+
+    let data = try JSONEncoder().encode(iconsConfig)
+    let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+    XCTAssertEqual(json?["useCustomValidationIcons"] as? Bool, true)
+    XCTAssertEqual(json?["showCardBrandIcons"] as? Bool, true)
+    XCTAssertEqual(json?["successIcon"] as? String, "/ok.png")
+    XCTAssertEqual(json?["errorIcon"] as? String, "/fail.png")
+  }
+
+  // MARK: - CTPConfig Tests
+
+  func test_ctpVisaConfig_initialization() {
+    let visa = CTPVisaConfig(
+      srcInitiatorId: "payone-visa",
+      srcDpaId: "merchant-uuid",
+      encryptionKey: "enc-key",
+      nModulus: "modulus"
+    )
+
+    XCTAssertEqual(visa.srcInitiatorId, "payone-visa")
+    XCTAssertEqual(visa.srcDpaId, "merchant-uuid")
+    XCTAssertEqual(visa.encryptionKey, "enc-key")
+    XCTAssertEqual(visa.nModulus, "modulus")
+  }
+
+  func test_ctpMastercardConfig_initialization() {
+    let mc = CTPMastercardConfig(srcInitiatorId: "payone-mc", srcDpaId: "merchant-mc-uuid")
+
+    XCTAssertEqual(mc.srcInitiatorId, "payone-mc")
+    XCTAssertEqual(mc.srcDpaId, "merchant-mc-uuid")
+  }
+
+  func test_ctpSchemeConfig_initialization() {
+    let visa = CTPVisaConfig(srcInitiatorId: "v", srcDpaId: "d")
+    let mc = CTPMastercardConfig(srcInitiatorId: "m", srcDpaId: "md")
+    let scheme = CTPSchemeConfig(
+      merchantPresentationName: "MyMerchant",
+      visaConfig: visa,
+      mastercardConfig: mc
+    )
+
+    XCTAssertEqual(scheme.merchantPresentationName, "MyMerchant")
+    XCTAssertNotNil(scheme.visaConfig)
+    XCTAssertNotNil(scheme.mastercardConfig)
+  }
+
+  func test_ctpTransactionAmount_initialization() {
+    let amount = CTPTransactionAmount(amount: "1234", currencyCode: "EUR")
+
+    XCTAssertEqual(amount.amount, "1234")
+    XCTAssertEqual(amount.currencyCode, "EUR")
+  }
+
+  func test_ctpUIConfig_initialization() {
+    let uiConfig = CTPUIConfig(
+      buttonStyle: "solid",
+      buttonTextCase: "capitalize",
+      buttonAndBadgeColor: "#3B82F6"
+    )
+
+    XCTAssertEqual(uiConfig.buttonStyle, "solid")
+    XCTAssertEqual(uiConfig.buttonTextCase, "capitalize")
+    XCTAssertEqual(uiConfig.buttonAndBadgeColor, "#3B82F6")
+    XCTAssertNil(uiConfig.accentColor)
+  }
+
+  func test_ctpConfig_initialization() {
+    let scheme = CTPSchemeConfig(
+      mastercardConfig: CTPMastercardConfig(srcInitiatorId: "m", srcDpaId: "md")
+    )
+    let amount = CTPTransactionAmount(amount: "500", currencyCode: "USD")
+    let ctpConfig = CTPConfig(
+      schemeConfig: scheme,
+      transactionAmount: amount,
+      enableCTP: true,
+      enableCustomerOnboarding: true
+    )
+
+    XCTAssertTrue(ctpConfig.enableCTP)
+    XCTAssertTrue(ctpConfig.enableCustomerOnboarding)
+    XCTAssertNotNil(ctpConfig.schemeConfig)
+    XCTAssertNotNil(ctpConfig.transactionAmount)
+    XCTAssertNil(ctpConfig.uiConfig)
+  }
+
+  func test_ctpConfig_encoding() throws {
+    let scheme = CTPSchemeConfig(
+      merchantPresentationName: "Merchant",
+      visaConfig: CTPVisaConfig(srcInitiatorId: "v", srcDpaId: "d", encryptionKey: "k", nModulus: "n"),
+      mastercardConfig: CTPMastercardConfig(srcInitiatorId: "m", srcDpaId: "md")
+    )
+    let amount = CTPTransactionAmount(amount: "100", currencyCode: "EUR")
+    let ctpConfig = CTPConfig(
+      schemeConfig: scheme,
+      transactionAmount: amount,
+      enableCTP: true,
+      enableCustomerOnboarding: false
+    )
+
+    let data = try JSONEncoder().encode(ctpConfig)
+    let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+    XCTAssertEqual(json?["enableCTP"] as? Bool, true)
+    XCTAssertEqual(json?["enableCustomerOnboarding"] as? Bool, false)
+    XCTAssertNotNil(json?["schemeConfig"])
+    XCTAssertNotNil(json?["transactionAmount"])
+  }
+
+  // MARK: - CreditcardTokenizerConfig v1.4 fields Tests
+
+  func test_creditcardTokenizerConfig_emailAndShowCardholderName() {
+    let iframeConfig = IframeConfig(iframeWrapperId: "payment-frame")
+    let submitConfig = SubmitButtonConfig(selector: "#submit")
+
+    let config = CreditcardTokenizerConfig(
+      iframeConfig: iframeConfig,
+      uiConfig: nil,
+      locale: "en_US",
+      token: "tok",
+      mode: "test",
+      allowedCardSchemes: nil,
+      customTextConfig: nil,
+      submitButtonConfig: submitConfig,
+      email: "user@example.com",
+      showCardholderName: false
+    )
+
+    XCTAssertEqual(config.email, "user@example.com")
+    XCTAssertFalse(config.showCardholderName)
+  }
+
+  func test_creditcardTokenizerConfig_defaultShowCardholderName() {
+    let iframeConfig = IframeConfig(iframeWrapperId: "payment-frame")
+    let submitConfig = SubmitButtonConfig(selector: "#submit")
+
+    let config = CreditcardTokenizerConfig(
+      iframeConfig: iframeConfig,
+      uiConfig: nil,
+      locale: nil,
+      token: "tok",
+      mode: nil,
+      allowedCardSchemes: nil,
+      customTextConfig: nil,
+      submitButtonConfig: submitConfig
+    )
+
+    XCTAssertTrue(config.showCardholderName)
+    XCTAssertNil(config.email)
+    XCTAssertNil(config.customIconsConfig)
+    XCTAssertNil(config.ctpConfig)
+  }
+
+  func test_creditcardTokenizerConfig_withCustomIconsConfig() {
+    let iframeConfig = IframeConfig(iframeWrapperId: "payment-frame")
+    let submitConfig = SubmitButtonConfig(selector: "#submit")
+    let icons = CustomIconsConfig(useCustomValidationIcons: true, successIcon: "/ok.svg", errorIcon: "/err.svg")
+
+    let config = CreditcardTokenizerConfig(
+      iframeConfig: iframeConfig,
+      uiConfig: nil,
+      locale: nil,
+      token: "tok",
+      mode: nil,
+      allowedCardSchemes: nil,
+      customTextConfig: nil,
+      submitButtonConfig: submitConfig,
+      customIconsConfig: icons
+    )
+
+    XCTAssertNotNil(config.customIconsConfig)
+    XCTAssertTrue(config.customIconsConfig?.useCustomValidationIcons ?? false)
+    XCTAssertEqual(config.customIconsConfig?.successIcon, "/ok.svg")
+  }
+
+  func test_creditcardTokenizerConfig_withCTPConfig() {
+    let iframeConfig = IframeConfig(iframeWrapperId: "payment-frame")
+    let submitConfig = SubmitButtonConfig(selector: "#submit")
+    let scheme = CTPSchemeConfig(
+      mastercardConfig: CTPMastercardConfig(srcInitiatorId: "m", srcDpaId: "md")
+    )
+    let ctp = CTPConfig(
+      schemeConfig: scheme,
+      transactionAmount: CTPTransactionAmount(amount: "200", currencyCode: "EUR")
+    )
+
+    let config = CreditcardTokenizerConfig(
+      iframeConfig: iframeConfig,
+      uiConfig: nil,
+      locale: nil,
+      token: "tok",
+      mode: nil,
+      allowedCardSchemes: nil,
+      customTextConfig: nil,
+      submitButtonConfig: submitConfig,
+      ctpConfig: ctp
+    )
+
+    XCTAssertNotNil(config.ctpConfig)
+    XCTAssertTrue(config.ctpConfig?.enableCTP ?? false)
+    XCTAssertEqual(config.ctpConfig?.transactionAmount.currencyCode, "EUR")
+  }
 }

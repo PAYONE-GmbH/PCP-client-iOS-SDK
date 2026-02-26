@@ -215,11 +215,43 @@ struct ContentView: View {
       )
     ]
 
+    // Example: Custom validation icons (v1.4)
+    // Uncomment and provide your own icon URLs to use custom icons.
+    // let customIconsConfig = CustomIconsConfig(
+    //   useCustomValidationIcons: true,
+    //   showCardBrandIcons: true,
+    //   successIcon: "https://your-cdn.com/icons/check.svg",
+    //   errorIcon: "https://your-cdn.com/icons/error.svg"
+    // )
+
+    // Example: Click-to-Pay configuration (v1.4)
+    // Uncomment and fill in your scheme credentials to enable CTP.
+    // let ctpConfig = CTPConfig(
+    //   schemeConfig: CTPSchemeConfig(
+    //     merchantPresentationName: "YOUR_SHOP_NAME",
+    //     visaConfig: CTPVisaConfig(
+    //       srcInitiatorId: "YOUR_SRC_INITIATOR_ID",
+    //       srcDpaId: "YOUR_SRC_DPA_ID"
+    //     ),
+    //     mastercardConfig: CTPMastercardConfig(
+    //       srcInitiatorId: "YOUR_SRC_INITIATOR_ID",
+    //       srcDpaId: "YOUR_SRC_DPA_ID"
+    //     )
+    //   ),
+    //   transactionAmount: CTPTransactionAmount(amount: "36.98", currencyCode: "EUR"),
+    //   enableCTP: true,
+    //   enableCustomerOnboarding: true,
+    //   uiConfig: CTPUIConfig(accentColor: "#0070ba")
+    // )
+
     return CreditcardTokenizerView(
       tokenizerUrl: URL(string: "YOUR_URL")!,
       config: CreditcardTokenizerConfig(
         iframeConfig: IframeConfig(
-          iframeWrapperId: "payment-IFrame", width: Double(400)),
+          iframeWrapperId: "payment-IFrame",
+          width: Double(400)
+          // zIndex: 9999  // optional, defaults to 9999
+        ),
         uiConfig: UIConfig(
           formBgColor: "#fff",
           fieldBgColor: "#f9f9f9",
@@ -237,6 +269,11 @@ struct ContentView: View {
         allowedCardSchemes: nil,
         customTextConfig: customTextConfig,
         submitButtonConfig: SubmitButtonConfig(selector: "#submit"),
+        // v1.4 optional parameters:
+        // email: "customer@example.com",
+        // showCardholderName: true,
+        // customIconsConfig: customIconsConfig,
+        // ctpConfig: ctpConfig,
         tokenizationSuccessCallback: { statusCode, token, cardDetails, inputMode in
           print("SuccessCallback statusCode:", statusCode)
           print("SuccessCallback token:", token)
