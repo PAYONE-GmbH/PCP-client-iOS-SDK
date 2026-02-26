@@ -450,6 +450,177 @@ import Foundation
   }
 }
 
+// MARK: - CustomIconsConfig
+
+/// Configuration for custom validation icons shown in the payment form.
+@objc public class CustomIconsConfig: NSObject, Encodable {
+  /// Set to `true` to enable custom validation icons.
+  public let useCustomValidationIcons: Bool
+  /// If `true` (and `useCustomValidationIcons` is also `true`), the card number
+  /// field shows the detected card brand icon instead of a validation icon.
+  public let showCardBrandIcons: Bool
+  /// Path / URL of the icon shown when validation passes.
+  public let successIcon: String?
+  /// Path / URL of the icon shown when validation fails.
+  public let errorIcon: String?
+
+  @objc public init(
+    useCustomValidationIcons: Bool = false,
+    showCardBrandIcons: Bool = false,
+    successIcon: String? = nil,
+    errorIcon: String? = nil
+  ) {
+    self.useCustomValidationIcons = useCustomValidationIcons
+    self.showCardBrandIcons = showCardBrandIcons
+    self.successIcon = successIcon
+    self.errorIcon = errorIcon
+  }
+}
+
+// MARK: - CTPSchemeConfig (Visa)
+
+/// Visa-specific Click-to-Pay scheme configuration.
+@objc public class CTPVisaConfig: NSObject, Encodable {
+  public let srcInitiatorId: String
+  public let srcDpaId: String
+  public let encryptionKey: String?
+  public let nModulus: String?
+
+  @objc public init(
+    srcInitiatorId: String,
+    srcDpaId: String,
+    encryptionKey: String? = nil,
+    nModulus: String? = nil
+  ) {
+    self.srcInitiatorId = srcInitiatorId
+    self.srcDpaId = srcDpaId
+    self.encryptionKey = encryptionKey
+    self.nModulus = nModulus
+  }
+}
+
+// MARK: - CTPSchemeConfig (Mastercard)
+
+/// Mastercard-specific Click-to-Pay scheme configuration.
+@objc public class CTPMastercardConfig: NSObject, Encodable {
+  public let srcInitiatorId: String
+  public let srcDpaId: String
+
+  @objc public init(
+    srcInitiatorId: String,
+    srcDpaId: String
+  ) {
+    self.srcInitiatorId = srcInitiatorId
+    self.srcDpaId = srcDpaId
+  }
+}
+
+// MARK: - CTPSchemeConfig
+
+/// Container for per-scheme Click-to-Pay configurations.
+@objc public class CTPSchemeConfig: NSObject, Encodable {
+  public let merchantPresentationName: String?
+  public let visaConfig: CTPVisaConfig?
+  public let mastercardConfig: CTPMastercardConfig?
+
+  @objc public init(
+    merchantPresentationName: String? = nil,
+    visaConfig: CTPVisaConfig? = nil,
+    mastercardConfig: CTPMastercardConfig? = nil
+  ) {
+    self.merchantPresentationName = merchantPresentationName
+    self.visaConfig = visaConfig
+    self.mastercardConfig = mastercardConfig
+  }
+}
+
+// MARK: - CTPTransactionAmount
+
+/// Transaction amount used for Click-to-Pay.
+@objc public class CTPTransactionAmount: NSObject, Encodable {
+  public let amount: String
+  public let currencyCode: String
+
+  @objc public init(amount: String, currencyCode: String) {
+    self.amount = amount
+    self.currencyCode = currencyCode
+  }
+}
+
+// MARK: - CTPUIConfig
+
+/// UI customisation for the Click-to-Pay component.
+@objc public class CTPUIConfig: NSObject, Encodable {
+  public let buttonStyle: String?
+  public let buttonTextCase: String?
+  public let buttonAndBadgeColor: String?
+  public let buttonFilledHoverColor: String?
+  public let buttonOutlinedHoverColor: String?
+  public let buttonDisabledColor: String?
+  public let cardItemActiveColor: String?
+  public let buttonAndBadgeTextColor: String?
+  public let linkTextColor: String?
+  public let accentColor: String?
+  public let fontFamily: String?
+  public let buttonAndInputRadius: String?
+  public let cardItemRadius: String?
+
+  @objc public init(
+    buttonStyle: String? = nil,
+    buttonTextCase: String? = nil,
+    buttonAndBadgeColor: String? = nil,
+    buttonFilledHoverColor: String? = nil,
+    buttonOutlinedHoverColor: String? = nil,
+    buttonDisabledColor: String? = nil,
+    cardItemActiveColor: String? = nil,
+    buttonAndBadgeTextColor: String? = nil,
+    linkTextColor: String? = nil,
+    accentColor: String? = nil,
+    fontFamily: String? = nil,
+    buttonAndInputRadius: String? = nil,
+    cardItemRadius: String? = nil
+  ) {
+    self.buttonStyle = buttonStyle
+    self.buttonTextCase = buttonTextCase
+    self.buttonAndBadgeColor = buttonAndBadgeColor
+    self.buttonFilledHoverColor = buttonFilledHoverColor
+    self.buttonOutlinedHoverColor = buttonOutlinedHoverColor
+    self.buttonDisabledColor = buttonDisabledColor
+    self.cardItemActiveColor = cardItemActiveColor
+    self.buttonAndBadgeTextColor = buttonAndBadgeTextColor
+    self.linkTextColor = linkTextColor
+    self.accentColor = accentColor
+    self.fontFamily = fontFamily
+    self.buttonAndInputRadius = buttonAndInputRadius
+    self.cardItemRadius = cardItemRadius
+  }
+}
+
+// MARK: - CTPConfig
+
+/// Configuration for the Click-to-Pay (CTP) feature.
+@objc public class CTPConfig: NSObject, Encodable {
+  public let enableCTP: Bool
+  public let enableCustomerOnboarding: Bool
+  public let schemeConfig: CTPSchemeConfig
+  public let transactionAmount: CTPTransactionAmount
+  public let uiConfig: CTPUIConfig?
+
+  @objc public init(
+    schemeConfig: CTPSchemeConfig,
+    transactionAmount: CTPTransactionAmount,
+    enableCTP: Bool = true,
+    enableCustomerOnboarding: Bool = true,
+    uiConfig: CTPUIConfig? = nil
+  ) {
+    self.enableCTP = enableCTP
+    self.enableCustomerOnboarding = enableCustomerOnboarding
+    self.schemeConfig = schemeConfig
+    self.transactionAmount = transactionAmount
+    self.uiConfig = uiConfig
+  }
+}
+
 // MARK: - CreditcardTokenizerConfig
 /// The configuration object to set up the creditcard tokenizer.
 @objc public class CreditcardTokenizerConfig: NSObject {
@@ -461,6 +632,14 @@ import Foundation
   public let allowedCardSchemes: [String]?
   public let customTextConfig: [String: LocaleTextConfig]?
   public let submitButtonConfig: SubmitButtonConfig
+  /// Optional email address pre-filled in the payment form (used by CTP).
+  public let email: String?
+  /// Controls whether the cardholder name field is shown. Defaults to `true`.
+  public let showCardholderName: Bool
+  /// Custom validation icon configuration (v1.4).
+  public let customIconsConfig: CustomIconsConfig?
+  /// Click-to-Pay configuration (v1.4).
+  public let ctpConfig: CTPConfig?
   public let tokenizationSuccessCallback: ((Int, String, CardDetails, String) -> Void)?
   public let tokenizationFailureCallback: ((Int, [String: Any]) -> Void)?
 
@@ -473,6 +652,10 @@ import Foundation
     allowedCardSchemes: [String]?,
     customTextConfig: [String: LocaleTextConfig]?,
     submitButtonConfig: SubmitButtonConfig,
+    email: String? = nil,
+    showCardholderName: Bool = true,
+    customIconsConfig: CustomIconsConfig? = nil,
+    ctpConfig: CTPConfig? = nil,
     tokenizationSuccessCallback: ((Int, String, CardDetails, String) -> Void)? = nil,
     tokenizationFailureCallback: ((Int, [String: Any]) -> Void)? = nil
   ) {
@@ -484,6 +667,10 @@ import Foundation
     self.allowedCardSchemes = allowedCardSchemes
     self.customTextConfig = customTextConfig
     self.submitButtonConfig = submitButtonConfig
+    self.email = email
+    self.showCardholderName = showCardholderName
+    self.customIconsConfig = customIconsConfig
+    self.ctpConfig = ctpConfig
     self.tokenizationSuccessCallback = tokenizationSuccessCallback
     self.tokenizationFailureCallback = tokenizationFailureCallback
   }

@@ -123,7 +123,7 @@ import SwiftUI
     public func paymentAuthorizationController(
         _: PKPaymentAuthorizationController,
         didSelectShippingMethod shippingMethod: PKShippingMethod,
-        handler completion: @escaping (PKPaymentRequestShippingMethodUpdate) -> Void
+        handler completion: (PKPaymentRequestShippingMethodUpdate) -> Void
     ) {
         guard let onShippingMethodDidChange else {
             PCPLogger.error("No onShippingMethodDidChange defined.")
@@ -137,7 +137,7 @@ import SwiftUI
     public func paymentAuthorizationController(
         _: PKPaymentAuthorizationController,
         didSelectShippingContact contact: PKContact,
-        handler completion: @escaping (PKPaymentRequestShippingContactUpdate) -> Void
+        handler completion: (PKPaymentRequestShippingContactUpdate) -> Void
     ) {
         guard let request else {
             PCPLogger.error("Shipping contact was changed but not request object was set.")
@@ -152,7 +152,7 @@ import SwiftUI
     public func paymentAuthorizationController(
         _: PKPaymentAuthorizationController,
         didChangeCouponCode couponCode: String,
-        handler completion: @escaping (PKPaymentRequestCouponCodeUpdate) -> Void
+        handler completion: (PKPaymentRequestCouponCodeUpdate) -> Void
     ) {
         guard let onChangeCouponCode else {
             PCPLogger.error("No onChangeCouponCode defined.")
@@ -166,7 +166,7 @@ import SwiftUI
     public func paymentAuthorizationController(
         _: PKPaymentAuthorizationController,
         didSelectPaymentMethod paymentMethod: PKPaymentMethod,
-        handler completion: @escaping (PKPaymentRequestPaymentMethodUpdate) -> Void
+        handler completion: (PKPaymentRequestPaymentMethodUpdate) -> Void
     ) {
         guard let onDidSelectPaymentMethod else {
             PCPLogger.error("No onDidSelectPaymentMethod defined.")

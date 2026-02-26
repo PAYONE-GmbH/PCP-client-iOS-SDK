@@ -23,7 +23,7 @@ Welcome to the PAYONE Commerce Platform Client iOS SDK for the PAYONE Commerce P
     - [5. Initialize and display the Tokenizer](#5-initialize-and-display-the-tokenizer)
     - [6. Customization and Callbacks](#6-customization-and-callbacks)
     - [7. PCI DSS & Security](#7-pci-dss--security)
-    - [8. Migration Note](#8-migration-note)
+    - [7. Migration Note](#7-migration-note)
   - [Fingerprint Tokenizer](#fingerprint-tokenizer)
     - [1. Import PCPClient modules](#1-import-pcpclient-modules)
     - [2. Create a new Fingerprint tokenizer instance](#2-create-a-new-fingerprint-tokenizer-instance)
@@ -73,7 +73,7 @@ To integrate using Apple's Swift package manager, you have two options.
 Add the following as a dependency to your `Package.swift`:
 
 ```swift
-.package(url: "https://https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.3.0"))
+.package(url: "https://https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.4.0"))
 ```
 
 and then specify `"PCPClient"` as a dependency of the Target in which you wish to use PCPClient.
@@ -91,7 +91,7 @@ let package = Package(
             targets: ["MyPackage"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.3.0"))
+        .package(url: "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.4.0"))
     ],
     targets: [
         .target(
@@ -156,19 +156,27 @@ import PCPClient
 
 ### Creditcard Tokenizer
 
-The Creditcard Tokenizer uses the new PAYONE Hosted Tokenization SDK. It securely collects and processes credit or debit card information in a PCI DSS-compliant way, returning a token for use in your server-side payment process.
+The Creditcard Tokenizer uses the PAYONE Hosted Tokenization SDK (v1.4). It securely collects and processes credit or debit card information in a PCI DSS-compliant way, returning a token for use in your server-side payment process.
+
+> **Hosted Tokenization SDK version history**
+> - **v1.0** – Initial release
+> - **v1.0.2** – Added `iframe.zIndex` config; added font customization (`fontFamily`, `fontUrl`, `labelStyle`, `inputStyle`, `errorValidationStyle`) to `uiConfig`
+> - **v1.2** – Added `allowedCardSchemes` to restrict accepted card brands
+> - **v1.3** – Added `customTextConfig` for per-locale text overrides; added Click-to-Pay support (`CTPConfig`); extended `uiConfig` with button, separator, checkbox, terms, border-radius and spacing properties; added `manualEntryFormLabelStyle`, `checkboxLabelStyle`, `termsTextStyle` to `uiConfig`
+> - **v1.4** – Added `customIconsConfig` for custom validation icons; added `showCardholderName` to toggle the cardholder name field; added top-level `email` parameter; added `fontSizeMobile` to `FontStyle`; added `inputMode` to the success callback; updated `uiConfig` with remaining spacing and icon properties
 
 To integrate the Creditcard Tokenizer feature into your iOS application, follow these steps:
 
 #### 1. Host your HTML page
 
-Host your HTML page locally (for development) or on a server. The page must contain the payment IFrame and submit button:
+Host your HTML page locally (for development) or on a server. The page must contain the payment IFrame and a submit button:
 
 ```html
-<div id="payment-IFrame"></div> <button id="submit">Submit</button>
+<div id="payment-IFrame"></div>
+<button id="submit">Submit</button>
 ```
 
-For a more sophisticated example, see [creditcard-tokenizer-example.html](./creditcard-tokenizer-example.html) or the demo app in `Examples/PCPClientSwiftDemo`.
+For a complete example, see [creditcard-tokenizer-example.html](./creditcard-tokenizer-example.html) or the demo app in `Examples/PCPClientSwiftDemo`.
 
 #### 2. Import PCPClient modules
 
@@ -187,40 +195,44 @@ import PCPClient
 
 #### 3. Configure the Tokenizer
 
-Create a config object to customize the UI and behavior. See the demo app for more advanced usage.
+Create a config object to customise the UI and behaviour. See the demo app for more advanced usage.
 
 ```swift
-let uiConfig = UIConfig(
-    formBgColor: "#64bbb7",
-    fieldBgColor: "wheat",
-    fieldBorder: "1px solid #b33cd8",
-    fieldOutline: "#101010 solid 5px",
-    fieldLabelColor: "#d3d83c",
-    fieldPlaceholderColor: "blue",
-    fieldTextColor: "crimson",
-    fieldErrorCodeColor: "green"
-)
-
 let config = CreditcardTokenizerConfig(
     iframeConfig: IframeConfig(
         iframeWrapperId: "payment-IFrame",
         height: 400,
-        width: 400
+        width: 400,
+        zIndex: 9999           // optional, since v1.0.2, defaults to 9999
     ),
-    uiConfig: uiConfig,
+    uiConfig: UIConfig(
+        formBgColor: "#64bbb7",
+        fieldBgColor: "wheat",
+        fieldBorder: "1px solid #b33cd8",
+        fieldOutline: "#101010 solid 5px",
+        fieldLabelColor: "#d3d83c",
+        fieldPlaceholderColor: "blue",
+        fieldTextColor: "crimson",
+        fieldErrorCodeColor: "green"
+        // additional styling properties available – see UIConfig reference below
+    ),
     locale: "de_DE",
-    token: "<Token to be retrieved from the CommercePlatform-API>", // Fetch from your backend
-    mode: "live", // or "test"
-    allowedCardSchemes: nil, // Optional: e.g., ["visa", "mastercard", "amex"]
-    customTextConfig: nil, // Optional: custom text configuration
-    submitButtonConfig: SubmitButtonConfig(
-        selector: "#submit"
-    ),
+    token: "<Token to be retrieved from the CommercePlatform-API>", // fetch from your backend
+    mode: "live",              // "live" or "test"
+    allowedCardSchemes: nil,   // optional, since v1.2 – e.g. ["visa", "mastercard", "amex"]
+    customTextConfig: nil,     // optional, since v1.3 – see LocaleTextConfig reference below
+    submitButtonConfig: SubmitButtonConfig(selector: "#submit"),
+    email: nil,                // optional, since v1.4 – pre-fills email (used by Click-to-Pay)
+    showCardholderName: true,  // optional, since v1.4 – show/hide cardholder name field
+    customIconsConfig: nil,    // optional, since v1.4 – see CustomIconsConfig reference below
+    ctpConfig: nil,            // optional, since v1.3 – see CTPConfig reference below
     tokenizationSuccessCallback: { statusCode, token, cardDetails, inputMode in
-        print("Tokenized card successfully: Status: \(statusCode), Token: \(token), Card Details: \(cardDetails), Input Mode: \(inputMode)")
+        // statusCode 201 = success
+        // inputMode: "manual", "register" or "ClickToPay"
+        print("Tokenized: \(statusCode), token: \(token), card: \(cardDetails), mode: \(inputMode)")
     },
     tokenizationFailureCallback: { statusCode, errorResponse in
-        print("Tokenization failed: Status: \(statusCode), Error: \(String(describing: errorResponse["error"]))")
+        print("Failed: \(statusCode), error: \(String(describing: errorResponse["error"]))")
     }
 )
 ```
@@ -228,7 +240,7 @@ let config = CreditcardTokenizerConfig(
 For Objective-C, use the `CreditcardTokenizerConfigWrapper`:
 
 ```objectivec
- CreditcardTokenizerConfigWrapper *config = [
+CreditcardTokenizerConfigWrapper *config = [
     [CreditcardTokenizerConfigWrapper alloc]
         initWithIframeConfig:iframeConfig
         uiConfig:uiConfig
@@ -239,10 +251,10 @@ For Objective-C, use the `CreditcardTokenizerConfigWrapper`:
         customTextConfig:nil
         submitButtonConfig:submitButtonConfig
         tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, CardDetails *cardDetails, NSString *inputMode) {
-             NSLog(@"Tokenized card successfully: %ld %@ %@ %@", (long)statusCode, token, cardDetails, inputMode);
+            NSLog(@"Tokenized: %ld %@ %@ %@", (long)statusCode, token, cardDetails, inputMode);
         }
         tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
-            NSLog(@"Tokenization failed: %ld %@", (long)statusCode, errorResponse);
+            NSLog(@"Failed: %ld %@", (long)statusCode, errorResponse);
         }
 ];
 ```
@@ -279,16 +291,275 @@ CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewCon
 
 #### 5. Customization and Callbacks
 
-- `iframeConfig`: Configure the container and size for the payment iframe.
-- `uiConfig`: Customize the look and feel of the form fields.
-- `locale`: Set the language/locale for the form.
-- `token`: The JWT from your backend (CommercePlatform-API).
-- `mode`: Choose "test" or "live" for the SDK environment.
-- `allowedCardSchemes`: Optional array of allowed card schemes (e.g., ["visa", "mastercard", "amex"]).
-- `customTextConfig`: Optional custom text configuration for localization.
-- `submitButtonConfig`: Provide a selector or element for the submit button.
-- `tokenizationSuccessCallback`: Handle the token, card details, and input mode on success.
-- `tokenizationFailureCallback`: Handle errors on failure.
+##### CreditcardTokenizerConfig parameters
+
+| Parameter | Type | Required | Since | Description |
+|-----------|------|----------|-------|-------------|
+| `iframeConfig` | `IframeConfig` | Yes | v1.0 | Container, size and z-index for the payment iframe |
+| `uiConfig` | `UIConfig?` | No | v1.0 | Visual appearance of the form |
+| `locale` | `String?` | No | v1.0 | Language locale for the form (e.g. `"de_DE"`, `"en_US"`) |
+| `token` | `String` | Yes | v1.0 | JWT from your backend (CommercePlatform-API) |
+| `mode` | `String?` | No | v1.0 | `"live"` or `"test"` (defaults to `"test"`) |
+| `allowedCardSchemes` | `[String]?` | No | v1.2 | Restrict accepted card brands in lowercase, e.g. `["visa", "mastercard", "amex", "diners", "discover", "jcb", "maestro", "unionpay"]`. All brands allowed if omitted. |
+| `customTextConfig` | `[String: LocaleTextConfig]?` | No | v1.3 | Per-locale overrides for labels, placeholders, aria-labels and error messages |
+| `submitButtonConfig` | `SubmitButtonConfig` | Yes | v1.0 | CSS selector of the submit button in your HTML |
+| `email` | `String?` | No | v1.4 | Pre-filled email address (used by Click-to-Pay) |
+| `showCardholderName` | `Bool` | No | v1.4 | Show or hide the cardholder name field (defaults to `true`) |
+| `customIconsConfig` | `CustomIconsConfig?` | No | v1.4 | Custom validation icons – see reference below |
+| `ctpConfig` | `CTPConfig?` | No | v1.3 | Click-to-Pay configuration – see reference below |
+| `tokenizationSuccessCallback` | `(Int, String, CardDetails, String) -> Void` | No | v1.0 | Called on success with status code, token, card details and input mode |
+| `tokenizationFailureCallback` | `(Int, [String: Any]) -> Void` | No | v1.0 | Called on failure with status code and error response |
+
+##### Tokenization callbacks
+
+**Success callback** – `(statusCode: Int, token: String, cardDetails: CardDetails, inputMode: String)`
+
+| Parameter | Description |
+|-----------|-------------|
+| `statusCode` | HTTP-style status code; `201` indicates successful tokenization |
+| `token` | Unique token representing the card – store this for future transactions |
+| `cardDetails` | Truncated card data (see `CardDetails` below) |
+| `inputMode` | Method used for tokenization: `"manual"`, `"register"` or `"ClickToPay"` |
+
+`CardDetails` properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `cardholderName` | `String` | Name of the cardholder as entered |
+| `cardNumber` | `String` | Truncated card number (e.g. `411111XXXXXX1111`) |
+| `expiryDate` | `String` | Card expiry in MMYY format (e.g. `1133` = November 2033) |
+| `cardType` | `String` | Card scheme (e.g. `VISA`, `MASTERCARD`) |
+
+**Failure callback** – `(statusCode: Int, errorResponse: [String: Any])`
+
+| Parameter | Description |
+|-----------|-------------|
+| `statusCode` | HTTP-style error code; `400` typically indicates invalid input |
+| `errorResponse` | Error details – use `errorResponse["error"]` for a descriptive message |
+
+##### IframeConfig parameters
+
+| Parameter | Type | Required | Since | Description |
+|-----------|------|----------|-------|-------------|
+| `iframeWrapperId` | `String` | Yes | v1.0 | ID of the HTML element that wraps the payment iframe |
+| `height` | `Double?` | No | v1.0 | Minimum height of the iframe in pixels; auto-adjusts if omitted |
+| `width` | `Double?` | No | v1.0 | Maximum width of the iframe in pixels (defaults to `400`) |
+| `zIndex` | `Int?` | No | v1.0.2 | CSS z-index of the iframe (defaults to `9999`) |
+
+##### UIConfig parameters
+
+All properties are optional. Supported file formats for `fontUrl`: `.woff2`, `.woff`, `.ttf`, `.otf`, `.eot`, `.svg`, `.sfnt`.
+
+**Basic appearance** (since v1.0)
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `formBgColor` | `String?` | Background color of the entire form | `"#E9EEF5"` |
+| `formMarginLeft` | `String?` | Left margin of the form (since v1.3) | `"20px"` |
+| `formMarginRight` | `String?` | Right margin of the form (since v1.3) | `"20px"` |
+| `fieldBgColor` | `String?` | Background color of input fields | `"#FDFDFD"` |
+| `fieldBorder` | `String?` | CSS border for input fields | `"#8FA8C8 solid 2px"` |
+| `fieldOutline` | `String?` | CSS outline on focus/active | `"#3B82F6 solid 3px"` |
+| `fieldLabelColor` | `String?` | Color of field labels | `"#334155"` |
+| `fieldPlaceholderColor` | `String?` | Color of placeholder text | `"#6B7280"` |
+| `fieldTextColor` | `String?` | Color of text entered by the user | `"#1E293B"` |
+| `fieldErrorCodeColor` | `String?` | Color of validation error messages | `"#D97706"` |
+
+**Font customization** (since v1.0.2, `fontSizeMobile` since v1.4)
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `fontFamily` | `String?` | CSS font-family for the form | `"Sansation"` |
+| `fontUrl` | `String?` | URL to load a custom web font | `"https://fonts.googleapis.com/..."` |
+| `labelStyle` | `FontStyle?` | Font size/weight for field labels | see below |
+| `inputStyle` | `FontStyle?` | Font size/weight for input text | see below |
+| `errorValidationStyle` | `FontStyle?` | Font size/weight for error messages | see below |
+| `manualEntryFormLabelStyle` | `FontStyle?` | Font size/weight for "Manually enter your card details" label (since v1.3) | see below |
+| `checkboxLabelStyle` | `FontStyle?` | Font size/weight for checkbox labels (since v1.3) | see below |
+| `termsTextStyle` | `FontStyle?` | Font size/weight for terms & privacy text (since v1.3) | see below |
+
+`FontStyle` has three optional `String` properties:
+- `fontSize` – unit value (e.g. `"20px"`, `"1.2rem"`)
+- `fontWeight` – any valid CSS value (e.g. `"900"`, `"normal"`, `"bold"`)
+- `fontSizeMobile` – font size for viewport width < 380 px (since v1.4)
+
+**Colors, borders & spacing** (since v1.3)
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `checkboxLabelColor` | `String?` | Color of checkbox label text | `"#334155"` |
+| `checkboxSize` | `String?` | Size of checkboxes | `"20px"` |
+| `btnBgColor` | `String?` | Submit button background color | `"#6390f2"` |
+| `btnTextColor` | `String?` | Submit button text color | `"#FFFFFF"` |
+| `btnBorderColor` | `String?` | Submit button border color | `"#6390f2"` |
+| `separatorColor` | `String?` | Color of the separator line | `"#8FA8C8"` |
+| `separatorTextColor` | `String?` | Color of separator text (e.g. "or") | `"#64748B"` |
+| `termsTextColor` | `String?` | Color of terms & privacy text | `"#475569"` |
+| `inputBorderRadius` | `String?` | Border radius of input fields | `"8px"` |
+| `inputBorderColorDefault` | `String?` | Input border color (default state) | `"#7a0f45"` |
+| `inputBorderColorSuccess` | `String?` | Input border color (valid input) | `"#22C55E"` |
+| `inputBorderColorError` | `String?` | Input border color (invalid input) | `"#821030"` |
+| `inputFocusOutline` | `String?` | Outline when an input has focus | `"#3B82F6 auto 0px"` |
+| `inputPadding` | `String?` | Padding inside input fields | `"12px 16px"` |
+| `fieldSpacingVertical` | `String?` | Gap between form elements | `"5px"` |
+| `labelMarginBottom` | `String?` | Spacing below field labels | `"10px"` |
+| `inputMarginBottom` | `String?` | Spacing below input fields | `"10px"` |
+| `errorMarginBottom` | `String?` | Spacing below error messages | `"10px"` |
+| `buttonMarginBottom` | `String?` | Spacing below the submit button | `"16px"` |
+| `separatorTextMarginBottom` | `String?` | Spacing below separator text | `"20px"` |
+| `checkboxTextMarginBottom` | `String?` | Spacing below checkbox text | `"10px"` |
+| `termsTextMarginBottom` | `String?` | Spacing below terms & privacy text | `"10px"` |
+| `iconWidth` | `String?` | Width of card brand / validation icons (since v1.4) | `"60px"` |
+| `iconPaddingRight` | `String?` | Right padding of icons (since v1.4) | `"20px"` |
+
+##### CustomIconsConfig (since v1.4)
+
+Replace the default validation icons with custom images. Supported formats: SVG, PNG, JPEG, WebP.
+
+```swift
+let customIconsConfig = CustomIconsConfig(
+    useCustomValidationIcons: true,
+    showCardBrandIcons: false,  // if true, shows detected card brand in card number field
+    successIcon: "/icons/valid.svg",
+    errorIcon: "/icons/invalid.svg"
+)
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `useCustomValidationIcons` | `Bool` | `false` | Enable custom validation icons |
+| `showCardBrandIcons` | `Bool` | `false` | Show detected card brand icon in card number field instead of validation icon (requires `useCustomValidationIcons: true`) |
+| `successIcon` | `String?` | – | Path or URL of the icon shown when validation passes |
+| `errorIcon` | `String?` | – | Path or URL of the icon shown when validation fails |
+
+##### CTPConfig – Click-to-Pay (since v1.3)
+
+Click-to-Pay is a wallet-based payment method by card schemes (Visa, Mastercard) that tokenizes stored cards, eliminating manual entry. You must be onboarded against the card schemes by PAYONE before using this feature.
+
+> [!IMPORTANT]
+> SDK version 1.3 or higher is required for Click-to-Pay. Use SDK version 1.4 for all new integrations.
+
+```swift
+let ctpConfig = CTPConfig(
+    schemeConfig: CTPSchemeConfig(
+        merchantPresentationName: "My Shop",
+        visaConfig: CTPVisaConfig(
+            srcInitiatorId: "YOUR_PAYONE_VISA_UUID",
+            srcDpaId: "YOUR_MERCHANT_UUID",
+            encryptionKey: "STRING",   // provided by PAYONE
+            nModulus: "STRING"         // provided by PAYONE
+        ),
+        mastercardConfig: CTPMastercardConfig(
+            srcInitiatorId: "YOUR_PAYONE_MC_UUID",
+            srcDpaId: "YOUR_MERCHANT_UUID"
+        )
+    ),
+    transactionAmount: CTPTransactionAmount(amount: "36.98", currencyCode: "EUR"),
+    enableCTP: true,
+    enableCustomerOnboarding: true,
+    uiConfig: CTPUIConfig(
+        buttonStyle: "solid",
+        buttonTextCase: "capitalize",
+        buttonAndBadgeColor: "#3B82F6",
+        accentColor: "#6390f2",
+        fontFamily: "Sansation",
+        buttonAndInputRadius: "1rem",
+        cardItemRadius: "2rem"
+    )
+)
+```
+
+**CTPConfig parameters**
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `enableCTP` | `Bool` | Yes | Set to `true` to enable Click-to-Pay |
+| `enableCustomerOnboarding` | `Bool` | Yes | Set to `true` to allow new customers to enrol during checkout |
+| `schemeConfig` | `CTPSchemeConfig` | Yes | Per-scheme configuration (Visa / Mastercard) |
+| `transactionAmount` | `CTPTransactionAmount` | Yes | Amount and currency displayed to the customer |
+| `uiConfig` | `CTPUIConfig?` | No | Visual customisation of the CTP component |
+
+**CTPSchemeConfig parameters**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `merchantPresentationName` | `String?` | Display name shown in the CTP flow |
+| `visaConfig` | `CTPVisaConfig?` | Visa: `srcInitiatorId`, `srcDpaId`, optional `encryptionKey`, `nModulus` |
+| `mastercardConfig` | `CTPMastercardConfig?` | Mastercard: `srcInitiatorId`, `srcDpaId` |
+
+**CTPUIConfig properties** (all optional)
+
+| Property | Description |
+|----------|-------------|
+| `buttonStyle` | Button style, e.g. `"solid"` or `"OUTLINED"` |
+| `buttonTextCase` | Text case, e.g. `"capitalize"` or `"upper"` |
+| `buttonAndBadgeColor` | Color of the CTP button and badge |
+| `buttonFilledHoverColor` | Hover color for filled button |
+| `buttonOutlinedHoverColor` | Hover color for outlined button |
+| `buttonDisabledColor` | Color when button is disabled |
+| `cardItemActiveColor` | Color of active card item |
+| `buttonAndBadgeTextColor` | Text color on button and badge |
+| `linkTextColor` | Color of links in the CTP component |
+| `accentColor` | Accent color |
+| `fontFamily` | Font family |
+| `buttonAndInputRadius` | Border radius for buttons and inputs |
+| `cardItemRadius` | Border radius for card items |
+
+##### LocaleTextConfig – custom text (since v1.3)
+
+Override labels, placeholders, aria-labels and error messages per locale. Pass a dictionary keyed by locale string (e.g. `"en"`, `"de"`, `"fr"`, `"cs"`) as `customTextConfig` in `CreditcardTokenizerConfig`.
+
+When Click-to-Pay is enabled, additional fields (`email`, `country`, `firstName`, `lastName`, `mobileNumber`, `addresslevel1`, `stateProvince`, `city`, `zipCode`) can also be customized in the same structure.
+
+```swift
+let customTextConfig: [String: LocaleTextConfig] = [
+    "en": LocaleTextConfig(
+        labels: LocaleTextLabels(
+            cardNumber: "Card Number",
+            cardholderName: "Cardholder Name",
+            expiryDate: "Expiry Date",
+            securityCode: "Security Code"
+        ),
+        placeholders: LocaleTextPlaceholders(
+            cardNumber: "1234 5678 9012 3456",
+            cardholderName: "John Doe",
+            expiryDate: "MM/YY",
+            securityCode: "CVV"
+        ),
+        arialabels: LocaleTextAriaLabels(
+            cardNumber: "Enter your card number",
+            cardholderName: "Enter the name on the card",
+            expiryDate: "Enter the expiration month and year of your card",
+            securityCode: "Enter the card verification code"
+        ),
+        errors: LocaleTextErrors(
+            cardNumber: CardNumberErrors(
+                isRequired: "Card number is required",
+                isInvalid: "Invalid card number",
+                isTooShort: "Card number is too short",
+                notSupported: "Card type not supported"
+            ),
+            cardholderName: CardholderNameErrors(
+                isRequired: "Cardholder name is required",
+                isInvalid: "Invalid cardholder name"
+            ),
+            expiryDate: ExpiryDateErrors(
+                isRequired: "Expiry date is required",
+                isInvalid: "Invalid expiry date"
+            ),
+            securityCode: SecurityCodeErrors(
+                isRequired: "Security code is required",
+                amexCardSecurityCodeError: "Invalid Amex security code",
+                generalSecurityCodeError: "Invalid security code"
+            )
+        )
+    )
+    // add more locales as needed
+]
+```
+
+> [!NOTE]
+> The iOS SDK `LocaleTextConfig` currently exposes the core card fields (`cardNumber`, `cardholderName`, `expiryDate`, `securityCode`). Additional CTP-related fields shown in the underlying JS SDK (`email`, `country`, `firstName`, etc.) are passed through as raw JSON when available.
 
 #### 6. PCI DSS & Security
 
@@ -297,7 +568,17 @@ CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewCon
 
 #### 7. Migration Note
 
-If you previously used the classic PAYONE Hosted IFrames, update your integration to use the new Hosted Tokenization SDK as shown above. The old `fields`, `defaultStyle`, and related config are no longer used.
+**Migrating from classic PAYONE Hosted IFrames:** Update your integration to use the Hosted Tokenization SDK as shown above. The old `fields`, `defaultStyle`, and related config are no longer used.
+
+**Migrating from iOS SDK v1.3 to v1.4:**
+
+- `jwtToken` is no longer a separate parameter of `CreditcardTokenizerView` / `CreditcardTokenizerViewController`. It is now `token` inside `CreditcardTokenizerConfig`.
+- `environment` has been renamed to `mode`.
+- The `tokenizationSuccessCallback` signature changed: the third argument is now a typed `CardDetails` object (instead of `[String: Any]`), and a fourth `inputMode: String` argument has been added.
+- `iframeConfig` and `submitButtonConfig` are now non-optional.
+- New optional parameters: `email`, `showCardholderName`, `customIconsConfig`.
+- `UIConfig` gained `formMarginLeft`, `formMarginRight`, `iconWidth`, `iconPaddingRight` and `fontSizeMobile` on `FontStyle`.
+- `IframeConfig` already had `zIndex` since the underlying JS SDK v1.0.2.
 
 **For more details, see the [demo project](Examples/) folder.**
 

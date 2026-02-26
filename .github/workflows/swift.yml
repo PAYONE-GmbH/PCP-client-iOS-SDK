@@ -8,6 +8,7 @@ on:
     branches: ['main']
   pull_request:
     branches: ['main', 'develop']
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,7 +22,7 @@ jobs:
       - name: Install SwiftLint
         run: brew install swiftlint
       - name: Build
-        run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+        run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2'
       - name: Run SwiftLint
         run: |
           set -o pipefail

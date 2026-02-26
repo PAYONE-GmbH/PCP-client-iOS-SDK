@@ -197,4 +197,82 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
     sut.webView?.configuration.userContentController.removeScriptMessageHandler(forName: "test")
     // No assertion needed, just ensure no crash
   }
+
+  func test_script_containsSDKVersion140URL() {
+    let sut = makeSUT(webView: webView)
+    sut.webView(sut.webView!, didFinish: mockNavigation)
+    let scripts = webView.invokedEvaluateJavaScriptParametersList
+    XCTAssertFalse(scripts.isEmpty)
+    let script = scripts.first ?? ""
+    XCTAssertTrue(
+      script.contains("1.4.0"),
+      "Expected SDK URL to contain 1.4.0 but got: \(script)"
+    )
+  }
+
+  func test_script_containsEmailAndShowCardholderName() {
+    let config = CreditcardTokenizerConfig(
+      iframeConfig: IframeConfig(iframeWrapperId: "payment-IFrame", height: Double(400), width: Double(400)),
+      uiConfig: nil,
+      locale: "en_US",
+      token: "tok",
+      mode: "test",
+      allowedCardSchemes: nil,
+      customTextConfig: nil,
+      submitButtonConfig: SubmitButtonConfig(selector: "#submit", element: nil),
+      email: "user@test.com",
+      showCardholderName: false
+    )
+    let sut = makeSUT(webView: webView, config: config)
+    sut.webView(sut.webView!, didFinish: mockNavigation)
+    let script = webView.invokedEvaluateJavaScriptParametersList.first ?? ""
+    XCTAssertTrue(script.contains("user@test.com"), "Expected email in script")
+    XCTAssertTrue(script.contains("showCardholderName: false"), "Expected showCardholderName: false in script")
+  }
+
+  func test_script_containsCustomIconsConfig() {
+    let icons = CustomIconsConfig(useCustomValidationIcons: true, successIcon: "/ok.svg", errorIcon: "/err.svg")
+    let config = CreditcardTokenizerConfig(
+      iframeConfig: IframeConfig(iframeWrapperId: "payment-IFrame", height: Double(400), width: Double(400)),
+      uiConfig: nil,
+      locale: nil,
+      token: "tok",
+      mode: "test",
+      allowedCardSchemes: nil,
+      customTextConfig: nil,
+      submitButtonConfig: SubmitButtonConfig(selector: "#submit", element: nil),
+      customIconsConfig: icons
+    )
+    let sut = makeSUT(webView: webView, config: config)
+    sut.webView(sut.webView!, didFinish: mockNavigation)
+    let script = webView.invokedEvaluateJavaScriptParametersList.first ?? ""
+    XCTAssertTrue(script.contains("customIconsConfig"), "Expected customIconsConfig in script")
+    XCTAssertTrue(script.contains("/ok.svg"), "Expected successIcon path in script")
+  }
+
+  func test_script_containsCTPConfig() {
+    let scheme = CTPSchemeConfig(
+      mastercardConfig: CTPMastercardConfig(srcInitiatorId: "m", srcDpaId: "md")
+    )
+    let ctp = CTPConfig(
+      schemeConfig: scheme,
+      transactionAmount: CTPTransactionAmount(amount: "500", currencyCode: "USD")
+    )
+    let config = CreditcardTokenizerConfig(
+      iframeConfig: IframeConfig(iframeWrapperId: "payment-IFrame", height: Double(400), width: Double(400)),
+      uiConfig: nil,
+      locale: nil,
+      token: "tok",
+      mode: "test",
+      allowedCardSchemes: nil,
+      customTextConfig: nil,
+      submitButtonConfig: SubmitButtonConfig(selector: "#submit", element: nil),
+      ctpConfig: ctp
+    )
+    let sut = makeSUT(webView: webView, config: config)
+    sut.webView(sut.webView!, didFinish: mockNavigation)
+    let script = webView.invokedEvaluateJavaScriptParametersList.first ?? ""
+    XCTAssertTrue(script.contains("CTPConfig"), "Expected CTPConfig key in script")
+    XCTAssertTrue(script.contains("USD"), "Expected currencyCode in script")
+  }
 }
