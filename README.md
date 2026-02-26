@@ -73,7 +73,7 @@ To integrate using Apple's Swift package manager, you have two options.
 Add the following as a dependency to your `Package.swift`:
 
 ```swift
-.package(url: "https://https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.3.0"))
+.package(url: "https://https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.4.0"))
 ```
 
 and then specify `"PCPClient"` as a dependency of the Target in which you wish to use PCPClient.
@@ -91,7 +91,7 @@ let package = Package(
             targets: ["MyPackage"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.3.0"))
+        .package(url: "https://github.com/PAYONE-GmbH/PCP-client-iOS-SDK.git", .upToNextMajor(from: "1.4.0"))
     ],
     targets: [
         .target(
