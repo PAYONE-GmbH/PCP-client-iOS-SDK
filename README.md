@@ -16,14 +16,9 @@ Welcome to the PAYONE Commerce Platform Client iOS SDK for the PAYONE Commerce P
 - [Installation](#installation)
 - [Usage](#usage)
   - [Creditcard Tokenizer](#creditcard-tokenizer)
-    - [1. Host your HTML page](#1-host-your-html-page)
-    - [2. Import PCPClient modules](#2-import-pcpclient-modules)
-    - [3. Configure the Tokenizer](#3-configure-the-tokenizer)
-    - [4. Fetch the JWT from your Backend](#4-fetch-the-jwt-token-from-your-backend)
-    - [5. Initialize and display the Tokenizer](#5-initialize-and-display-the-tokenizer)
-    - [6. Customization and Callbacks](#6-customization-and-callbacks)
-    - [7. PCI DSS & Security](#7-pci-dss--security)
-    - [7. Migration Note](#7-migration-note)
+    - [SDK integration guide](docs/creditcard-tokenizer.md)
+    - [Runnable Swift and Objective-C examples](Examples/CreditcardTokenizerDemoSupport/README.md)
+    - [Configuration reference](#creditcardtokenizerconfig-parameters)
   - [Fingerprint Tokenizer](#fingerprint-tokenizer)
     - [1. Import PCPClient modules](#1-import-pcpclient-modules)
     - [2. Create a new Fingerprint tokenizer instance](#2-create-a-new-fingerprint-tokenizer-instance)
@@ -150,7 +145,11 @@ import PCPClient
 
 ### Creditcard Tokenizer
 
-The Creditcard Tokenizer uses the PAYONE Hosted Tokenization SDK (v1.4). It securely collects and processes credit or debit card information in a PCI DSS-compliant way, returning a token for use in your server-side payment process.
+The Creditcard Tokenizer loads PAYONE Hosted Tokenization SDK 1.4.0 in a native WebKit view and returns a card token for use by your backend. Tokenization does not authorize a payment.
+
+- **[SDK integration guide](docs/creditcard-tokenizer.md):** runtime token handling, hosted/bundled HTML, HTTPS base origin, SwiftUI/UIKit/Objective-C usage, callbacks/errors, diagnostics and lifecycle.
+- **[Runnable examples](Examples/CreditcardTokenizerDemoSupport/README.md):** shared configurable screen, editable plist, token input and Requests & Responses trace. Tokens are entered at runtime; changing an expired token no longer requires rebuilding the app.
+- **[Configuration reference](#creditcardtokenizerconfig-parameters):** advanced styling, custom text/icons and Click-to-Pay types retained below.
 
 > **Hosted Tokenization SDK version history**
 > - **v1.0** – Initial release
@@ -159,131 +158,9 @@ The Creditcard Tokenizer uses the PAYONE Hosted Tokenization SDK (v1.4). It secu
 > - **v1.3** – Added `customTextConfig` for per-locale text overrides; added Click-to-Pay support (`CTPConfig`); extended `uiConfig` with button, separator, checkbox, terms, border-radius and spacing properties; added `manualEntryFormLabelStyle`, `checkboxLabelStyle`, `termsTextStyle` to `uiConfig`
 > - **v1.4** – Added `customIconsConfig` for custom validation icons; added `showCardholderName` to toggle the cardholder name field; added top-level `email` parameter; added `fontSizeMobile` to `FontStyle`; added `inputMode` to the success callback; updated `uiConfig` with remaining spacing and icon properties
 
-To integrate the Creditcard Tokenizer feature into your iOS application, follow these steps:
+#### Configuration reference
 
-#### 1. Host your HTML page
-
-Host your HTML page locally (for development) or on a server. The page must contain the payment IFrame and a submit button:
-
-```html
-<div id="payment-IFrame"></div>
-<button id="submit">Submit</button>
-```
-
-For a complete example, see [creditcard-tokenizer-example.html](./creditcard-tokenizer-example.html) or the demo app in `Examples/PCPClientSwiftDemo`.
-
-#### 2. Import PCPClient modules
-
-**Swift**
-
-```swift
-import PCPClient
-```
-
-**Objective-C**
-
-```objectivec
-@import PCPClient;
-@import PCPClientBridge;
-```
-
-#### 3. Configure the Tokenizer
-
-Create a config object to customise the UI and behaviour. See the demo app for more advanced usage.
-
-```swift
-let config = CreditcardTokenizerConfig(
-    iframeConfig: IframeConfig(
-        iframeWrapperId: "payment-IFrame",
-        height: 400,
-        width: 400,
-        zIndex: 9999           // optional, since v1.0.2, defaults to 9999
-    ),
-    uiConfig: UIConfig(
-        formBgColor: "#64bbb7",
-        fieldBgColor: "wheat",
-        fieldBorder: "1px solid #b33cd8",
-        fieldOutline: "#101010 solid 5px",
-        fieldLabelColor: "#d3d83c",
-        fieldPlaceholderColor: "blue",
-        fieldTextColor: "crimson",
-        fieldErrorCodeColor: "green"
-        // additional styling properties available – see UIConfig reference below
-    ),
-    locale: "de_DE",
-    token: "<Token to be retrieved from the CommercePlatform-API>", // fetch from your backend
-    mode: "live",              // "live" or "test"
-    allowedCardSchemes: nil,   // optional, since v1.2 – e.g. ["visa", "mastercard", "amex"]
-    customTextConfig: nil,     // optional, since v1.3 – see LocaleTextConfig reference below
-    submitButtonConfig: SubmitButtonConfig(selector: "#submit"),
-    email: nil,                // optional, since v1.4 – pre-fills email (used by Click-to-Pay)
-    showCardholderName: true,  // optional, since v1.4 – show/hide cardholder name field
-    customIconsConfig: nil,    // optional, since v1.4 – see CustomIconsConfig reference below
-    ctpConfig: nil,            // optional, since v1.3 – see CTPConfig reference below
-    tokenizationSuccessCallback: { statusCode, token, cardDetails, inputMode in
-        // statusCode 201 = success
-        // inputMode: "manual", "register" or "ClickToPay"
-        print("Tokenized: \(statusCode), token: \(token), card: \(cardDetails), mode: \(inputMode)")
-    },
-    tokenizationFailureCallback: { statusCode, errorResponse in
-        print("Failed: \(statusCode), error: \(String(describing: errorResponse["error"]))")
-    }
-)
-```
-
-For Objective-C, use the `CreditcardTokenizerConfigWrapper`:
-
-```objectivec
-CreditcardTokenizerConfigWrapper *config = [
-    [CreditcardTokenizerConfigWrapper alloc]
-        initWithIframeConfig:iframeConfig
-        uiConfig:uiConfig
-        locale:@"de_DE"
-        token:@"<Token to be retrieved from the CommercePlatform-API>"
-        mode:@"live"
-        allowedCardSchemes:nil
-        customTextConfig:nil
-        submitButtonConfig:submitButtonConfig
-        tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, CardDetails *cardDetails, NSString *inputMode) {
-            NSLog(@"Tokenized: %ld %@ %@ %@", (long)statusCode, token, cardDetails, inputMode);
-        }
-        tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
-            NSLog(@"Failed: %ld %@", (long)statusCode, errorResponse);
-        }
-];
-```
-
-#### 4. Initialize and display the Tokenizer
-
-Use the provided SwiftUI view or UIKit view controller. Pass the config and the URL to your hosted HTML page.
-
-**SwiftUI**
-
-```swift
-CreditcardTokenizerView(
-    tokenizerUrl: URL(string: "https://your-server/creditcard-tokenizer-example.html")!,
-    config: config
-)
-```
-
-**UIKit**
-
-```swift
-let viewController = CreditcardTokenizerViewController(
-    tokenizerUrl: URL(string: "https://your-server/creditcard-tokenizer-example.html")!,
-    config: config
-)
-```
-
-**Objective-C**
-
-```objectivec
-CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewController alloc]
-    initWithTokenizerUrl:[NSURL URLWithString:@"https://your-server/creditcard-tokenizer-example.html"]
-    config:config];
-```
-
-#### 5. Customization and Callbacks
+The following advanced options supplement the [step-by-step integration guide](docs/creditcard-tokenizer.md).
 
 ##### CreditcardTokenizerConfig parameters
 
@@ -311,7 +188,7 @@ CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewCon
 | Parameter | Description |
 |-----------|-------------|
 | `statusCode` | HTTP-style status code; `201` indicates successful tokenization |
-| `token` | Unique token representing the card – store this for future transactions |
+| `token` | Card token returned by PAYONE; pass it to your backend and follow its usage/lifetime contract |
 | `cardDetails` | Truncated card data (see `CardDetails` below) |
 | `inputMode` | Method used for tokenization: `"manual"`, `"register"` or `"ClickToPay"` |
 
@@ -336,7 +213,7 @@ CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewCon
 | Parameter | Type | Required | Since | Description |
 |-----------|------|----------|-------|-------------|
 | `iframeWrapperId` | `String` | Yes | v1.0 | ID of the HTML element that wraps the payment iframe |
-| `height` | `Double?` | No | v1.0 | Minimum height of the iframe in pixels; auto-adjusts if omitted |
+| `height` | `Double?` | No | v1.0 | Initial height of the iframe in pixels; defaults to 400 when omitted. PAYONE may adjust it after loading. |
 | `width` | `Double?` | No | v1.0 | Maximum width of the iframe in pixels (defaults to `400`) |
 | `zIndex` | `Int?` | No | v1.0.2 | CSS z-index of the iframe (defaults to `9999`) |
 
@@ -553,12 +430,12 @@ let customTextConfig: [String: LocaleTextConfig] = [
 ```
 
 > [!NOTE]
-> The iOS SDK `LocaleTextConfig` currently exposes the core card fields (`cardNumber`, `cardholderName`, `expiryDate`, `securityCode`). Additional CTP-related fields shown in the underlying JS SDK (`email`, `country`, `firstName`, etc.) are passed through as raw JSON when available.
+> The iOS SDK `LocaleTextConfig` exposes the typed core card fields (`cardNumber`, `cardholderName`, `expiryDate`, `securityCode`). Additional CTP-related fields shown in the JavaScript SDK are not an arbitrary raw-JSON passthrough in this API.
 
 #### 6. PCI DSS & Security
 
 - The SDK uses a JWT from your backend for secure initialization.
-- All card data is handled inside the iframe and never touches your application code.
+- Card entry is handled in the hosted iframe. Callbacks return the card token and service-provided metadata. Opt-in detailed diagnostics can additionally expose submitted card data and authorization headers to application code; the SDK leaves this mode disabled by default.
 
 #### 7. Migration Note
 

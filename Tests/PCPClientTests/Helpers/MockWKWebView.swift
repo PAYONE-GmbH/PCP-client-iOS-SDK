@@ -34,6 +34,18 @@ internal final class MockWKWebView: WKWebView {
     }
 
     internal var invokedLoadWithRequestList = [URLRequest]()
+    internal var invokedLoadFileURLs = [(url: URL, readAccessURL: URL)]()
+    internal var invokedLoadHTML = [(html: String, baseURL: URL?)]()
+
+    override internal func loadHTMLString(_ string: String, baseURL: URL?) -> WKNavigation? {
+        invokedLoadHTML.append((string, baseURL))
+        return nil
+    }
+
+    override internal func loadFileURL(_ URL: URL, allowingReadAccessTo readAccessURL: URL) -> WKNavigation? {
+        invokedLoadFileURLs.append((URL, readAccessURL))
+        return nil
+    }
 
     override internal func load(_ request: URLRequest) -> WKNavigation? {
         invokedLoadWithRequestList.append(request)

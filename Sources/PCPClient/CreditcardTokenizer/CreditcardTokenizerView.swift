@@ -13,23 +13,36 @@ import UIKit
 public struct CreditcardTokenizerView: UIViewControllerRepresentable {
   internal let tokenizerUrl: URL
   internal let config: CreditcardTokenizerConfig
+  internal let localHTMLBaseURL: URL?
+  internal let onDiagnosticEvent: ((String, [String: Any]) -> Void)?
+  internal let includeSensitiveDiagnosticData: Bool
 
   public init(
     tokenizerUrl: URL,
-    config: CreditcardTokenizerConfig
+    config: CreditcardTokenizerConfig,
+    localHTMLBaseURL: URL? = nil,
+    onDiagnosticEvent: ((String, [String: Any]) -> Void)? = nil,
+    includeSensitiveDiagnosticData: Bool = false
   ) {
     self.tokenizerUrl = tokenizerUrl
     self.config = config
+    self.localHTMLBaseURL = localHTMLBaseURL
+    self.onDiagnosticEvent = onDiagnosticEvent
+    self.includeSensitiveDiagnosticData = includeSensitiveDiagnosticData
   }
 
   public func makeUIViewController(context _: Context) -> CreditcardTokenizerViewController {
-    CreditcardTokenizerViewController(
+    let controller = CreditcardTokenizerViewController(
       tokenizerUrl: tokenizerUrl,
       config: config
     )
+    controller.localHTMLBaseURL = localHTMLBaseURL
+    controller.onDiagnosticEvent = onDiagnosticEvent
+    controller.includeSensitiveDiagnosticData = includeSensitiveDiagnosticData
+    return controller
   }
 
-  public func updateUIViewController(_: CreditcardTokenizerViewController, context _: Context) {
-    // Update the view controller if needed
+  public func updateUIViewController(_ controller: CreditcardTokenizerViewController, context _: Context) {
+    controller.onDiagnosticEvent = onDiagnosticEvent
   }
 }
