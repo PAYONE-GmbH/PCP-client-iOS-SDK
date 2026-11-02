@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: macos-27
 
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
       - name: Install SwiftLint
         run: brew install swiftlint
       - name: Build
-        run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2'
+        run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0'
       - name: Run SwiftLint
         run: |
           set -o pipefail
