@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C10000000000000000000001 /* Tokenizer configuration in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002; };
+		C10000000000000000000003 /* Tokenizer screen in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000004; };
+		C10000000000000000000005 /* Tokenizer configuration in Resources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000006; };
+		C10000000000000000000009 /* Tokenizer HTML in Resources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000A; };
 		B10000000000000000000001 /* ApplePayDemoStandardOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002; };
 		B10000000000000000000003 /* ApplePayDemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004; };
 		B10000000000000000000005 /* ApplePayDemoStandardOrder.plist in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006; };
@@ -29,6 +33,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C10000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../CreditcardTokenizerDemoSupport/CreditcardTokenizerDemoConfiguration.swift"; sourceTree = SOURCE_ROOT; };
+		C10000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../CreditcardTokenizerDemoSupport/CreditcardTokenizerDemoViewController.swift"; sourceTree = SOURCE_ROOT; };
+		C10000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "../CreditcardTokenizerDemoSupport/CreditcardTokenizerDemoConfiguration.plist"; sourceTree = SOURCE_ROOT; };
+		C1000000000000000000000A = {isa = PBXFileReference; lastKnownFileType = text.html; path = "../../creditcard-tokenizer-example.html"; sourceTree = SOURCE_ROOT; };
 		B10000000000000000000002 /* ApplePayDemoStandardOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../ApplePayDemoSupport/ApplePayDemoStandardOrder.swift"; sourceTree = SOURCE_ROOT; };
 		B10000000000000000000004 /* ApplePayDemoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../ApplePayDemoSupport/ApplePayDemoViewController.swift"; sourceTree = SOURCE_ROOT; };
 		B10000000000000000000006 /* ApplePayDemoStandardOrder.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "../ApplePayDemoSupport/ApplePayDemoStandardOrder.plist"; sourceTree = SOURCE_ROOT; };
@@ -71,6 +79,10 @@
 			children = (
 				95EB6E1A2C7FB26A005243D3 /* PCPClientObjcDemo */,
 				95EB6E192C7FB26A005243D3 /* Products */,
+				C10000000000000000000002,
+				C10000000000000000000004,
+				C10000000000000000000006,
+				C1000000000000000000000A,
                 A10000000000000000000002 /* ApplePayDemoCheckout.swift */,
 				A10000000000000000000006 /* DemoBackendClient.swift */,
 				B10000000000000000000002 /* ApplePayDemoStandardOrder.swift */,
@@ -175,6 +187,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				95EB6E282C7FB26A005243D3 /* Assets.xcassets in Resources */,
+				C10000000000000000000005 /* Tokenizer configuration in Resources */,
+				C10000000000000000000009 /* Tokenizer HTML in Resources */,
 				A1000000000000000000000D /* ApplePayDemoConfiguration.plist in Resources */,
 				B10000000000000000000005 /* ApplePayDemoStandardOrder.plist in Resources */,
 				95EB6E2B2C7FB26A005243D3 /* Base in Resources */,
@@ -196,6 +210,8 @@
 				A1000000000000000000000B /* ApplePayDemoConfiguration.swift in Sources */,
 				A10000000000000000000007 /* DemoCheckoutModels.swift in Sources */,
 				95EB6E232C7FB26A005243D3 /* ViewController.m in Sources */,
+				C10000000000000000000001 /* Tokenizer configuration in Sources */,
+				C10000000000000000000003 /* Tokenizer screen in Sources */,
 				95EB6E1D2C7FB26A005243D3 /* AppDelegate.m in Sources */,
 				95EB6E2E2C7FB26A005243D3 /* main.m in Sources */,
 				95EB6E202C7FB26A005243D3 /* SceneDelegate.m in Sources */,

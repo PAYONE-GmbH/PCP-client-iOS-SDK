@@ -15,6 +15,13 @@
     {
       "target" : {
         "containerPath" : "container:",
+        "identifier" : "CreditcardTokenizerDemoTests",
+        "name" : "CreditcardTokenizerDemoTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
         "identifier" : "ApplePayDemoTests",
         "name" : "ApplePayDemoTests"
       }

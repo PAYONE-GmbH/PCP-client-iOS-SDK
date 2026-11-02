@@ -77,76 +77,14 @@
     [self.navigationController pushViewController:controller animated:YES];
 }
 - (IBAction)startCreditcardTokenizer:(id)sender {
-    NSURL *url = [[NSURL alloc] initWithString:@"YOUR_URL"];
-    UIConfig *uiConfig = [[UIConfig alloc] initWithFormBgColor:@"#fff"
-                                                  formMarginLeft:nil
-                                                 formMarginRight:nil
-                                                  fieldBgColor:@"#f9f9f9"
-                                                   fieldBorder:@"1px solid #000"
-                                                  fieldOutline:@"none"
-                                               fieldLabelColor:@"#333"
-                                         fieldPlaceholderColor:@"#aaa"
-                                                fieldTextColor:@"#000"
-                                           fieldErrorCodeColor:@"#f00"
-                                                    fontFamily:nil
-                                                       fontUrl:nil
-                                                    labelStyle:nil
-                                                    inputStyle:nil
-                                          errorValidationStyle:nil
-                                      manualEntryFormLabelStyle:nil
-                                            checkboxLabelStyle:nil
-                                                termsTextStyle:nil
-                                           checkboxLabelColor:nil
-                                                  checkboxSize:nil
-                                                    btnBgColor:nil
-                                                  btnTextColor:nil
-                                              btnBorderColor:nil
-                                                separatorColor:nil
-                                            separatorTextColor:nil
-                                               termsTextColor:nil
-                                           inputBorderRadius:nil
-                                      inputBorderColorDefault:nil
-                                      inputBorderColorSuccess:nil
-                                        inputBorderColorError:nil
-                                             inputFocusOutline:nil
-                                                  inputPadding:nil
-                                          fieldSpacingVertical:nil
-                                            labelMarginBottom:nil
-                                            inputMarginBottom:nil
-                                            errorMarginBottom:nil
-                                           buttonMarginBottom:nil
-                                   separatorTextMarginBottom:nil
-                                   checkboxTextMarginBottom:nil
-                                      termsTextMarginBottom:nil
-                                                   iconWidth:nil
-                                            iconPaddingRight:nil];
-    
-    IframeConfig *iframeConfig = [[IframeConfig alloc] initWithIframeWrapperId:@"payment-IFrame" height:@400 width:@400 zIndex:nil];
-    
-    SubmitButtonConfig *submitButtonConfig = [[SubmitButtonConfig alloc] initWithSelector:@"#submit" element:nil];
-    
-    CreditcardTokenizerConfigWrapper *config = [
-            [CreditcardTokenizerConfigWrapper alloc]
-                    initWithIframeConfig:iframeConfig
-                    uiConfig:uiConfig
-                    locale:@"de_DE"
-                    token:@"<Token to be retrieved from the CommercePlatform-API>"
-                    mode:@"test"
-                    allowedCardSchemes:nil
-                    customTextConfig:nil
-                    submitButtonConfig:submitButtonConfig 
-                    tokenizationSuccessCallback:^(NSInteger statusCode, NSString *token, CardDetails *cardDetails, NSString *inputMode) {
-                        self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Success: %ld %@ %@ %@", (long)statusCode, token, cardDetails, inputMode];
-                        [self.navigationController popViewControllerAnimated:true];
-                    }   
-                    tokenizationFailureCallback:^(NSInteger statusCode, NSDictionary *errorResponse) {
-                        self.creditcardTokenizerResponseLabel.text = [NSString stringWithFormat:@"Failure: %ld %@", (long)statusCode, errorResponse];
-                        [self.navigationController popViewControllerAnimated:true];
-                    }
-    ];
-
-    CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewController alloc] initWithTokenizerUrl:url config:config.creditcardTokenizerConfig];
-    [self.navigationController pushViewController:viewController animated:true];
+    NSError *error = nil;
+    CreditcardTokenizerDemoConfiguration *configuration = [CreditcardTokenizerDemoConfiguration loadFromBundle:NSBundle.mainBundle error:&error];
+    if (!configuration) {
+        self.creditcardTokenizerResponseLabel.text = error.localizedDescription;
+        return;
+    }
+    CreditcardTokenizerDemoViewController *controller = [[CreditcardTokenizerDemoViewController alloc] initWithConfiguration:configuration];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 @end

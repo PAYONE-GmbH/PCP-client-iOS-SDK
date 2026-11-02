@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>pageURL</key>
+        <string></string>
+        <key>htmlResourceName</key>
+        <string>creditcard-tokenizer-example</string>
+        <key>localHTMLBaseURL</key>
+        <string>https://payone-apple-pay-demo-server.nanogiants-services.de/</string>
+        <key>mode</key>
+        <string>test</string>
+        <key>token</key>
+        <string></string>
+        <key>locale</key>
+        <string>de_DE</string>
+        <key>iframeWrapperID</key>
+        <string>payment-IFrame</string>
+        <key>submitButtonSelector</key>
+        <string>#submit</string>
+        <key>iframeHeight</key>
+        <real>400</real>
+        <key>iframeWidth</key>
+        <real>400</real>
+        <key>allowedCardSchemes</key>
+        <array>
+            <string>visa</string>
+            <string>mastercard</string>
+            <string>amex</string>
+        </array>
+        <key>showCardholderName</key>
+        <true/>
+        <key>includeSensitiveDiagnosticData</key>
+        <true/>
+    </dict>
+</plist>

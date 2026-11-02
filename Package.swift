@@ -41,6 +41,13 @@ let package = Package(
         .testTarget(
             name: "PCPClientBridgeTests",
             dependencies: ["PCPClientBridge"]
+        ),
+        .testTarget(
+            name: "CreditcardTokenizerDemoTests",
+            dependencies: ["PCPClient"],
+            path: "Examples/CreditcardTokenizerDemoSupport",
+            exclude: ["README.md"],
+            resources: [.copy("CreditcardTokenizerDemoConfiguration.plist")]
         )
     ]
 )
