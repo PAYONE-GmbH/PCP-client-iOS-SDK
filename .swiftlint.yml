@@ -32,6 +32,7 @@ disabled_rules:
   - identifier_name
   - file_length
   - discouraged_optional_collection
+  - variable_shadowing
 
 file_header:
   required_pattern: |
@@ -45,12 +46,12 @@ file_header:
 # Configurations
 attributes:
   always_on_same_line:
-    - '@IBSegueAction'
-    - '@IBAction'
-    - '@NSManaged'
-    - '@objc'
+    - "@IBSegueAction"
+    - "@IBAction"
+    - "@NSManaged"
+    - "@objc"
   always_on_line_above:
-    - '@discardableResult'
+    - "@discardableResult"
 
 force_cast: error
 

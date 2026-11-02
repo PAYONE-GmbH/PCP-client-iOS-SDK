@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>merchantIdentifier</key>
+	<string>merchant.de.nanogiants.payonedemo</string>
+	<key>baseURL</key>
+	<string>https://payone-apple-pay-demo-server.nanogiants-services.de</string>
+	<key>cartID</key>
+	<string>demo-cart-1</string>
+	<key>countryCode</key>
+	<string>DE</string>
+	<key>currencyCode</key>
+	<string>EUR</string>
+	<key>initialShippingMethodIdentifier</key>
+	<string>standard</string>
+</dict>
+</plist>
