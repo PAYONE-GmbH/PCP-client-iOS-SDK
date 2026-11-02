@@ -15,8 +15,6 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *fingerprintTokenLabel;
 @property (nonatomic, strong) FingerprintTokenizerWrapper *tokenizerWrapper;
-@property (nonatomic, strong) ApplePayDemoCheckout *applePayCheckout;
-@property (nonatomic, strong) PKPaymentButton *applePayButton;
 @property (weak, nonatomic) IBOutlet UILabel *applePayResultLabel;
 @property (weak, nonatomic) IBOutlet UILabel *creditcardTokenizerResponseLabel;
 
@@ -27,32 +25,26 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.applePayResultLabel.text = @"Apple Pay Express Demo – keine echte Zahlung";
+    self.applePayResultLabel.text = @"Apple Pay Beispiele – keine echte Zahlung";
     self.applePayResultLabel.numberOfLines = 0;
-    NSError *configurationError = nil;
-    ApplePayDemoConfiguration *configuration = [ApplePayDemoConfiguration loadFromBundle:NSBundle.mainBundle error:&configurationError];
-    if (configuration) {
-        self.applePayCheckout = [[ApplePayDemoCheckout alloc] initWithConfiguration:configuration];
-    } else {
-        self.applePayResultLabel.text = configurationError.localizedDescription;
-    }
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
-    if (!self.applePayButton && [self.applePayCheckout supportsApplePay]) {
-        PKPaymentButton *applePayButton = [PKPaymentButton buttonWithType: PKPaymentButtonTypePlain style:PKPaymentButtonStyleBlack];
-        applePayButton.translatesAutoresizingMaskIntoConstraints = false;
-        [self.view addSubview:applePayButton];
-        self.applePayButton = applePayButton;
-
-        [applePayButton.leadingAnchor constraintEqualToAnchor:self.fingerprintTokenLabel.leadingAnchor].active = true;
-        [applePayButton.trailingAnchor constraintEqualToAnchor:self.fingerprintTokenLabel.trailingAnchor].active = true;
-        [applePayButton.bottomAnchor constraintEqualToAnchor:self.applePayResultLabel.topAnchor constant:-8.0].active = true;
-
-        [applePayButton addTarget:self action:@selector(startApplePay:) forControlEvents:UIControlEventTouchUpInside];
-    }
+    UIStackView *menu = [[UIStackView alloc] init];
+    menu.axis = UILayoutConstraintAxisVertical;
+    menu.spacing = 8;
+    menu.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:menu];
+    [NSLayoutConstraint activateConstraints:@[
+        [menu.leadingAnchor constraintEqualToAnchor:self.fingerprintTokenLabel.leadingAnchor],
+        [menu.trailingAnchor constraintEqualToAnchor:self.fingerprintTokenLabel.trailingAnchor],
+        [menu.bottomAnchor constraintEqualToAnchor:self.applePayResultLabel.topAnchor constant:-8]
+    ]];
+    UIButton *standard = [UIButton buttonWithType:UIButtonTypeSystem];
+    [standard setTitle:@"Go to Apple Pay Standard Checkout" forState:UIControlStateNormal];
+    [standard addTarget:self action:@selector(showStandardApplePay:) forControlEvents:UIControlEventTouchUpInside];
+    [menu addArrangedSubview:standard];
+    UIButton *express = [UIButton buttonWithType:UIButtonTypeSystem];
+    [express setTitle:@"Go to Apple Pay Express Checkout" forState:UIControlStateNormal];
+    [express addTarget:self action:@selector(showExpressApplePay:) forControlEvents:UIControlEventTouchUpInside];
+    [menu addArrangedSubview:express];
 }
 
 - (IBAction)startFingerprintTokenizer:(id)sender {
@@ -65,14 +57,24 @@
     }];
 }
 
--(void)startApplePay:(id)sender {
-    self.applePayButton.enabled = NO;
-    self.applePayResultLabel.text = @"Demo-Versandangebot wird geladen …";
-    __weak typeof(self) weakSelf = self;
-    [self.applePayCheckout startWithCompletion:^(NSString *result) {
-        weakSelf.applePayResultLabel.text = result;
-        weakSelf.applePayButton.enabled = YES;
-    }];
+- (void)showStandardApplePay:(id)sender {
+    [self showApplePayWithStandardOrder:YES];
+}
+
+- (void)showExpressApplePay:(id)sender {
+    [self showApplePayWithStandardOrder:NO];
+}
+
+- (void)showApplePayWithStandardOrder:(BOOL)standard {
+    NSError *error = nil;
+    ApplePayDemoConfiguration *configuration = [ApplePayDemoConfiguration loadFromBundle:NSBundle.mainBundle error:&error];
+    ApplePayDemoStandardOrder *order = standard ? [ApplePayDemoStandardOrder loadFromBundle:NSBundle.mainBundle error:&error] : nil;
+    if (!configuration || (standard && !order)) {
+        self.applePayResultLabel.text = error.localizedDescription;
+        return;
+    }
+    ApplePayDemoViewController *controller = [[ApplePayDemoViewController alloc] initWithConfiguration:configuration standardOrder:order];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 - (IBAction)startCreditcardTokenizer:(id)sender {
     NSError *error = nil;

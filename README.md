@@ -24,6 +24,8 @@ Welcome to the PAYONE Commerce Platform Client iOS SDK for the PAYONE Commerce P
     - [2. Create a new Fingerprint tokenizer instance](#2-create-a-new-fingerprint-tokenizer-instance)
     - [3. Get the snippet token](#3-get-the-snippet-token)
   - [Apple Pay Session Integration](#apple-pay-session-integration)
+    - [Standard and Express flow comparison](docs/apple-pay.md)
+    - [Apple Pay Standard integration guide](docs/apple-pay-standard.md)
     - [Apple Pay Express integration guide](docs/apple-pay-express.md)
     - [Runnable Swift and Objective-C examples](Examples/ApplePayDemoSupport/README.md)
   - [PayPal Web Payments Integration](#paypal-web-payments-integration)
@@ -549,7 +551,10 @@ For further information see: https://docs.payone.com/pcp/commerce-platform-payme
 
 ### Apple Pay Session Integration
 
-`ApplePayHandler` supports native PassKit checkout, including Apple Pay Express with asynchronous shipping/contact updates and merchant-defined authorization.
+`ApplePayHandler` supports both native PassKit payment flows: **Standard**, with precollected order contacts and fixed shipping/totals, and **Express**, with sheet contact/shipping selection and asynchronous recalculation. Both use merchant-defined authorization.
+
+- **[Standard versus Express](docs/apple-pay.md):** flow selection and integration responsibilities.
+- **[Standard integration guide](docs/apple-pay-standard.md):** precollected order parameters, fixed payment request, authorization and backend processing.
 
 - **[SDK integration guide](docs/apple-pay-express.md):** prerequisites, signing/entitlements, request configuration, Swift/Objective-C integration, callback/lifecycle reference, errors/timeouts and migration from the URL transport.
 - **[Runnable examples](Examples/ApplePayDemoSupport/README.md):** SwiftUI and Objective-C apps sharing a small merchant-backend adapter, configuration, exact demo HTTP contract and device checks.

@@ -26,6 +26,7 @@ struct ContentView: View {
         Text(fingerprintToken)
         NavigationLink(destination: CreditcardTokenizerDemoView()) { Text("Go to Creditcard Tokenizer") }
         NavigationLink(destination: PayPalWebPaymentsView()) { Text("Go to PayPal Web Payments") }
+        NavigationLink(destination: ApplePayStandardView()) { Text("Go to Apple Pay Standard Checkout") }
         NavigationLink(destination: ApplePayExpressView()) { Text("Go to Apple Pay Express Checkout") }
         Spacer()
       }
