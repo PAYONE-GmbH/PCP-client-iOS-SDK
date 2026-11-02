@@ -21,6 +21,9 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
   private var webView: MockWKWebView!
   private let tokenizerURL = URL(string: "https://payone-test-app-very-long-title.com")!
 
+  // WebKit launches a separate content process, which can be slow on a cold CI simulator.
+  private let webKitTimeout: TimeInterval = 30
+
   // MARK: - Test Lifecycle
 
   override internal func setUp() {
@@ -36,6 +39,35 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
   }
 
   // MARK: - Tests (Cleaned)
+
+  private func makeBrowser(frame: CGRect = .zero) -> WKWebView {
+    let browser = WKWebView(frame: frame)
+    addTeardownBlock {
+      browser.stopLoading()
+      browser.navigationDelegate = nil
+      let content = browser.configuration.userContentController
+      content.removeAllUserScripts()
+      for name in CreditcardTokenizerMessageHandler.names {
+        content.removeScriptMessageHandler(forName: name)
+      }
+    }
+    return browser
+  }
+
+  private func waitForWebKit(
+    _ expectations: [XCTestExpectation], file: StaticString = #filePath, line: UInt = #line
+  ) -> Bool {
+    let result = XCTWaiter.wait(for: expectations, timeout: webKitTimeout)
+    guard result == .completed else {
+      XCTFail(
+        "WebKit did not complete: \(expectations.map(\.expectationDescription)) (\(result))",
+        file: file,
+        line: line
+      )
+      return false
+    }
+    return true
+  }
 
   func test_localHTMLWithHTTPSBaseLoadsBundledContentsWithoutRequestingHostedHTML() throws {
     let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".html")
@@ -167,7 +199,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
         received.fulfill()
       }
     )
-    let browser = WKWebView()
+    let browser = makeBrowser()
     let controller = makeSUT(webView: browser, config: config)
     browser.navigationDelegate = controller
     browser.loadHTMLString("""
@@ -183,7 +215,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
       document.head.appendChild = function(script) { script.onload(); return script; };
       </script></head><body><button id="submit">Submit</button></body></html>
       """, baseURL: nil)
-    wait(for: [received], timeout: 5)
+    _ = waitForWebKit([received])
     withExtendedLifetime(controller) {}
   }
 
@@ -241,7 +273,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
         failed.fulfill()
       }
     )
-    let browser = WKWebView(frame: CGRect(x: 0, y: 0, width: 800, height: 600))
+    let browser = makeBrowser(frame: CGRect(x: 0, y: 0, width: 800, height: 600))
     let sut = makeSUT(webView: browser, config: config)
     browser.navigationDelegate = sut
     // Execute our actual injected script in WebKit, without contacting PAYONE.
@@ -269,9 +301,9 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
         }
       };
       document.head.appendChild = function(script) { script.onload(); return script; };
-      </script></head><body><div id="payment-IFrame"></div></body></html>
+      </script></head><body><div id="payment-IFrame"></div><button id="submit">Submit</button></body></html>
       """, baseURL: nil)
-    wait(for: [failed], timeout: 5)
+    _ = waitForWebKit([failed])
     withExtendedLifetime(sut) {}
   }
 
@@ -283,7 +315,7 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
 
   func test_diagnosticsFollowSDKCallsWithoutExposingTokenOrCardInput() {
     let completed = expectation(description: "Tokenization diagnostic response")
-    let browser = WKWebView()
+    let browser = makeBrowser()
     let sut = makeSUT(webView: browser)
     var events: [(String, [String: Any])] = []
     sut.onDiagnosticEvent = { name, details in
@@ -309,7 +341,9 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
       document.head.appendChild = function(script) { script.onload(); return script; };
       </script></head><body><button id="submit">Submit</button></body></html>
       """, baseURL: nil)
-    wait(for: [completed], timeout: 5)
+    guard waitForWebKit([completed]) else {
+      return
+    }
     XCTAssertEqual(events.map(\.0), [
       "Request · loadScript", "Response · loadScript", "Request · init", "Response · init",
       "Request · getPaymentPage", "Response · getPaymentPage", "Request · submitForm", "Response · submitForm"
@@ -337,16 +371,18 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
     XCTAssertEqual(details["statusCode"] as? Int, 400)
   }
 
-  func test_sensitiveDiagnosticsIncludeActualRequestAndResponsePayloadsWhenEnabled() {
-    for transport in ["fetch", "xhr"] {
-      assertSensitiveDiagnostics(transport: transport)
-    }
+  func test_sensitiveDiagnosticsIncludeActualFetchRequestAndResponsePayloadsWhenEnabled() {
+    assertSensitiveDiagnostics(transport: "fetch")
+  }
+
+  func test_sensitiveDiagnosticsIncludeActualXHRRequestAndResponsePayloadsWhenEnabled() {
+    assertSensitiveDiagnostics(transport: "xhr")
   }
 
   private func assertSensitiveDiagnostics(transport: String) {
-    let requests = expectation(description: "HTTP request")
-    let responses = expectation(description: "HTTP response")
-    let browser = WKWebView()
+    let requests = expectation(description: "\(transport) HTTP request")
+    let responses = expectation(description: "\(transport) HTTP response")
+    let browser = makeBrowser()
     let sut = makeSUT(webView: browser)
     sut.includeSensitiveDiagnosticData = true
     var request: [String: Any] = [:]
@@ -393,7 +429,9 @@ internal final class CreditcardTokenizerViewControllerTests: XCTestCase {
       }
       </script></body></html>
       """, baseURL: URL(string: "https://iframe.preprod.tokenization.secure.payone.com"))
-    wait(for: [requests, responses], timeout: 5)
+    guard waitForWebKit([requests, responses]) else {
+      return
+    }
     XCTAssertEqual(request["method"] as? String, "POST")
     XCTAssertEqual((request["headers"] as? [String: String])?["authorization"], "Bearer test-credential")
     XCTAssertEqual((request["body"] as? [String: String])?["cardNumber"], "4111111111111111")
