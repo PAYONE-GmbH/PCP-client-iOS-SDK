@@ -5,174 +5,286 @@
 // For the full copyright and license information, please view the LICENSE
 // file that was distributed with this source code.
 //
+
 import Foundation
 import PassKit
-import SwiftUI
 
-/// Apple Pay handling object which can send updates when user payment information changes and send the payment
-/// token to your server.
+/// Presents native Apple Pay with merchant-defined checkout and authorization callbacks.
+/// Configure and start on main. Async reply blocks may be called from any queue;
+/// the handler delivers them to PassKit once, on main, with a 25-second fallback.
 @objc public class ApplePayHandler: NSObject, PKPaymentAuthorizationControllerDelegate {
-    /// `PKPaymentAuthorizationController` which usually shouldn't be changed or needed.
+    public typealias ShippingContactCompletion = (PKPaymentRequestShippingContactUpdate) -> Void
+    public typealias ShippingMethodCompletion = (PKPaymentRequestShippingMethodUpdate) -> Void
+
+    /// The current sheet controller. Observe only; do not replace it during checkout.
     @objc public var paymentController: PKPaymentAuthorizationController?
-    /// Completion to call when the payment authorization result was retrieved.
+    /// Observes each authorization attempt after its PassKit reply, not the final dismissal.
     @objc public var didAuthorizePayment: ((PKPaymentAuthorizationResult) -> Void)?
-    /// Completion to call when the shipping contact did change.
+    /// Legacy synchronous notification. Use updateShippingContact for asynchronous recalculation.
     @objc public var didSelectShippingContact: ((PKContact) -> Void)?
-    
-    /// Completion to call when the shipping method did change.
+    /// Legacy synchronous shipping update. Overridden by updateShippingMethod when configured.
     @objc public var onShippingMethodDidChange: ((PKShippingMethod) -> PKPaymentRequestShippingMethodUpdate)?
-    /// Completion to call when the payment method was selected.
+    /// Synchronous card update. Replaced by the block supplied to each startPayment call.
     @objc public var onDidSelectPaymentMethod: ((PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate)?
-    /// Completion to call when a coupon was applied.
+    /// Synchronous coupon update. Asynchronous coupon recalculation is not supported by this callback.
     @objc public var onChangeCouponCode: ((String) -> PKPaymentRequestCouponCodeUpdate)?
 
-    private var paymentStatus: PKPaymentAuthorizationStatus = .failure
-    private var completion: ((Bool) -> Void)?
-    private let processPaymentServerUrl: URL
-    private let urlSession: URLSession
-    internal var request: PKPaymentRequest?
+    /// Async callbacks take precedence over their synchronous counterparts. Complete within 25 seconds.
+    @objc public var updateShippingContact: ((PKContact, @escaping ShippingContactCompletion) -> Void)?
+    /// Recalculate totals for the selected method. Takes precedence over onShippingMethodDidChange.
+    @objc public var updateShippingMethod: ((PKShippingMethod, @escaping ShippingMethodCompletion) -> Void)?
+    /// Submit the complete payment to your backend and return its authorization result.
+    /// This overrides the URL-based transport, allowing arbitrary merchant backend contracts.
+    @objc public var authorizePayment: ((PKPayment, @escaping (PKPaymentAuthorizationResult) -> Void) -> Void)?
+    /// Final session result, after dismissal or failed presentation. Called once per accepted start.
+    @objc public var didFinish: ((ApplePayCompletionStatus) -> Void)?
 
-    /// - Parameters:
-    ///   - processPaymentServerUrl: The URL where the handler should send your the payment token to.
-    ///   - urlSession: Optional `URLSession`, will use `URLSession.shared` as default.
-    @objc public init(
-        processPaymentServerUrl: URL,
-        urlSession: URLSession = URLSession.shared
-    ) {
-        self.processPaymentServerUrl = processPaymentServerUrl
-        self.urlSession = urlSession
+    private var paymentStatus: PKPaymentAuthorizationStatus = .failure
+    private var attemptedAuthorization = false
+    private var completion: ((Bool) -> Void)?
+    private let transport: ApplePayPaymentTransport?
+    private var sessionID: UUID?
+    private var task: URLSessionDataTask?
+    internal var request: PKPaymentRequest?
+    internal var callbackTimeout: TimeInterval = 25
+    internal var controllerFactory: (PKPaymentRequest) -> PKPaymentAuthorizationController = { request in
+        PKPaymentAuthorizationController(paymentRequest: request)
     }
-    
-    /// Tells whether or not Apple Pay is supported depending on your request. Use this to show and hide the
-    /// Apple Pay button.
-    /// - Returns: True if Apple Pay is supported.
+
+    /// Use with `authorizePayment` to implement your own backend contract.
+    @objc override public init() {
+        transport = nil
+        super.init()
+    }
+
+    /// Default transport POSTs token.paymentData (JSON), paymentMethod and transactionIdentifier.
+    /// Success requires HTTP 200 and a JSON object containing `success: true`.
+    @objc public init(processPaymentServerUrl: URL, urlSession: URLSession = .shared) {
+        transport = ApplePayPaymentTransport(url: processPaymentServerUrl, session: urlSession)
+        super.init()
+    }
+
+    /// Checks device capability and, during checkout, the request's networks and capabilities.
+    /// Before starting, use PassKit's network-aware check if the actual card eligibility is required.
     @objc public func supportsApplePay() -> Bool {
         guard let request else {
             return PKPaymentAuthorizationController.canMakePayments()
         }
         return PKPaymentAuthorizationController.canMakePayments() &&
             PKPaymentAuthorizationController.canMakePayments(
-                usingNetworks: request.supportedNetworks,
-                capabilities: request.merchantCapabilities
+                usingNetworks: request.supportedNetworks, capabilities: request.merchantCapabilities
             )
     }
-    
-    /// Initializes the payment and completes if Apple Pay process did work.
-    /// - Parameters:
-    ///   - request: The `PKPaymentRequest`.
-    ///   - onDidSelectPaymentMethod: A completion that will be triggered when the payment method changes.
-    ///   - completion: The completion that will be triggered when the process is finished.
+
+    /// Presents one session. The handler must be retained until completion.
+    /// A concurrent start is rejected with false without replacing the active checkout or invoking didFinish.
+    /// The Boolean observer runs immediately before didFinish; true means the final attempt succeeded.
     @objc public func startPayment(
         request: PKPaymentRequest,
         onDidSelectPaymentMethod: @escaping @convention(block) (PKPaymentMethod) -> PKPaymentRequestPaymentMethodUpdate,
         completion: @escaping @convention(block) (Bool) -> Void
     ) {
-        PCPLogger.info("Starts payment request.")
+        guard sessionID == nil else {
+            completion(false)
+            return
+        }
         self.request = request
         self.completion = completion
         self.onDidSelectPaymentMethod = onDidSelectPaymentMethod
-        self.paymentController = PKPaymentAuthorizationController(paymentRequest: request)
-        paymentController?.delegate = self
-        paymentController?.present()
+        paymentStatus = .failure
+        attemptedAuthorization = false
+        let identifier = UUID()
+        sessionID = identifier
+        let controller = controllerFactory(request)
+        paymentController = controller
+        controller.delegate = self
+        controller.present { [weak self] presented in
+            DispatchQueue.main.async {
+                guard let self, self.sessionID == identifier, !presented else {
+                    return
+                }
+                self.finish(.failure)
+            }
+        }
+    }
+
+    private func finish(_ status: ApplePayCompletionStatus) {
+        guard sessionID != nil else {
+            return
+        }
+        sessionID = nil
+        task?.cancel()
+        task = nil
+        paymentController = nil
+        request = nil
+        onDidSelectPaymentMethod = nil
+        let callback = completion
+        let finishCallback = didFinish
+        completion = nil
+        callback?(status == .success)
+        finishCallback?(status)
     }
 
     public func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController) {
-        PCPLogger.info("Dismisses PKPaymentAuthorizationController.")
-        controller.dismiss()
-        completion?(paymentStatus == .success)
+        guard controller === paymentController, let identifier = sessionID else {
+            return
+        }
+        let status: ApplePayCompletionStatus = paymentStatus == .success ? .success :
+            (attemptedAuthorization ? .failure : .cancelled)
+        controller.dismiss { [weak self] in
+            guard self?.sessionID == identifier else {
+                return
+            }
+            self?.finish(status)
+        }
+    }
+
+    /// Ensures a callback completes once, on main, before PassKit's deadline. Late replies are ignored.
+    private func reply<Value>(fallback: Value, completion: @escaping (Value) -> Void) -> (Value) -> Void {
+        let identifier = sessionID
+        var completed = false
+        var timeout: DispatchWorkItem?
+        let respond: (Value) -> Void = { [weak self] value in
+            let deliver = {
+                guard !completed else {
+                    return
+                }
+                completed = true
+                timeout?.cancel()
+                timeout = nil
+                guard let self, self.sessionID == identifier else {
+                    return
+                }
+                completion(value)
+            }
+            if Thread.isMainThread { deliver() } else { DispatchQueue.main.async(execute: deliver) }
+        }
+        let work = DispatchWorkItem { respond(fallback) }
+        timeout = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + callbackTimeout, execute: work)
+        return respond
+    }
+
+    private var failure: PKPaymentAuthorizationResult {
+        PKPaymentAuthorizationResult(status: .failure, errors: [
+            NSError(
+                domain: "PCPClient.ApplePay",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Payment could not be completed. Please retry."]
+            )
+        ])
     }
 
     public func paymentAuthorizationController(
-        _: PKPaymentAuthorizationController,
+        _ controller: PKPaymentAuthorizationController,
         didAuthorizePayment payment: PKPayment,
         handler completion: @escaping (PKPaymentAuthorizationResult) -> Void
     ) {
-        let paymentMethodData = payment.token.paymentMethod.network?.rawValue ?? ""
-        let transactionIdentifier = payment.token.transactionIdentifier
-
-        let paymentData: [String: Any] = [
-            "paymentMethod": paymentMethodData,
-            "transactionIdentifier": transactionIdentifier
-        ]
-
-        var request = URLRequest(url: processPaymentServerUrl)
-        request.httpMethod = "POST"
-        request.httpBody = try? JSONSerialization.data(withJSONObject: paymentData, options: [])
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let task = urlSession.dataTask(with: request) { [weak self] data, _, error in
-            if let error {
-                PCPLogger.error(error.localizedDescription)
-                self?.paymentStatus = .failure
-                let result = PKPaymentAuthorizationResult(status: .failure, errors: [error])
-                completion(result)
-                self?.didAuthorizePayment?(result)
-            } else if let data {
-                let dataString = String(data: data, encoding: .utf8) ?? ""
-                PCPLogger.info("Received data:\n\(dataString)")
-                self?.paymentStatus = .success
-                let result = PKPaymentAuthorizationResult(status: .success, errors: nil)
-                completion(result)
-                self?.didAuthorizePayment?(result)
-            }
+        guard controller === paymentController, sessionID != nil else {
+            completion(failure)
+            return
         }
-
-        task.resume()
+        attemptedAuthorization = true
+        paymentStatus = .failure
+        let respond = reply(fallback: failure) { [weak self] result in
+            self?.paymentStatus = result.status
+            completion(result)
+            self?.didAuthorizePayment?(result)
+        }
+        if let authorizePayment {
+            authorizePayment(payment, respond)
+            return
+        }
+        guard let transport else {
+            respond(failure)
+            return
+        }
+        let failure = self.failure
+        task = transport.authorize(payment) { success in
+            respond(success ? PKPaymentAuthorizationResult(status: .success, errors: nil) : failure)
+        }
     }
 
     public func paymentAuthorizationController(
-        _: PKPaymentAuthorizationController,
+        _ controller: PKPaymentAuthorizationController,
         didSelectShippingMethod shippingMethod: PKShippingMethod,
-        handler completion: (PKPaymentRequestShippingMethodUpdate) -> Void
+        handler completion: @escaping (PKPaymentRequestShippingMethodUpdate) -> Void
     ) {
-        guard let onShippingMethodDidChange else {
-            PCPLogger.error("No onShippingMethodDidChange defined.")
-            self.completion?(false)
+        let fallback = PKPaymentRequestShippingMethodUpdate(paymentSummaryItems: request?.paymentSummaryItems ?? [])
+        guard controller === paymentController, sessionID != nil else {
+            completion(fallback)
             return
         }
-        PCPLogger.info("Shipping method selected..")
-        completion(onShippingMethodDidChange(shippingMethod))
+        let respond = reply(fallback: fallback) { [weak self] update in
+            self?.request?.paymentSummaryItems = update.paymentSummaryItems
+            completion(update)
+        }
+        if let updateShippingMethod {
+            updateShippingMethod(shippingMethod, respond)
+        } else if let onShippingMethodDidChange {
+            respond(onShippingMethodDidChange(shippingMethod))
+        } else {
+            respond(fallback)
+        }
     }
 
     public func paymentAuthorizationController(
-        _: PKPaymentAuthorizationController,
+        _ controller: PKPaymentAuthorizationController,
         didSelectShippingContact contact: PKContact,
-        handler completion: (PKPaymentRequestShippingContactUpdate) -> Void
+        handler completion: @escaping (PKPaymentRequestShippingContactUpdate) -> Void
     ) {
-        guard let request else {
-            PCPLogger.error("Shipping contact was changed but not request object was set.")
-            self.completion?(false)
+        let fallback = PKPaymentRequestShippingContactUpdate(paymentSummaryItems: request?.paymentSummaryItems ?? [])
+        fallback.shippingMethods = request?.shippingMethods ?? []
+        guard controller === paymentController, sessionID != nil else {
+            completion(fallback)
             return
         }
-
-        didSelectShippingContact?(contact)
-        completion(PKPaymentRequestShippingContactUpdate(paymentSummaryItems: request.paymentSummaryItems))
+        fallback.errors = [
+            PKPaymentRequest.paymentShippingAddressInvalidError(
+                withKey: "", localizedDescription: "Shipping update failed. Please retry."
+            )
+        ]
+        let respond = reply(fallback: fallback) { [weak self] update in
+            self?.request?.paymentSummaryItems = update.paymentSummaryItems
+            self?.request?.shippingMethods = update.shippingMethods
+            completion(update)
+        }
+        if let updateShippingContact {
+            updateShippingContact(contact, respond)
+        } else {
+            didSelectShippingContact?(contact)
+            fallback.errors = nil
+            respond(fallback)
+        }
     }
 
     public func paymentAuthorizationController(
-        _: PKPaymentAuthorizationController,
+        _ controller: PKPaymentAuthorizationController,
         didChangeCouponCode couponCode: String,
         handler completion: (PKPaymentRequestCouponCodeUpdate) -> Void
     ) {
-        guard let onChangeCouponCode else {
-            PCPLogger.error("No onChangeCouponCode defined.")
-            self.completion?(false)
+        let fallback = PKPaymentRequestCouponCodeUpdate(paymentSummaryItems: request?.paymentSummaryItems ?? [])
+        guard controller === paymentController, sessionID != nil else {
+            completion(fallback)
             return
         }
-
-        completion(onChangeCouponCode(couponCode))
+        let update = onChangeCouponCode?(couponCode) ?? fallback
+        request?.paymentSummaryItems = update.paymentSummaryItems
+        completion(update)
     }
 
     public func paymentAuthorizationController(
-        _: PKPaymentAuthorizationController,
+        _ controller: PKPaymentAuthorizationController,
         didSelectPaymentMethod paymentMethod: PKPaymentMethod,
         handler completion: (PKPaymentRequestPaymentMethodUpdate) -> Void
     ) {
-        guard let onDidSelectPaymentMethod else {
-            PCPLogger.error("No onDidSelectPaymentMethod defined.")
-            self.completion?(false)
+        let fallback = PKPaymentRequestPaymentMethodUpdate(paymentSummaryItems: request?.paymentSummaryItems ?? [])
+        guard controller === paymentController, sessionID != nil else {
+            completion(fallback)
             return
         }
-        completion(onDidSelectPaymentMethod(paymentMethod))
+        let update = onDidSelectPaymentMethod?(paymentMethod) ?? fallback
+        request?.paymentSummaryItems = update.paymentSummaryItems
+        completion(update)
     }
 }

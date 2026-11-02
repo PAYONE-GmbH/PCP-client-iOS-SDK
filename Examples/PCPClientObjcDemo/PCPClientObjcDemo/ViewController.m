@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "PCPClientObjcDemo-Swift.h"
 @import PCPClient;
 @import PCPClientBridge;
 
@@ -14,7 +15,8 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *fingerprintTokenLabel;
 @property (nonatomic, strong) FingerprintTokenizerWrapper *tokenizerWrapper;
-@property (nonatomic, strong) ApplePayHandler *applePayHandler;
+@property (nonatomic, strong) ApplePayDemoCheckout *applePayCheckout;
+@property (nonatomic, strong) PKPaymentButton *applePayButton;
 @property (weak, nonatomic) IBOutlet UILabel *applePayResultLabel;
 @property (weak, nonatomic) IBOutlet UILabel *creditcardTokenizerResponseLabel;
 
@@ -25,17 +27,25 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    NSURL *url = [[NSURL alloc] initWithString:@"YOUR_URL"];
-    self.applePayHandler = [[ApplePayHandler alloc] initWithProcessPaymentServerUrl:url urlSession:NSURLSession.sharedSession];
+    self.applePayResultLabel.text = @"Apple Pay Express Demo – keine echte Zahlung";
+    self.applePayResultLabel.numberOfLines = 0;
+    NSError *configurationError = nil;
+    ApplePayDemoConfiguration *configuration = [ApplePayDemoConfiguration loadFromBundle:NSBundle.mainBundle error:&configurationError];
+    if (configuration) {
+        self.applePayCheckout = [[ApplePayDemoCheckout alloc] initWithConfiguration:configuration];
+    } else {
+        self.applePayResultLabel.text = configurationError.localizedDescription;
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    if ([self.applePayHandler supportsApplePay]) {
+    if (!self.applePayButton && [self.applePayCheckout supportsApplePay]) {
         PKPaymentButton *applePayButton = [PKPaymentButton buttonWithType: PKPaymentButtonTypePlain style:PKPaymentButtonStyleBlack];
         applePayButton.translatesAutoresizingMaskIntoConstraints = false;
         [self.view addSubview:applePayButton];
+        self.applePayButton = applePayButton;
 
         [applePayButton.leadingAnchor constraintEqualToAnchor:self.fingerprintTokenLabel.leadingAnchor].active = true;
         [applePayButton.trailingAnchor constraintEqualToAnchor:self.fingerprintTokenLabel.trailingAnchor].active = true;
@@ -56,30 +66,12 @@
 }
 
 -(void)startApplePay:(id)sender {
-    PKPaymentRequest *request = [self makeRequest];
-    self.applePayHandler.onShippingMethodDidChange = ^PKPaymentRequestShippingMethodUpdate * _Nonnull(PKShippingMethod *shippingMethod) {
-        NSMutableArray<PKPaymentSummaryItem *> *currentPaymentSummaryItems = [NSMutableArray array];
-        [currentPaymentSummaryItems addObject:[PKPaymentSummaryItem summaryItemWithLabel:@"Item 1" amount:[NSDecimalNumber decimalNumberWithString:@"33.99"]]];
-        [currentPaymentSummaryItems addObject:[PKPaymentSummaryItem summaryItemWithLabel:@"Item 2" amount:[NSDecimalNumber decimalNumberWithString:@"2.99"]]];
-
-        if ([shippingMethod.identifier isEqualToString:@"free"]) {
-            [currentPaymentSummaryItems addObject:[PKPaymentSummaryItem summaryItemWithLabel:@"Free Shipping" amount:[NSDecimalNumber decimalNumberWithString:@"0.00"]]];
-            [currentPaymentSummaryItems addObject:[PKPaymentSummaryItem summaryItemWithLabel:@"Total" amount:[NSDecimalNumber decimalNumberWithString:@"36.98"]]];
-        } else if ([shippingMethod.identifier isEqualToString:@"express"]) {
-            [currentPaymentSummaryItems addObject:[PKPaymentSummaryItem summaryItemWithLabel:@"Express Shipping" amount:[NSDecimalNumber decimalNumberWithString:@"10.00"]]];
-            [currentPaymentSummaryItems addObject:[PKPaymentSummaryItem summaryItemWithLabel:@"Total" amount:[NSDecimalNumber decimalNumberWithString:@"46.98"]]];
-        }
-
-        return [[PKPaymentRequestShippingMethodUpdate alloc] initWithPaymentSummaryItems:currentPaymentSummaryItems];
-    };
-    [self.applePayHandler startPaymentWithRequest:request onDidSelectPaymentMethod:^PKPaymentRequestPaymentMethodUpdate * _Nonnull(PKPaymentMethod *paymentMethod) {
-        return [[PKPaymentRequestPaymentMethodUpdate alloc] initWithPaymentSummaryItems:request.paymentSummaryItems];
-    } completion:^(BOOL success) {
-        if (success) {
-            self.applePayResultLabel.text = @"Success";
-        } else {
-            self.applePayResultLabel.text = @"Failed";
-        }
+    self.applePayButton.enabled = NO;
+    self.applePayResultLabel.text = @"Demo-Versandangebot wird geladen …";
+    __weak typeof(self) weakSelf = self;
+    [self.applePayCheckout startWithCompletion:^(NSString *result) {
+        weakSelf.applePayResultLabel.text = result;
+        weakSelf.applePayButton.enabled = YES;
     }];
 }
 - (IBAction)startCreditcardTokenizer:(id)sender {
@@ -153,37 +145,6 @@
 
     CreditcardTokenizerViewController *viewController = [[CreditcardTokenizerViewController alloc] initWithTokenizerUrl:url config:config.creditcardTokenizerConfig];
     [self.navigationController pushViewController:viewController animated:true];
-}
-
--(PKPaymentRequest *)makeRequest {
-    PKPaymentRequest *request = [[PKPaymentRequest alloc] init];
-    request.merchantIdentifier = @"YOUR_MERCHANT_IDENTIFIER";
-    request.supportedNetworks = @[PKPaymentNetworkVisa, PKPaymentNetworkGirocard];
-    request.merchantCapabilities = PKMerchantCapability3DS;
-    request.countryCode = @"DE";
-    request.currencyCode = @"EUR";
-
-    PKPaymentSummaryItem *item1 = [PKPaymentSummaryItem summaryItemWithLabel:@"Item 1" amount:[NSDecimalNumber decimalNumberWithString:@"33.99"]];
-    PKPaymentSummaryItem *item2 = [PKPaymentSummaryItem summaryItemWithLabel:@"Item 2" amount:[NSDecimalNumber decimalNumberWithString:@"2.99"]];
-    PKPaymentSummaryItem *total = [PKPaymentSummaryItem summaryItemWithLabel:@"Total" amount:[NSDecimalNumber decimalNumberWithString:@"36.98"]];
-    request.paymentSummaryItems = @[item1, item2, total];
-
-    request.requiredBillingContactFields = [NSSet setWithArray:@[PKContactFieldPostalAddress, PKContactFieldEmailAddress, PKContactFieldName]];
-    request.requiredShippingContactFields = [NSSet setWithArray:@[PKContactFieldPostalAddress, PKContactFieldEmailAddress, PKContactFieldName]];
-
-    PKShippingMethod *freeShipping = [PKShippingMethod summaryItemWithLabel:@"Free Shipping" amount:[NSDecimalNumber decimalNumberWithString:@"0.00"]];
-    freeShipping.identifier = @"free";
-    freeShipping.detail = @"Arrives in 1-3 business days.";
-
-    PKShippingMethod *expressShipping = [PKShippingMethod summaryItemWithLabel:@"Express Shipping" amount:[NSDecimalNumber decimalNumberWithString:@"10.00"]];
-    expressShipping.identifier = @"express";
-    expressShipping.detail = @"Arrives tomorrow";
-
-    request.shippingMethods = @[freeShipping, expressShipping];
-
-    request.applicationData = [NSData data];
-
-    return request;
 }
 
 @end

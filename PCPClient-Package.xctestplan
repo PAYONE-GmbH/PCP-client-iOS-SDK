@@ -15,6 +15,13 @@
     {
       "target" : {
         "containerPath" : "container:",
+        "identifier" : "ApplePayDemoTests",
+        "name" : "ApplePayDemoTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
         "identifier" : "PCPClientTests",
         "name" : "PCPClientTests"
       }

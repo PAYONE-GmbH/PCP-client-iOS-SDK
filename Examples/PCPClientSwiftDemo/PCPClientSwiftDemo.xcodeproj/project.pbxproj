@@ -7,11 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A1000000000000000000000B /* ApplePayDemoConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000C; };
+		A1000000000000000000000D /* ApplePayDemoConfiguration.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000E; };
+		A10000000000000000000005 /* DemoBackendClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006; };
+		A10000000000000000000007 /* DemoCheckoutModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000008; };
+		A10000000000000000000009 /* ApplePayExpressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000A; };
 		95EB6E462C7FB785005243D3 /* PCPClientSwiftDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EB6E452C7FB785005243D3 /* PCPClientSwiftDemoApp.swift */; };
 		95EB6E482C7FB785005243D3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EB6E472C7FB785005243D3 /* ContentView.swift */; };
 		95EB6E4A2C7FB786005243D3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95EB6E492C7FB786005243D3 /* Assets.xcassets */; };
 		95EB6E4D2C7FB786005243D3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95EB6E4C2C7FB786005243D3 /* Preview Assets.xcassets */; };
 		95EB6E572C7FFE28005243D3 /* ApplePayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EB6E562C7FFE28005243D3 /* ApplePayButton.swift */; };
+		A10000000000000000000001 /* ../ApplePayDemoSupport/ApplePayDemoCheckout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* ../ApplePayDemoSupport/ApplePayDemoCheckout.swift */; };
 		D60421C82E24F9860008424F /* PCPClient in Frameworks */ = {isa = PBXBuildFile; productRef = D60421C72E24F9860008424F /* PCPClient */; };
 		D60421CA2E24F9860008424F /* PCPClientBridge in Frameworks */ = {isa = PBXBuildFile; productRef = D60421C92E24F9860008424F /* PCPClientBridge */; };
 		D60421CC2E24FA7E0008424F /* PCPClient in Frameworks */ = {isa = PBXBuildFile; productRef = D60421CB2E24FA7E0008424F /* PCPClient */; };
@@ -26,12 +32,18 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A1000000000000000000000C /* ApplePayDemoConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../ApplePayDemoSupport/ApplePayDemoConfiguration.swift"; sourceTree = SOURCE_ROOT; };
+		A1000000000000000000000E /* ApplePayDemoConfiguration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "../ApplePayDemoSupport/ApplePayDemoConfiguration.plist"; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000006 /* DemoBackendClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../ApplePayDemoSupport/DemoBackendClient.swift"; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000008 /* DemoCheckoutModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../ApplePayDemoSupport/DemoCheckoutModels.swift"; sourceTree = SOURCE_ROOT; };
+		A1000000000000000000000A /* ApplePayExpressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PCPClientSwiftDemo/ApplePayExpressView.swift"; sourceTree = SOURCE_ROOT; };
 		95EB6E422C7FB785005243D3 /* PCPClientSwiftDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PCPClientSwiftDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95EB6E452C7FB785005243D3 /* PCPClientSwiftDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PCPClientSwiftDemoApp.swift; sourceTree = "<group>"; };
 		95EB6E472C7FB785005243D3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		95EB6E492C7FB786005243D3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95EB6E4C2C7FB786005243D3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		95EB6E562C7FFE28005243D3 /* ApplePayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplePayButton.swift; sourceTree = "<group>"; };
+		A10000000000000000000002 /* ../ApplePayDemoSupport/ApplePayDemoCheckout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../ApplePayDemoSupport/ApplePayDemoCheckout.swift; sourceTree = SOURCE_ROOT; };
 		D63D9CF72E856D45004A8F35 /* PayPal-README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "PayPal-README.md"; sourceTree = "<group>"; };
 		D63D9CFA2E856D45004A8F35 /* PayPalWebPaymentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayPalWebPaymentsView.swift; sourceTree = "<group>"; };
 		D63D9D072E857B64004A8F35 /* PayPalViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayPalViewModel.swift; sourceTree = "<group>"; };
@@ -61,6 +73,12 @@
 			children = (
 				95EB6E442C7FB785005243D3 /* PCPClientSwiftDemo */,
 				95EB6E432C7FB785005243D3 /* Products */,
+				A10000000000000000000002 /* ../ApplePayDemoSupport/ApplePayDemoCheckout.swift */,
+				A10000000000000000000006 /* DemoBackendClient.swift */,
+				A1000000000000000000000C /* ApplePayDemoConfiguration.swift */,
+				A1000000000000000000000E /* ApplePayDemoConfiguration.plist */,
+				A10000000000000000000008 /* DemoCheckoutModels.swift */,
+				A1000000000000000000000A /* ApplePayExpressView.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -168,6 +186,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				95EB6E4D2C7FB786005243D3 /* Preview Assets.xcassets in Resources */,
+				A1000000000000000000000D /* ApplePayDemoConfiguration.plist in Resources */,
 				95EB6E4A2C7FB786005243D3 /* Assets.xcassets in Resources */,
 				D63D9CFB2E856D45004A8F35 /* PayPal-README.md in Resources */,
 			);
@@ -180,6 +199,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000001 /* ../ApplePayDemoSupport/ApplePayDemoCheckout.swift in Sources */,
+				A10000000000000000000005 /* DemoBackendClient.swift in Sources */,
+				A1000000000000000000000B /* ApplePayDemoConfiguration.swift in Sources */,
+				A10000000000000000000007 /* DemoCheckoutModels.swift in Sources */,
+				A10000000000000000000009 /* ApplePayExpressView.swift in Sources */,
 				95EB6E572C7FFE28005243D3 /* ApplePayButton.swift in Sources */,
 				95EB6E482C7FB785005243D3 /* ContentView.swift in Sources */,
 				D63D9CFC2E856D45004A8F35 /* PayPalWebPaymentsView.swift in Sources */,
@@ -315,6 +339,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PCPClientSwiftDemo/ApplePayDemo.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PCPClientSwiftDemo/Preview Content\"";
@@ -343,6 +368,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PCPClientSwiftDemo/ApplePayDemo.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PCPClientSwiftDemo/Preview Content\"";
