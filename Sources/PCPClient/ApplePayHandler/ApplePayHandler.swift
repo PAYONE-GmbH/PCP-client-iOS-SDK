@@ -9,7 +9,8 @@
 import Foundation
 import PassKit
 
-/// Presents native Apple Pay with merchant-defined checkout and authorization callbacks.
+/// Presents native Apple Pay Standard or Express using the supplied PKPaymentRequest.
+/// Standard uses precollected order data; Express adds asynchronous contact/shipping callbacks.
 /// Configure and start on main. Async reply blocks may be called from any queue;
 /// the handler delivers them to PassKit once, on main, with a 25-second fallback.
 @objc public class ApplePayHandler: NSObject, PKPaymentAuthorizationControllerDelegate {

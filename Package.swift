@@ -36,7 +36,7 @@ let package = Package(
             dependencies: ["PCPClient"],
             path: "Examples/ApplePayDemoSupport",
             exclude: ["README.md"],
-            resources: [.copy("ApplePayDemoConfiguration.plist")]
+            resources: [.copy("ApplePayDemoConfiguration.plist"), .copy("ApplePayDemoStandardOrder.plist")]
         ),
         .testTarget(
             name: "PCPClientBridgeTests",

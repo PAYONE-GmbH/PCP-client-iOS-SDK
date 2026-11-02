@@ -5,24 +5,24 @@ name: Swift
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   pull_request:
-    branches: ['main', 'develop']
+    branches: ["main", "develop"]
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: macos-27
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: swift-actions/setup-swift@v2.1.0
+      - uses: actions/checkout@v7
+      - uses: swift-actions/setup-swift@v2.4.0
         with:
-          swift-version: '5.10.1'
+          swift-version: "6.2"
       - name: Install SwiftLint
         run: brew install swiftlint
       - name: Build
-        run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2'
+        run: xcodebuild -scheme 'PCPClient-Package' -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0'
       - name: Run SwiftLint
         run: |
           set -o pipefail
@@ -53,10 +53,10 @@ jobs:
       - name: Update Paths for SonarCloud
         uses: jacobtomlinson/gha-find-replace@v3
         with:
-          find: '/Users/runner/work/PCP-client-iOS-SDK/PCP-client-iOS-SDK/'
-          replace: ''
+          find: "/Users/runner/work/PCP-client-iOS-SDK/PCP-client-iOS-SDK/"
+          replace: ""
           regex: false
-          include: 'Coverage.xml'
+          include: "Coverage.xml"
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:

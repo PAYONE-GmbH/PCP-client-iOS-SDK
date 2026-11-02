@@ -4,6 +4,8 @@
 
 This guide describes the SDK contract. The [runnable Swift and Objective-C examples](../Examples/ApplePayDemoSupport/README.md) demonstrate a concrete merchant-backend adapter. Their server **simulates checkout and does not authorize a PAYONE/bank payment**.
 
+The same SDK also supports the [Standard payment flow](apple-pay-standard.md), with order contacts and shipping fixed before presentation. See [the flow comparison](apple-pay.md). Express-specific contact/shipping selection is described here; the callback/lifecycle and transport reference is shared by both flows.
+
 ## Responsibilities
 
 | SDK | App and merchant backend |
@@ -78,7 +80,7 @@ func makeExpressRequest(
     request.merchantIdentifier = merchantIdentifier
     request.countryCode = "DE"
     request.currencyCode = "EUR"
-    request.supportedNetworks = [.visa, .masterCard, .amex]
+    request.supportedNetworks = [.visa, .masterCard, .girocard]
     request.merchantCapabilities = .threeDSecure
     request.requiredShippingContactFields = [.postalAddress, .name, .emailAddress, .phoneNumber]
     request.requiredBillingContactFields = [.postalAddress, .name]
@@ -252,7 +254,7 @@ Earlier behavior that accepted arbitrary response data as success is intentional
 
 ## Runnable reference and verification
 
-- [Example setup, source map, HTTP contract and device checks](../Examples/ApplePayDemoSupport/README.md).
+- [Example setup, source map and HTTP contract](../Examples/ApplePayDemoSupport/README.md).
 - [Example configuration parameters and Swift/Objective-C usage](../Examples/ApplePayDemoSupport/README.md#pass-configuration-explicitly): merchant identifier, backend URL, cart ID, country, currency and initial shipping method are injected into the example coordinator. Both apps load their editable values from a bundled plist; the SDK defines none of these defaults.
 - [SDK lifecycle/delegate/transport tests](../Tests/PCPClientTests/ApplePayHandler/ApplePayHandlerTests.swift).
 - [Checkout contract tests](../Examples/ApplePayDemoSupport/ApplePayDemoCheckoutTests.swift).
@@ -263,4 +265,4 @@ xcodebuild build -project Examples/PCPClientSwiftDemo/PCPClientSwiftDemo.xcodepr
 xcodebuild build -project Examples/PCPClientObjcDemo/PCPClientObjcDemo.xcodeproj -scheme PCPClientObjcDemo -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO -quiet
 ```
 
-Select an installed simulator if necessary. The older `run_test.sh` pins a different destination. Automated tests use synthetic tokens and stubbed controllers/backends; they verify app/SDK behavior, not bank processing. Real Wallet interaction requires signed hardware, and successful simulated checkout is not proof of real PCP authorization. See the example checklist for manual acceptance.
+Select an installed simulator if necessary. The older `run_test.sh` pins a different destination. Automated tests use synthetic tokens and stubbed controllers/backends. The example server simulates checkout rather than bank processing.

@@ -25,7 +25,8 @@ final class ApplePayDemoCheckoutTests: XCTestCase {
         configuration: ApplePayDemoConfiguration = ApplePayDemoConfiguration(
             merchantIdentifier: "merchant.de.nanogiants.payonedemo", baseURL: URL(string: "https://example.test")!,
             cartID: "demo-cart-1", countryCode: "DE", currencyCode: "EUR", initialShippingMethodIdentifier: "standard"
-        )
+        ),
+        standardOrder: ApplePayDemoStandardOrder? = nil
     ) -> (ApplePayDemoCheckout, ApplePayHandler, DemoSheetStub) {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [DemoURLProtocol.self]
@@ -33,11 +34,112 @@ final class ApplePayDemoCheckoutTests: XCTestCase {
         let sheet = DemoSheetStub()
         handler.controllerFactory = { request in sheet.capturedRequest = request; return sheet }
         let checkout = ApplePayDemoCheckout(configuration: configuration,
-                                            session: URLSession(configuration: config), handler: handler)
+                                            session: URLSession(configuration: config), handler: handler,
+                                            standardOrder: standardOrder)
         return (checkout, handler, sheet)
     }
 
     override func tearDown() { DemoURLProtocol.respond = nil; DemoURLProtocol.requestURLs = []; super.tearDown() }
+
+    func testStandardUsesPrecollectedOrderAndFixedShippingWithoutExpressCallbacks() throws {
+        _ = try XCTUnwrap(Bundle.module.url(forResource: "ApplePayDemoStandardOrder", withExtension: "plist"))
+        let order = try ApplePayDemoStandardOrder.load(from: .module)
+        let (checkout, handler, sheet) = makeCheckout(standardOrder: order)
+        let presented = expectation(description: "standard sheet")
+        sheet.onPresent = { presented.fulfill() }
+        let finished = expectation(description: "standard receipt")
+        var quoteCalls = 0
+        DemoURLProtocol.respond = { path, body in
+            XCTAssertEqual(body["shippingMethodIdentifier"] as? String, order.shippingMethodIdentifier)
+            let shipping = body["shippingContact"] as? [String: Any]
+            XCTAssertEqual(shipping?["addressLines"] as? [String], ["Teststraße 1"])
+            if path == "/checkout/quote" {
+                quoteCalls += 1
+                return (200, self.fixture(), 0)
+            }
+            XCTAssertEqual(path, "/process-payment")
+            XCTAssertEqual((body["billingContact"] as? [String: Any])?["addressLines"] as? [String], ["Teststraße 2"])
+            return (200, self.receipt(), 0)
+        }
+        checkout.start { XCTAssertTrue($0.contains("Simulierter Checkout erfolgreich")); finished.fulfill() }
+        wait(for: [presented], timeout: 2)
+        let request = try XCTUnwrap(sheet.capturedRequest)
+        XCTAssertTrue(request.requiredShippingContactFields.isEmpty)
+        XCTAssertTrue(request.requiredBillingContactFields.isEmpty)
+        XCTAssertTrue(request.shippingMethods?.isEmpty != false)
+        XCTAssertEqual(request.shippingContact?.postalAddress?.street, "Teststraße 1")
+        XCTAssertEqual(request.billingContact?.postalAddress?.street, "Teststraße 2")
+        XCTAssertEqual(request.paymentSummaryItems.last?.amount, NSDecimalNumber(string: "24.80"))
+        XCTAssertNil(handler.updateShippingContact)
+        XCTAssertNil(handler.updateShippingMethod)
+        let authorized = expectation(description: "standard authorization")
+        // No Wallet contacts: the standard order remains authoritative.
+        handler.paymentAuthorizationController(sheet, didAuthorizePayment: StandardPaymentStub()) {
+            XCTAssertEqual($0.status, .success)
+            authorized.fulfill()
+        }
+        wait(for: [authorized], timeout: 2)
+        XCTAssertEqual(quoteCalls, 1)
+        handler.paymentAuthorizationControllerDidFinish(sheet)
+        wait(for: [finished], timeout: 1)
+    }
+
+    func testStandardCancellationAndFailureCanBeRetried() throws {
+        let order = try ApplePayDemoStandardOrder.load(from: .module)
+        let (checkout, handler, sheet) = makeCheckout(standardOrder: order)
+        for status in [0, 409, 503, -1] {
+            let presented = expectation(description: "standard attempt")
+            sheet.onPresent = { presented.fulfill() }
+            var paymentCalls = 0
+            DemoURLProtocol.respond = { path, _ in
+                if path == "/checkout/quote" { return (200, self.fixture(), 0) }
+                paymentCalls += 1
+                return (status, ["success": false], 0)
+            }
+            let finished = expectation(description: "standard cancel/error")
+            checkout.start {
+                XCTAssertFalse($0.contains("erfolgreich"))
+                if status == 0 { XCTAssertTrue($0.contains("abgebrochen")) }
+                finished.fulfill()
+            }
+            wait(for: [presented], timeout: 2)
+            if status != 0 {
+                let replied = expectation(description: "standard backend error")
+                handler.paymentAuthorizationController(sheet, didAuthorizePayment: StandardPaymentStub()) {
+                    XCTAssertEqual($0.status, .failure)
+                    replied.fulfill()
+                }
+                wait(for: [replied], timeout: 2)
+            }
+            handler.paymentAuthorizationControllerDidFinish(sheet)
+            wait(for: [finished], timeout: 1)
+            XCTAssertEqual(paymentCalls, status == 0 ? 0 : 1)
+        }
+    }
+
+    func testStandardRejectsIncompleteOrderBeforeNetworkAndUnexpectedShippingBeforePresentation() throws {
+        let invalid = ApplePayDemoStandardOrder(shippingContact: PKContact(), billingContact: PKContact(), shippingMethodIdentifier: "standard")
+        let (invalidCheckout, _, invalidSheet) = makeCheckout(standardOrder: invalid)
+        invalidSheet.onPresent = { XCTFail("Incomplete order") }
+        var invalidReported = false
+        invalidCheckout.start { _ in invalidReported = true }
+        XCTAssertTrue(invalidReported)
+        XCTAssertTrue(DemoURLProtocol.requestURLs.isEmpty)
+
+        let order = try ApplePayDemoStandardOrder.load(from: .module)
+        let (checkout, _, sheet) = makeCheckout(standardOrder: order)
+        sheet.onPresent = { XCTFail("Backend changed the standard order's shipping") }
+        DemoURLProtocol.respond = { _, _ in (200, self.fixture(method: "express"), 0) }
+        let failed = expectation(description: "shipping mismatch")
+        checkout.start { XCTAssertFalse($0.contains("erfolgreich")); failed.fulfill() }
+        wait(for: [failed], timeout: 2)
+    }
+
+    private func receipt() -> [String: Any] {
+        ["success": true, "mode": "demo", "paymentStatus": "simulated", "orderId": "demo-order-standard",
+         "quoteId": "quote-standard", "cartId": "demo-cart-1", "currencyCode": "EUR",
+         "shippingMethodIdentifier": "standard", "total": ["label": "Demo", "amount": "24.80"]]
+    }
 
     func testInjectedConfigurationControlsMerchantServerCartAndRegion() {
         let configuration = ApplePayDemoConfiguration(
@@ -144,6 +246,8 @@ final class ApplePayDemoCheckoutTests: XCTestCase {
         let token = try XCTUnwrap(body["token"] as? [String: Any])
         let paymentData = try XCTUnwrap(token["paymentData"] as? [String: Any])
         XCTAssertEqual(paymentData["signature"] as? String, "synthetic-signature")
+        XCTAssertEqual((token["paymentMethod"] as? [String: String])?["network"], PKPaymentNetwork.visa.rawValue)
+        XCTAssertEqual(token["transactionIdentifier"] as? String, "test-transaction")
         let shipping = try XCTUnwrap(body["shippingContact"] as? [String: Any])
         XCTAssertEqual(shipping["postalCode"] as? String, "10115")
         XCTAssertEqual(shipping["addressLines"] as? [String], ["Teststraße 1", "Hinterhaus"])
@@ -288,9 +392,21 @@ private final class DemoPaymentStub: PKPayment {
     override var billingContact: PKContact? { shippingContact }
 }
 private final class DemoTokenStub: PKPaymentToken {
+    override var paymentMethod: PKPaymentMethod { DemoNetworkMethod() }
+    override var transactionIdentifier: String { "test-transaction" }
     override var paymentData: Data {
         Data(#"{"version":"EC_v1","data":"synthetic-data","signature":"synthetic-signature","header":{"ephemeralPublicKey":"key","publicKeyHash":"hash","transactionId":"id"}}"#.utf8)
     }
+}
+
+private final class DemoNetworkMethod: PKPaymentMethod {
+    override var network: PKPaymentNetwork? { .visa }
+}
+
+private final class StandardPaymentStub: PKPayment {
+    override var token: PKPaymentToken { DemoTokenStub() }
+    override var shippingContact: PKContact? { nil }
+    override var billingContact: PKContact? { nil }
 }
 
 private final class DemoURLProtocol: URLProtocol {
