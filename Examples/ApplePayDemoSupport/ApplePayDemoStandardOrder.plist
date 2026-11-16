@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+    <key>shippingMethodIdentifier</key><string>standard</string>
+    <key>shippingContact</key><dict>
+        <key>givenName</key><string>Demo</string>
+        <key>familyName</key><string>Customer</string>
+        <key>street</key><string>Teststraße 1</string>
+        <key>city</key><string>Berlin</string>
+        <key>postalCode</key><string>10115</string>
+        <key>countryCode</key><string>DE</string>
+        <key>emailAddress</key><string>demo@example.com</string>
+        <key>phoneNumber</key><string>+49300000000</string>
+    </dict>
+    <key>billingContact</key><dict>
+        <key>givenName</key><string>Demo</string>
+        <key>familyName</key><string>Customer</string>
+        <key>street</key><string>Teststraße 2</string>
+        <key>city</key><string>Berlin</string>
+        <key>postalCode</key><string>10117</string>
+        <key>countryCode</key><string>DE</string>
+    </dict>
+</dict></plist>

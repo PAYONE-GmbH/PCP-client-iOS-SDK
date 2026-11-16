@@ -32,8 +32,22 @@ let package = Package(
             dependencies: ["PCPClient"]
         ),
         .testTarget(
+            name: "ApplePayDemoTests",
+            dependencies: ["PCPClient"],
+            path: "Examples/ApplePayDemoSupport",
+            exclude: ["README.md"],
+            resources: [.copy("ApplePayDemoConfiguration.plist"), .copy("ApplePayDemoStandardOrder.plist")]
+        ),
+        .testTarget(
             name: "PCPClientBridgeTests",
             dependencies: ["PCPClientBridge"]
+        ),
+        .testTarget(
+            name: "CreditcardTokenizerDemoTests",
+            dependencies: ["PCPClient"],
+            path: "Examples/CreditcardTokenizerDemoSupport",
+            exclude: ["README.md"],
+            resources: [.copy("CreditcardTokenizerDemoConfiguration.plist")]
         )
     ]
 )

@@ -12,9 +12,34 @@ import UIKit
 import PassKit
 
 struct ApplePayButton: UIViewRepresentable {
-    func makeUIView(context: Context) -> PKPaymentButton {
-        PKPaymentButton(paymentButtonType: .plain, paymentButtonStyle: .black)
+    let action: () -> Void
+    var isEnabled = true
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(action: action)
     }
 
-    func updateUIView(_ uiView: PKPaymentButton, context: UIViewRepresentableContext<ApplePayButton>) {}
+    func makeUIView(context: Context) -> PKPaymentButton {
+        let button = PKPaymentButton(paymentButtonType: .plain, paymentButtonStyle: .black)
+        button.addTarget(context.coordinator, action: #selector(Coordinator.pressed), for: .touchUpInside)
+        button.isEnabled = isEnabled
+        return button
+    }
+
+    func updateUIView(_ uiView: PKPaymentButton, context: Context) {
+        context.coordinator.action = action
+        uiView.isEnabled = isEnabled
+    }
+
+    final class Coordinator: NSObject {
+        var action: () -> Void
+
+        init(action: @escaping () -> Void) {
+            self.action = action
+        }
+
+        @objc func pressed() {
+            action()
+        }
+    }
 }
